@@ -30,12 +30,14 @@ const userSchema = new Schema(
             required: true,
             select: false,
         },
-        workspaces: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Workspace',
-            },
-        ],
+        workspaces: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Workspace',
+        }],
+        groups: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Group',
+        }],
     },
     {
         timestamps: true,
