@@ -12,13 +12,13 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id, name, description } = await request.json();
+    const { workspaceId, name, description } = await request.json();
 
     try {
 
         await connectMongo();
         const workspace = await Workspace.findOneAndUpdate(
-            { _id: id, owner: userId },
+            { _id: workspaceId, owner: userId },
             { name, description },
             { new: true }
         );
