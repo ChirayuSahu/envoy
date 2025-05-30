@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { workspaceId, isPublic } = await request.json();
+    const { name, workspaceId, isPublic } = await request.json();
 
-    if (!workspaceId) {
-        return NextResponse.json({ error: "Workspace ID is required." }, { status: 400 });
+    if (!workspaceId || !name) {
+        return NextResponse.json({ error: "Workspace ID and name are required." }, { status: 400 });
     }
 
     
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         }
 
         const group = await Group.create({
-            members: [userId],
+            name,
             workspace: workspaceId,
             owner: userId,
             token: uuid,
