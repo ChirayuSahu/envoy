@@ -4,6 +4,7 @@ import Group from "@/modals/group";
 import { getToken } from "next-auth/jwt";
 import { randomUUID } from "crypto";
 import Workspace from "@/modals/workspace";
+import User from "@/modals/user";
 
 export async function POST(request: NextRequest) {
 
@@ -30,6 +31,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Workspace not found." }, { status: 404 });
         }
 
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return NextResponse.json({ error: "User not found." }, { status: 404 });
+        }
+
         let uuid = randomUUID();
 
         const existingToken = await Group.findOne({token: uuid});
@@ -47,8 +54,14 @@ export async function POST(request: NextRequest) {
         });
 
         workspace.groups.push(group._id);
-
         await workspace.save();
+
+        user.otherGroups.push(group._id);
+        await user.save();
+
+        group.members.push(userId);
+        await group.save();
+
         return NextResponse.json({ message: "Group created successfully.", group }, { status: 201 });
 
     } catch (error: any) {
