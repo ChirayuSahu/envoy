@@ -10,16 +10,16 @@ export async function DELETE(request: NextRequest) {
     if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
-    const { id } = await request.json();
 
-    if (!id) {
+    const { workspaceId } = await request.json();
+
+    if (!workspaceId) {
         return NextResponse.json({ error: "Workspace ID is required." }, { status: 400 });
     }
 
     try {
         await connectMongo();
-        const workspace = await Workspace.findOneAndDelete({ _id: id, owner: userId });
+        const workspace = await Workspace.findOneAndDelete({ _id: workspaceId, owner: userId });
 
         if (!workspace) {
             return NextResponse.json({ error: "Workspace not found or you do not have permission to delete it." }, { status: 404 });
