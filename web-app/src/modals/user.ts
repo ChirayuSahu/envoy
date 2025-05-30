@@ -34,9 +34,9 @@ const userSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Workspace',
         }],
-        otherWorkspaces: [{
+        otherGroups: [{
             type: Schema.Types.ObjectId,
-            ref: 'Workspace',
+            ref: 'Group',
         }],
         groups: [{
             type: Schema.Types.ObjectId,
