@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import Workspace from "@/modals/workspace";
 import { getToken } from "next-auth/jwt";
+import User from "@/modals/user";
 
 export async function DELETE(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -19,11 +20,22 @@ export async function DELETE(request: NextRequest) {
 
     try {
         await connectMongo();
+
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return NextResponse.json({ error: "User not found." }, { status: 404 });
+        }
+
         const workspace = await Workspace.findOneAndDelete({ _id: workspaceId, owner: userId });
 
         if (!workspace) {
             return NextResponse.json({ error: "Workspace not found or you do not have permission to delete it." }, { status: 404 });
         }
+
+        user.workspaces = user.workspaces.filter((w: any) => w.toString() !== workspaceId);
+
+        await user.save();
 
         return NextResponse.json({ message: "Workspace deleted successfully." }, { status: 200 });
 
