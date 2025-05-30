@@ -15,10 +15,6 @@ const workspaceSchema = new Schema({
         ref: 'User',
         required: true,
     },
-    members: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-    }],
     groups: [{
         type: Schema.Types.ObjectId,
         ref: 'Group',
