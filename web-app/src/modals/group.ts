@@ -14,7 +14,6 @@ const groupSchema = new Schema({
                 trim: true,
             }
         },
-        required: true,
     }],
     members: [{
         type: Schema.Types.ObjectId,
@@ -32,6 +31,10 @@ const groupSchema = new Schema({
         trim: true,
         index: true,
     },
+    isPublic: {
+        type: Boolean,
+        default: false,
+    }
 }, { timestamps: true });
 
 const Group = mongoose.models.Group || mongoose.model('Group', groupSchema);
