@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         group.envs = envs;
         await group.save();
 
-        return NextResponse.json({ message: "Environment variables updated successfully.", group }, { status: 200 });
+        return NextResponse.json({ message: "Environment variables updated successfully.", envs: group.envs }, { status: 200 });
 
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
