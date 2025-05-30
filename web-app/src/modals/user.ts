@@ -38,10 +38,6 @@ const userSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Group',
         }],
-        groups: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Group',
-        }],
     },
     {
         timestamps: true,
