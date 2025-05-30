@@ -6,6 +6,11 @@ import { getToken } from "next-auth/jwt";
 export async function DELETE(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const userId = token?.id;
+
+    if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
     const { id } = await request.json();
 
     if (!id) {
