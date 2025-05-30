@@ -1,6 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 
 const groupSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+    },
     envs: [{
         type: {
             key: {
