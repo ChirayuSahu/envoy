@@ -1,8 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
-import Group from "@/modals/group";
+import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
-import User from "@/modals/user";
+import User from "@/models/user";
 
 export async function POST(request: NextRequest){
 

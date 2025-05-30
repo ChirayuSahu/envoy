@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/utils/connectMongo";
-import Group from "@/modals/group";
+import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
 import { randomUUID } from "crypto";
-import Workspace from "@/modals/workspace";
-import User from "@/modals/user";
+import Workspace from "@/models/workspace";
+import User from "@/models/user";
 
 export async function POST(request: NextRequest) {
 

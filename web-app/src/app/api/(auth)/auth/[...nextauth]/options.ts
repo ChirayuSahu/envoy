@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"
 import connectMongo from "@/utils/connectMongo";
-import User from "@/modals/user";
+import User from "@/models/user";
 import { comparePassword } from "@/utils/bcrypt";
 import { sanitizeFilter } from "mongoose";
 

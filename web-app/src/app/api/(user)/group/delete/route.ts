@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
-import Group from "@/modals/group";
-import Workspace from "@/modals/workspace";
+import Group from "@/models/group";
+import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
 
 export async function DELETE(request: NextRequest) {
@@ -39,7 +39,7 @@ export async function DELETE(request: NextRequest) {
         await workspace.save();
 
         return NextResponse.json({ message: "Group deleted successfully." }, { status: 200 });
-        
+
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

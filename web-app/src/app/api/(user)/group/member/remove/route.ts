@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
-import Group from "@/modals/group";
-import User from "@/modals/user";
+import Group from "@/models/group";
+import User from "@/models/user";
 import { getToken } from "next-auth/jwt";
 
 export async function POST(request: NextRequest) {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
         group.members = group.members.filter((m: any) => m.toString() !== member._id.toString());
         await group.save();
-        
+
         member.otherGroups = member.otherGroups.filter((g: any) => g.toString() !== groupId);
         await member.save();
 

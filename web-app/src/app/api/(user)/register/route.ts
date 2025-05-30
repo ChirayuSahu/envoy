@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import User from "@/modals/user";
+import User from "@/models/user";
 import connectMongo from "@/utils/connectMongo";
 import { sanitizeFilter } from "mongoose";
 import { hashPassword } from "@/utils/bcrypt";

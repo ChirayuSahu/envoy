@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/utils/connectMongo";
-import Workspace from "@/modals/workspace";
-import User from "@/modals/user";
+import Workspace from "@/models/workspace";
+import User from "@/models/user";
 import { getToken } from "next-auth/jwt";
 
 export async function DELETE(request: NextRequest) {

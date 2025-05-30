@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/utils/connectMongo";
-import Workspace from "@/modals/workspace";
+import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
-import User from "@/modals/user";
+import User from "@/models/user";
 
 export async function GET(request: NextRequest) {
 
