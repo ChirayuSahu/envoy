@@ -3,6 +3,7 @@ import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
+import User from "@/models/user";
 
 export async function DELETE(request: NextRequest) {
 
@@ -37,6 +38,11 @@ export async function DELETE(request: NextRequest) {
 
         workspace.groups = workspace.groups.filter((id: any) => id.toString() !== groupId);
         await workspace.save();
+
+        await User.updateMany(
+            { _id: { $in: group.members } },
+            { $pull: { otherGroups: groupId } }
+        );
 
         return NextResponse.json({ message: "Group deleted successfully." }, { status: 200 });
 
