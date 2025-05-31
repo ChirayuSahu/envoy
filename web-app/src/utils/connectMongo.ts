@@ -1,5 +1,7 @@
 import mongoose from "mongoose"
 
+mongoose.set('sanitizeFilter', true);
+
 const uri = process.env.NEXT_MONGO_URI;
 
 if(!uri){
