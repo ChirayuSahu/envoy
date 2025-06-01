@@ -3,6 +3,7 @@ import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
 import { connect } from "http2";
+import BasicGroup from "@/models/basicGroup";
 
 export async function GET(request: NextRequest) {
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     if (type === "basic") {
         try {
             await connectMongo();
-            const group = await Group.findOne({ token: groupToken });
+            const group = await BasicGroup.findOne({ token: groupToken });
 
             if (!group) {
                 return NextResponse.json({ message: "Group not found." }, { status: 404 });
