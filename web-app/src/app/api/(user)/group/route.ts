@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
-import { connect } from "http2";
 import BasicGroup from "@/models/basicGroup";
 
 export async function GET(request: NextRequest) {
