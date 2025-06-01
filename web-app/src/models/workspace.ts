@@ -19,6 +19,11 @@ const workspaceSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Group',
     }],
+    uuid: {
+        type: String,
+        required: true,
+        unique: true,
+    },
 }, {
     timestamps: true,
 });
