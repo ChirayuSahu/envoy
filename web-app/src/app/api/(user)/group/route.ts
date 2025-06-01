@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     try {
         await connectMongo();
 
-        const group = await Group.findOne({ token: groupToken });
+        const group = await Group.findOne({ token: groupToken }).populate({ path: "members", select: "name email" });
 
         if (!group) {
             return NextResponse.json({ error: "Group not found." }, { status: 404 });
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ group }, { status: 200 });
         }
 
-        if( group.members.map( (member: any) => member.toString() ).includes(userId) ){
+        if( group.owner.toString() === userId) {
             return NextResponse.json({ group }, { status: 200 });
         }
 
