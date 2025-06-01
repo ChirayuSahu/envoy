@@ -11,16 +11,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { groupId, envs } = await request.json();
+    const { groupToken, envs } = await request.json();
 
-    if (!groupId || !envs || !Array.isArray(envs)) {
-        return NextResponse.json({ error: "Group ID and environment variables are required." }, { status: 400 });
+    if (!groupToken || !envs || !Array.isArray(envs)) {
+        return NextResponse.json({ error: "Group token and environment variables are required." }, { status: 400 });
     }
 
     try {
         await connectMongo();
-        
-        const group = await Group.findOne({ _id: groupId, owner: userId });
+
+        const group = await Group.findOne({ token: groupToken, owner: userId });
 
         if (!group) {
             return NextResponse.json({ error: "Group not found or you do not have permission to access it." }, { status: 404 });
