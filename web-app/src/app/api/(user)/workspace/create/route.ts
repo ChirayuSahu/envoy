@@ -3,6 +3,7 @@ import connectMongo from "@/utils/connectMongo";
 import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
 import User from "@/models/user";
+import { generateShortUuid } from "custom-uuid";
 
 export async function POST(request: NextRequest) {
 
@@ -27,8 +28,14 @@ export async function POST(request: NextRequest) {
         if (!user) {
             return NextResponse.json({ error: "User not found." }, { status: 404 });
         }
-        
-        const workspace = await Workspace.create({ name, description, owner: userId });
+
+        let uuid = generateShortUuid();
+
+        if( await Workspace.exists({ uuid })) {
+            uuid = generateShortUuid();
+        }
+
+        const workspace = await Workspace.create({ name, description, owner: userId, uuid });
         
         user.workspaces.push(workspace._id);
         await user.save();
