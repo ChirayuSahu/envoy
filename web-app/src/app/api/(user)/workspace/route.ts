@@ -14,19 +14,13 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const workspaceId = searchParams.get("id");
+    const workspaceUUID = searchParams.get("id");
 
-    if (workspaceId) {
+    if (workspaceUUID) {
         try {
             await connectMongo();
 
-            const workspace = await Workspace.findOne({ _id: workspaceId, owner: userId })
-                .populate({
-                    path: "members",
-                    select: "name email",
-                    model: User
-                })
-                .lean();
+            const workspace = await Workspace.findOne({ uuid: workspaceUUID, owner: userId })
 
             if (!workspace) {
                 return NextResponse.json({ message: "Workspace not found." }, { status: 404 });
@@ -35,7 +29,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ workspace }, { status: 200 });
         } catch (error) {
             console.error("Error fetching workspace:", error);
-            return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+            return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
         }
     }
 
@@ -54,9 +48,9 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json({ workspaces }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching workspaces:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 
 }
