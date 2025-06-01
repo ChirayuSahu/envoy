@@ -12,13 +12,13 @@ export async function POST(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { name, workspaceId, isPublic } = await request.json();
 
     if (!workspaceId || !name) {
-        return NextResponse.json({ error: "Workspace ID and name are required." }, { status: 400 });
+        return NextResponse.json({ message: "Workspace ID and name are required." }, { status: 400 });
     }
 
     
@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
         const workspace = await Workspace.findOne({ _id: workspaceId, owner: userId });
          
         if (!workspace) {
-            return NextResponse.json({ error: "Workspace not found." }, { status: 404 });
+            return NextResponse.json({ message: "Workspace not found." }, { status: 404 });
         }
 
         const user = await User.findById(userId);
         
         if (!user) {
-            return NextResponse.json({ error: "User not found." }, { status: 404 });
+            return NextResponse.json({ message: "User not found." }, { status: 404 });
         }
 
         let uuid = randomUUID();
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Group created successfully.", group }, { status: 201 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 
 }

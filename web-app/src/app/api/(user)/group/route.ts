@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ group }, { status: 200 });
 
         } catch (error: any) {
-            return NextResponse.json({ message: error.message }, { status: 500 });
+            return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
         }
     }
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ message: "You do not have permission to access this group." }, { status: 403 });
 
     } catch (error: any) {
-        return NextResponse.json({ message: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 
 }

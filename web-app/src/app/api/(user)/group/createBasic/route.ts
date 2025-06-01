@@ -8,15 +8,15 @@ export async function POST(request: NextRequest) {
     const { envs, expireAt } = await request.json();
 
     if (!envs || !expireAt) {
-        return NextResponse.json({ error: "Envs and expireAt are required." }, { status: 400 });
+        return NextResponse.json({ message: "Envs and expireAt are required." }, { status: 400 });
     }
 
     if (!Array.isArray(envs) || envs.length === 0) {
-        return NextResponse.json({ error: "Envs must be a non-empty array." }, { status: 400 });
+        return NextResponse.json({ message: "Envs must be a non-empty array." }, { status: 400 });
     }
-    
+
     if (typeof expireAt !== 'number' || expireAt <= 0) {
-        return NextResponse.json({ error: "ExpireAt must be a positive number." }, { status: 400 });
+        return NextResponse.json({ message: "ExpireAt must be a positive number." }, { status: 400 });
     }
 
     try {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message:"Group Created Successfully.", token: basicGroup.token }, { status: 201 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 
 }

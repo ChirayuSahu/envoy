@@ -11,13 +11,13 @@ export async function DELETE(request: NextRequest) {
     const userId = token?.id;
     
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { groupId } = await request.json();
 
     if (!groupId) {
-        return NextResponse.json({ error: "Group ID is required." }, { status: 400 });
+        return NextResponse.json({ message: "Group ID is required." }, { status: 400 });
     }
 
     try {
@@ -27,13 +27,13 @@ export async function DELETE(request: NextRequest) {
         const group = await Group.findOneAndDelete({ _id: groupId, owner: userId });
 
         if (!group) {
-            return NextResponse.json({ error: "Group not found or you do not have permission to delete it." }, { status: 404 });
+            return NextResponse.json({ message: "Group not found or you do not have permission to delete it." }, { status: 404 });
         }
 
         const workspace = await Workspace.findById(group.workspace);
 
         if (!workspace) {
-            return NextResponse.json({ error: "Workspace not found." }, { status: 404 });
+            return NextResponse.json({ message: "Workspace not found." }, { status: 404 });
         }
 
         workspace.groups = workspace.groups.filter((id: any) => id.toString() !== groupId);
@@ -47,7 +47,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ message: "Group deleted successfully." }, { status: 200 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 
 }

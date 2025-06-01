@@ -10,13 +10,13 @@ export async function POST(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { groupId, memberEmail } = await request.json();
 
     if (!groupId || !memberEmail) {
-        return NextResponse.json({ error: "Group ID and member email are required." }, { status: 400 });
+        return NextResponse.json({ message: "Group ID and member email are required." }, { status: 400 });
     }
 
     try {
@@ -26,17 +26,17 @@ export async function POST(request: NextRequest) {
         const group = await Group.findOne({ _id: groupId, owner: userId });
 
         if (!group) {
-            return NextResponse.json({ error: "Group not found or you do not have permission to access it." }, { status: 404 });
+            return NextResponse.json({ message: "Group not found or you do not have permission to access it." }, { status: 404 });
         }
 
         const member = await User.findOne({ email: memberEmail });
 
         if (!member) {
-            return NextResponse.json({ error: "Member not found with provided email." }, { status: 404 });
+            return NextResponse.json({ message: "Member not found with provided email." }, { status: 404 });
         }
 
         if (group.members.map((member: any) => !member.toString()).includes(member._id.toString())) {
-            return NextResponse.json({ error: "Member does not exist in the group." }, { status: 400 });
+            return NextResponse.json({ message: "Member does not exist in the group." }, { status: 400 });
         }
 
         group.members = group.members.filter((m: any) => m.toString() !== member._id.toString());
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         await member.save();
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 
 }

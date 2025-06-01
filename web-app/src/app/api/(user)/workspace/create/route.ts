@@ -11,13 +11,13 @@ export async function POST(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { name, description } = await request.json();
 
     if (!name || !description) {
-        return NextResponse.json({ error: "Name and description are required." }, { status: 400 });
+        return NextResponse.json({ message: "Name and description are required." }, { status: 400 });
     }
 
     try {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         const user = await User.findById(userId);
         
         if (!user) {
-            return NextResponse.json({ error: "User not found." }, { status: 404 });
+            return NextResponse.json({ message: "User not found." }, { status: 404 });
         }
 
         let uuid = generateShortUuid();
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Workspace created successfully.", workspace }, { status: 201 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 
 }

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ group: group._id, members }, { status: 200 });
 
     } catch (error: any) {
-        return NextResponse.json({  message: error.message }, { status: 500 });
+        return NextResponse.json({  message: "Internal Server Error." }, { status: 500 });
     }
 
 }

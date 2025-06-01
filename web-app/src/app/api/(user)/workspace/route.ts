@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
 
             return NextResponse.json({ workspace }, { status: 200 });
         } catch (error) {
-            console.error("Error fetching workspace:", error);
             return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
         }
     }
@@ -49,7 +48,6 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ workspaces }, { status: 200 });
     } catch (error: any) {
-        console.error("Error fetching workspaces:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 

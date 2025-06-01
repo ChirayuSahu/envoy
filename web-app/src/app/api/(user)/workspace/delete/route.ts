@@ -9,13 +9,13 @@ export async function DELETE(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { workspaceId } = await request.json();
 
     if (!workspaceId) {
-        return NextResponse.json({ error: "Workspace ID is required." }, { status: 400 });
+        return NextResponse.json({ message: "Workspace ID is required." }, { status: 400 });
     }
 
     try {
@@ -24,13 +24,13 @@ export async function DELETE(request: NextRequest) {
         const user = await User.findById(userId);
         
         if (!user) {
-            return NextResponse.json({ error: "User not found." }, { status: 404 });
+            return NextResponse.json({ message: "User not found." }, { status: 404 });
         }
 
         const workspace = await Workspace.findOneAndDelete({ _id: workspaceId, owner: userId });
 
         if (!workspace) {
-            return NextResponse.json({ error: "Workspace not found or you do not have permission to delete it." }, { status: 404 });
+            return NextResponse.json({ message: "Workspace not found or you do not have permission to delete it." }, { status: 404 });
         }
 
         user.workspaces = user.workspaces.filter((w: any) => w.toString() !== workspaceId);
@@ -40,7 +40,7 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ message: "Workspace deleted successfully." }, { status: 200 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
     
 }

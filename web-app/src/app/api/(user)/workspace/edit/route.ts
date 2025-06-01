@@ -9,7 +9,7 @@ export async function PATCH(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { workspaceId, name, description } = await request.json();
@@ -24,13 +24,13 @@ export async function PATCH(request: NextRequest) {
         );
 
         if (!workspace) {
-            return NextResponse.json({ error: "Workspace not found or you do not have permission to edit it." }, { status: 404 });
+            return NextResponse.json({ message: "Workspace not found or you do not have permission to edit it." }, { status: 404 });
         }
 
         return NextResponse.json({ message: "Workspace updated successfully.", workspace }, { status: 200 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
 
 }

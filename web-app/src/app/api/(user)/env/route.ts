@@ -8,13 +8,13 @@ export async function POST(request: NextRequest) {
     const userId = token?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { groupToken, envs } = await request.json();
 
     if (!groupToken || !envs || !Array.isArray(envs)) {
-        return NextResponse.json({ error: "Group token and environment variables are required." }, { status: 400 });
+        return NextResponse.json({ message: "Group token and environment variables are required." }, { status: 400 });
     }
 
     try {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         const group = await Group.findOne({ token: groupToken, owner: userId });
 
         if (!group) {
-            return NextResponse.json({ error: "Group not found or you do not have permission to access it." }, { status: 404 });
+            return NextResponse.json({ message: "Group not found or you do not have permission to access it." }, { status: 404 });
         }
 
         group.envs = envs;
@@ -32,6 +32,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Environment variables updated successfully.", envs: group.envs }, { status: 200 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 }
