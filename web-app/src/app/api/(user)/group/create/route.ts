@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
         let uuid = randomUUID();
 
-        const existingToken = await Group.findOne({token: uuid});
+        const existingToken = await Group.exists({token: uuid});
 
         if (existingToken) {
             uuid = randomUUID();
