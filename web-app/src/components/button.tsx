@@ -13,9 +13,9 @@ const Button = ({ children, variant = "primary", className, onClick, disabled }:
   const base = "py-2 px-4 rounded font-medium transition-colors cursor-pointer";
 
   const variants = {
-    primary: "bg-[#00916C] text-white hover:bg-[#007a5a] focus:outline-none",
-    secondary: "bg-white text-[#00916C] hover:bg-gray-100 focus:ring-1 focus:outline-[#00916C]",
-    outline: "border border-[#00916C] text-[#00916C] hover:bg-[#00916C] hover:text-white",
+    primary: "bg-[#00916C] text-white hover:bg-[#007a5a] focus:outline-none text-sm md:text-md lg:text-xl",
+    secondary: "bg-white text-[#00916C] hover:bg-gray-100 focus:ring-1 focus:outline-[#00916C] text-sm md:text-md lg:text-xl",
+    outline: "border border-[#00916C] text-[#00916C] hover:bg-[#00916C] hover:text-white text-sm md:text-md lg:text-xl",
     danger: "bg-red-600 text-white hover:bg-red-700",
   };
 
