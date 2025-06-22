@@ -1,6 +1,7 @@
 "use client"
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/navbar";
+import HeroSection from "@/components/hero";
 
 export default function Home() {
 
@@ -11,6 +12,7 @@ export default function Home() {
   return (
     <>
     <Navbar />
+    <HeroSection />
     </>
   );
 }
