@@ -12,6 +12,7 @@
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "custom-uuid": "^3.1.1",
+    "lucide-react": "^0.522.0",
     "mongoose": "^8.15.1",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
