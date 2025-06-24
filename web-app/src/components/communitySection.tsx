@@ -25,9 +25,7 @@ const CommunitySection = () => {
 
   return (
     <>
-      <div className="relative p-16 -bottom-8 bg-[#F5F7FA] -rotate-2">
-      </div>
-      <section className="bg-[#F5F7FA] py-16 px-4 text-center">
+      <section className="bg-[#F5F7FA] py-30 px-20 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
             Manage your entire community <br /> in a single place
