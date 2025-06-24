@@ -31,7 +31,7 @@ const CommunitySection = () => {
             Manage your entire community <br /> in a single place
           </h2>
           <p className="text-sm text-gray-500 mt-2 mb-10">Who is [Name] suitable for?</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-15">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {cards.map((card, idx) => (
               <div
                 key={idx}
