@@ -102,7 +102,7 @@ const LoginPage = () => {
         </button>
 
         <label className="text-left text-sm md:text-base lg:text-md mt-2 text-black">
-          Already have an account?{" "}
+          Don't have an account?{" "}
           <Link href={"/signup"} className="text-[#00916C] underline">
             Sign up
           </Link>
