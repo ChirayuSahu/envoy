@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
         CredentialsProvider({
             name: "Credentials",
             credentials: {
-                email: { label: "Email", type: "text" },
+                username: { label: "Username", type: "text" },
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
@@ -23,8 +23,8 @@ export const authOptions: NextAuthOptions = {
 
                     const user = await User.findOne(sanitizeFilter({
                         $or: [
-                            { email: credentials.email },
-                            { username: credentials.email }
+                            { email: credentials.username },
+                            { username: credentials.username }
                         ]
                      })).select("+password");
 
