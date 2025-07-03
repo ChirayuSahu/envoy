@@ -28,7 +28,7 @@ const LoginPage = () => {
       username,
       password,
       redirect: true,
-      callbackUrl: "/dash"
+      callbackUrl: "/dashboard"
     });
 
     if (result?.error) {
