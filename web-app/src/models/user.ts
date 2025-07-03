@@ -38,6 +38,12 @@ const userSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Group',
         }],
+        passwordResetToken: {
+            type: String,
+        },
+        tokenExpiry: {
+            type: Date,
+        }
     },
     {
         timestamps: true,
