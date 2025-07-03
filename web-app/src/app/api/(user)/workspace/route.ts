@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
-import User from "@/models/user";
+import Group from "@/models/group";
 
 export async function GET(request: NextRequest) {
 
@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
 
         const workspaces = await Workspace.find({ owner: userId })
             .populate({
-                path: "members",
-                select: "name email",
-                model: User
+                path: "groups",
+                select: "name token",
+                model: Group,
             }).lean();
 
         if (!workspaces || workspaces.length === 0) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ workspaces }, { status: 200 });
     } catch (error: any) {
-        return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
 
 }
