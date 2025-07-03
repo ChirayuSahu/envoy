@@ -5,7 +5,7 @@ import Button from './button'
 const HeroSection = () => {
     return (
         <>
-            <div className='flex justify-center items-center gap-30 m-20'>
+            <div className='font-inter flex justify-center items-center gap-30 m-20'>
                 <div className='flex items-center justify-start max-w-[40vw]'>
                     <div className='flex flex-col'>
                         <h1 className='text-2xl lg:text-4xl xl:text-5xl font-bold text-wrap '>A Platform for Managing and Sharing Environment Variables Securely.</h1>

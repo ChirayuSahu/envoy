@@ -4,7 +4,7 @@ import Button from './button'
 const Navbar = () => {
     return (
         <>
-            <div className='bg-[#00916C] flex items-center justify-between p-4 px-6 m-4 rounded-xl'>
+            <div className='font-inter bg-[#00916C] flex items-center justify-between p-4 px-6 m-4 rounded-xl'>
                 <div className='text-white text-md lg:text-xl font-bold font-inter'>.envShare</div>
                 <div className='flex items-center justify-between gap-2'>
                     <Button variant="outline" className='text-white'>Home</Button>

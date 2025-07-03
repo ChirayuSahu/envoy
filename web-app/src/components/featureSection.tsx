@@ -8,7 +8,7 @@ const FeatureSection = () => {
             <div className='relative bg-[#F5F7FA]'>
             </div>
 
-            <div className='w-full flex justify-center items-center gap-10 p-20 bg-[#00916C]'>
+            <div className='font-inter w-full flex justify-center items-center gap-10 p-20 bg-[#00916C]'>
                 <div className='flex items-center justify-center min-w-[40vw]'>
                     <Image
                         src="/assets/feature.svg"
