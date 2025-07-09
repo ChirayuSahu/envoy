@@ -1,0 +1,2 @@
+#ignoring npm-sdk/node_modules
+npm-sdk/node_modules/
