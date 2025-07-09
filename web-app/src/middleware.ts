@@ -5,14 +5,19 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const authPages = ['/login', '/signup'];
 
-    if (!token) {
-        return NextResponse.redirect(new URL('/api/auth/signin', request.url)) //change the URL to your login page after frontend is ready
+    if(authPages.includes(request.nextUrl.pathname) && token) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
+    if(request.nextUrl.pathname.startsWith('/dashboard') && !token) {
+        return NextResponse.redirect(new URL('/login', request.url))
     }
 
     return NextResponse.next()
 }
 
 export const config = {
-    matcher: '/dash/:path*',
+    matcher: ['/dashboard/:path*', '/login', '/signup'],
 }
