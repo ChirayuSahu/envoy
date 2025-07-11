@@ -1,7 +1,11 @@
 import React from 'react'
 import Button from './button'
+import { useRouter } from 'next/navigation'
 
 const Navbar = () => {
+
+    const router = useRouter();
+
     return (
         <>
             <div className='font-inter bg-[#00916C] flex items-center justify-between p-4 px-6 m-4 rounded-xl'>
@@ -12,8 +16,8 @@ const Navbar = () => {
                     <Button variant="outline" className='text-white'>FAQs</Button>
                 </div>
                 <div className='flex items-center justify-center gap-4'>
-                    <Button variant="secondary" className=''>Login</Button>
-                    <Button variant="primary" className=''>Sign Up</Button>
+                    <Button onClick={()=>router.push("/login")} variant="secondary" className=''>Login</Button>
+                    <Button onClick={()=>router.push("/signup")} variant="primary" className=''>Sign Up</Button>
                 </div>
             </div>
         </>
