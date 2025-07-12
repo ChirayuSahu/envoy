@@ -39,7 +39,7 @@ const DashboardPage = () => {
           </div>
           <div className='grid grid-cols-3 lg:grid-cols-4 gap-4'>
             {workspaces.map((workspace: any) => (
-              <div key={workspace._id} className='bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200'>
+              <div key={workspace._id} className='bg-white p-4 rounded-lg shadow-md transition hover:-translate-y-0.5 hover:shadow-xl hover:border hover:border-[#00916C]'>
                 <h3 className='text-sm font-semibold'>{workspace.name}</h3>
                 <p className='text-xs text-gray-600'>{workspace.description}</p>
                 <p className='text-xs text-gray-600'>Groups: {workspace.groups.length}</p>
