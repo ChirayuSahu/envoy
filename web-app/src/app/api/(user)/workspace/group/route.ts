@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ groups }, { status: 200 });
   } catch (error: any) {
-    console.error("Error fetching workspace:", error);
     return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
   }
 }
