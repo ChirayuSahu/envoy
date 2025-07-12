@@ -5,6 +5,7 @@ import Button from '../button'
 import { SquareUser } from 'lucide-react'
 import { Settings } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
 
 const SidebarComp = () => {
     const { data: session } = useSession()
@@ -20,10 +21,10 @@ const SidebarComp = () => {
                     </div>
                 </div>
                 <div className='flex flex-col gap-4'>
-                    <div className="text-white w-full text-left flex items-center gap-2 sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">
+                    <button onClick={()=> signOut()} className="text-white w-full text-left flex items-center gap-2 sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">
                         <SquareUser className="w-4 h-4 xl:w-6 xl:h-6 text-white" />
-                        {user?.name || "User Name"}
-                    </div>
+                        Logout
+                    </button>
                     <div className="text-white w-full flex items-center gap-2 sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">
                         <Settings className="w-4 h-4 xl:w-6 xl:h-6 text-white" />
                         Settings
