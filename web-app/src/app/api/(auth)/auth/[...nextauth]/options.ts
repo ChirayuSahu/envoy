@@ -1,12 +1,13 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"
+import Google from "next-auth/providers/google";
 import connectMongo from "@/utils/connectMongo";
 import User from "@/models/user";
 import { comparePassword } from "@/utils/bcrypt";
 import { sanitizeFilter } from "mongoose";
 
 export const authOptions: NextAuthOptions = {
-    providers:[
+    providers: [
         CredentialsProvider({
             name: "Credentials",
             credentials: {
@@ -26,10 +27,13 @@ export const authOptions: NextAuthOptions = {
                             { email: credentials.username },
                             { username: credentials.username }
                         ]
-                     })).select("+password");
-
+                    })).select("+password");
 
                     if (!user) return null;
+
+                    if (user.provider !== "credentials") {
+                        throw new Error("User does not use credentials for authentication. Try signing in with Google.");
+                    }
 
                     const isPasswordValid = await comparePassword(
                         credentials.password,
@@ -47,9 +51,20 @@ export const authOptions: NextAuthOptions = {
                     throw new Error((error as Error).message || "Authentication failed");
                 }
             }
-        })
+        }), Google({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            profile: (profile) => {
+                return {
+                    id: profile.sub || profile.id || profile.email,
+                    name: profile.name || profile.email,
+                    email: profile.email,
+                };
+            },
+        }),
+
     ],
-    
+
     session: {
         strategy: "jwt",
         maxAge: 24 * 60 * 60, // 24 hours
@@ -57,30 +72,57 @@ export const authOptions: NextAuthOptions = {
 
     pages: {
         signIn: "/login",
-    },  
+        error: "/login",
+    },
 
     secret: process.env.NEXTAUTH_SECRET,
 
     callbacks: {
+        async jwt({ token, user, account, profile }) {
+            await connectMongo();
 
-        async jwt({ token, user }) {
-            if (user) {
+            if (account?.provider === "google") {
+                const email = profile?.email || token.email;
+                const name = profile?.name || token.name;
+
+                const existingUser = await User.findOne({ email });
+
+                if (!existingUser) {
+                    const newUser = await User.create({
+                        name,
+                        email,
+                        provider: "google",
+                    });
+
+                    token.id = newUser._id.toString();
+                    token.email = newUser.email;
+                    token.name = newUser.name;
+                } else {
+                    token.id = existingUser._id.toString();
+                    token.email = existingUser.email;
+                    token.name = existingUser.name;
+                }
+            }
+
+            if (user && account?.provider === "credentials") {
                 token.id = user.id;
                 token.email = user.email;
                 token.name = user.name;
             }
+
             return token;
         },
 
         async session({ session, token }) {
             if (token?.id) {
-                session.user.id = token.id.toString(); 
-                session.user.email = token.email;
-                session.user.name = token.name;
+                session.user.id = token.id.toString();
+                session.user.email = token.email ?? session.user.email;
+                session.user.name = token.name ?? session.user.name;
             }
+
             return session;
         },
-    },
+    }
 
 
 }

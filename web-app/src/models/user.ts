@@ -9,9 +9,8 @@ const userSchema = new Schema(
         },
         username: {
             type: String,
-            required: true,
             unique: true,
-            index: true,
+            sparse: true, // ✅ sparse index allows multiple docs with missing usernames
             match: /^[a-zA-Z0-9_]{3,30}$/,
             lowercase: true,
             trim: true,
@@ -27,29 +26,39 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: function (this: any) {
+                return this.provider === "credentials";
+            },
             select: false,
         },
-        workspaces: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Workspace',
-        }],
-        otherGroups: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Group',
-        }],
-        passwordResetToken: {
+        provider: {
+            type: String,
+            default: "credentials",
+            enum: ["credentials", "google"],
+        },
+        image: {
             type: String,
         },
-        tokenExpiry: {
-            type: Date,
-        }
+        workspaces: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Workspace",
+            },
+        ],
+        otherGroups: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Group",
+            },
+        ],
+        passwordResetToken: String,
+        tokenExpiry: Date,
     },
     {
         timestamps: true,
     }
 );
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;
