@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
         try {
             await connectMongo();
 
-            const workspace = await Workspace.findOne({ uuid: workspaceUUID, owner: userId })
+            const workspace = await Workspace.findOne({ uuid: workspaceUUID, owner: userId }).populate({
+                path: "groups",
+                model: "Group",
+                select: "-envs"
+            });
 
             if (!workspace) {
                 return NextResponse.json({ message: "Workspace not found." }, { status: 404 });
