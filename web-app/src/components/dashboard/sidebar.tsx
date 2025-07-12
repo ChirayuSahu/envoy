@@ -11,7 +11,7 @@ const SidebarComp = () => {
     const user = session?.user;
     return (
         <>
-            <div className="font-inter sm:col-span-1 xl:col-span-2 bg-[#00916C] p-4 md:p-6 xl:p-8 h-full w-full rounded-2xl flex flex-col justify-between shadow-[0_8px_24px_0_rgba(0,0,0,0.1)]">
+            <div className="hidden sm:block font-inter sm:col-span-1 xl:col-span-2 bg-[#00916C] p-4 md:p-6 xl:p-8 h-full w-full rounded-2xl flex flex-col justify-between shadow-[0_8px_24px_0_rgba(0,0,0,0.1)] hover:shadow-[0_12px_32px_0_rgba(0,0,0,0.15)] hover:-translate-y-1 transition duration-300 ease-in-out cursor-pointer">
                 <div className="flex flex-col items-center gap-6 md:gap-8 xl:gap-12 flex-grow">
                     <h1 className="text-white sm:text-sm md:text-md xl:text-2xl font-bold mb-2">.envShare</h1>
                     <div className="flex flex-col gap-2 w-full">
