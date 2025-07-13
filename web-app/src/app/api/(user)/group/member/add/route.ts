@@ -41,7 +41,7 @@ export async function POST(request: NextRequest){
         group.members.push(member._id);
         await group.save();
 
-        member.groups.push(group._id);
+        member.otherGroups.push(group._id);
         await member.save();
 
         return NextResponse.json({ message: "Member added successfully." }, { status: 200 });

@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
         member.otherGroups = member.otherGroups.filter((g: any) => g.toString() !== groupId);
         await member.save();
 
+        return NextResponse.json({ message: "Member removed successfully." }, { status: 200 });
+
     } catch (error: any) {
         return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
