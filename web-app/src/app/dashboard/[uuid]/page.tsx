@@ -61,7 +61,7 @@ const GroupsPage = () => {
                     </div>
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto'>
                         {groups.map((group: any) => (
-                            <div key={group._id} className="flex gap-2 items-end justify-between bg-white p-4 rounded-lg transition-all duration-300 border-2 border-transparent hover:border-2 hover:border-[#00916C]">
+                            <div key={group._id} className="flex gap-2 items-end justify-between bg-white p-4 rounded-md hover:rounded-xl transition-all duration-300 border-2 border-transparent hover:border-2 hover:border-[#00916C]">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors duration-200">{group.name}</h3>
                                     <p className="text-xs text-gray-500">Members: {group.members.length}</p>

@@ -85,14 +85,14 @@ const DashboardPage = () => {
             Workspaces
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div onClick={() => setShowModal(true)} className='cursor-pointer flex justify-center items-center text-[#00916C] hover:text-white bg-white hover:bg-[#00916C] p-4 rounded-lg border-2 border-transparent hover:border-[#00916C] transition-all duration-300'>
+            <div onClick={() => setShowModal(true)} className='cursor-pointer flex justify-center items-center text-[#00916C] hover:text-white bg-white hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300'>
               <CirclePlus className='' />
             </div>
             {workspaces.map((workspace: any) => (
               <Link
                 key={workspace._id}
                 href={`/dashboard/${workspace.uuid}`}
-                className="flex justify-between bg-white p-4 rounded-lg border-2 border-transparent hover:border-[#00916C] transition-all duration-300"
+                className="flex justify-between bg-white p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300"
               >
                 <div>
                   <h3 className="text-sm font-semibold">{workspace.name}</h3>
