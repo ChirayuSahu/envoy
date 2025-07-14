@@ -6,6 +6,7 @@ import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
 import { Copy, Plus, Trash2, Pencil, Save } from 'lucide-react';
+import { set } from 'mongoose';
 
 const GroupPage = () => {
 
@@ -123,6 +124,7 @@ const GroupPage = () => {
             console.log('Error saving changes:', err);
         } finally {
             setLoading(false);
+            setIsEditing(false);
         }
     }
 
@@ -143,7 +145,7 @@ const GroupPage = () => {
                     <div className=''>
                         <h1 className='font-bold text-2xl'>{group?.name}</h1>
                     </div>
-                    <div className='grid grid-cols-5 grid-rows-6 gap- h-full'>
+                    <div className='grid grid-cols-5 grid-rows-6 gap-4 h-full'>
                         {!group && (
                             <div className="col-span-4 text-center text-gray-500">
                                 No groups found with this token.
@@ -212,6 +214,12 @@ const GroupPage = () => {
                             </div>
                         </div>
 
+                        <div className='col-span-2 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col'>
+
+                        </div>
+                        <div className='col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col'>
+
+                        </div>
                     </div>
                 </div>
             </div >
