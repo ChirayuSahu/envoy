@@ -5,6 +5,7 @@ import LoadingPage from '@/components/misc/loadingPage'
 import { ArrowRight, CirclePlus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import DialogBox from '@/components/dialogBox'
 
 const DashboardPage = () => {
 
@@ -42,8 +43,7 @@ const DashboardPage = () => {
     fetchWorkspaces();
   }, []);
 
-  const handleCreateWorkspace = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateWorkspace = async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/workspace/create", {
@@ -63,12 +63,15 @@ const DashboardPage = () => {
         return;
       }
 
+      const updatedRes = await fetch("/api/workspace");
+      const updatedData = await updatedRes.json();
+      setWorkspaces(updatedData.workspaces);
+
     } catch (err) {
       console.error("Error creating workspace:", err);
     } finally {
       setLoading(false);
       setShowModal(false);
-      router.refresh();
     }
   };
 
@@ -78,7 +81,7 @@ const DashboardPage = () => {
 
   return (
     <>
-      <div className='absolute w-full z-50 bg-[#F0F0F0] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
+      <div className='absolute w-full z-40 bg-[#F0F0F0] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
         <SidebarComp />
         <div className='sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6'>
           <div className='font-bold text-2xl'>
@@ -126,61 +129,51 @@ const DashboardPage = () => {
       //modal for creating a new workspace
 
       {showModal && (
-        <>
-          <div className='absolute inset-0 min-h-screen w-full z-50 bg-black opacity-55 transition-all duration-300'></div>
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="bg-[#FAFAFA] rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 sm:p-8 md:p-10">
-              <h1 className="text-2xl md:text-3xl font-black text-center text-black mb-6">New Workspace</h1>
-
-              <form className="flex flex-col gap-4 w-full" onSubmit={handleCreateWorkspace}>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="name" className="text-sm font-semibold text-black">Name</label>
-                  <input
-                    id="name"
-                    type="text"
-                    name="name"
-                    defaultValue={workspace.current.name}
-                    onChange={(e) => {
-                      workspace.current.name = e.target.value;
-                    }}
-                    className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="description" className="text-sm font-semibold text-black">Description</label>
-                  <input
-                    id="description"
-                    type="text"
-                    name="description"
-                    defaultValue={workspace.current.description}
-                    onChange={(e) => {
-                      workspace.current.description = e.target.value;
-                    }}
-                    className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-[#00916C] cursor-pointer text-white font-black p-3 rounded-xl hover:bg-[#007a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Logging in..." : "Submit"}
-                </button>
-                <button
-                  onClick={() => setShowModal(false)}
-                  disabled={loading}
-                  className="bg-[#00916C] cursor-pointer text-white font-black p-3 rounded-xl hover:bg-[#007a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
-              </form>
-            </div>
+        <DialogBox
+          title="New Workspace"
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onAction={handleCreateWorkspace}
+          loading={loading}
+          actionLabel="Submit"
+        >
+          <div className="flex flex-col gap-1">
+            <label htmlFor="name" className="text-sm font-semibold text-black">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              name="name"
+              defaultValue={workspace.current.name}
+              onChange={(e) => {
+                workspace.current.name = e.target.value;
+              }}
+              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+              required
+            />
           </div>
-        </>
+
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="description"
+              className="text-sm font-semibold text-black"
+            >
+              Description
+            </label>
+            <input
+              id="description"
+              type="text"
+              name="description"
+              defaultValue={workspace.current.description}
+              onChange={(e) => {
+                workspace.current.description = e.target.value;
+              }}
+              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+              required
+            />
+          </div>
+        </DialogBox>
       )}
 
     </>
