@@ -10,7 +10,7 @@ type ButtonProps = {
 };
 
 const Button = ({ children, variant = "primary", className, onClick, disabled }: ButtonProps) => {
-  const base = "py-2 px-4 rounded font-medium transition-colors cursor-pointer w-full";
+  const base = "py-2 px-4 rounded font-medium transition-all cursor-pointer w-full";
 
   const variants = {
     primary: "bg-[#00916C] text-white hover:bg-[#007a5a] focus:outline-none text-sm md:text-md lg:px-6",

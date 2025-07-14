@@ -16,8 +16,8 @@ const Navbar = () => {
                     <Button variant="outline" className='text-white'>FAQs</Button>
                 </div>
                 <div className='flex items-center justify-center gap-4'>
-                    <Button onClick={()=>router.push("/login")} variant="secondary" className=''>Login</Button>
-                    <Button onClick={()=>router.push("/signup")} variant="primary" className=''>Sign Up</Button>
+                    <Button onClick={()=>router.push("/login")} variant="secondary" className=''>Login </Button>
+                    <Button onClick={()=>router.push("/signup")} variant="primary" className=''>SignUp</Button>
                 </div>
             </div>
         </>
