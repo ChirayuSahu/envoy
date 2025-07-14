@@ -10,8 +10,10 @@ const userSchema = new Schema(
         username: {
             type: String,
             unique: true,
-            sparse: true, // ✅ sparse index allows multiple docs with missing usernames
-            match: /^[a-zA-Z0-9_]{3,30}$/,
+            required: function (this: any) {
+                return this.provider === "credentials";
+            },
+            sparse: true,
             lowercase: true,
             trim: true,
         },
