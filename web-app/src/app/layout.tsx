@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, PT_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/providers/SessionProvider";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const ptMono = PT_Mono({
+  variable: "--font-pt-mono",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -21,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} antialiased`}
+        className={`${inter.variable} ${ptMono.variable} antialiased`}
       >
         <AuthSessionProvider>
         {children}
