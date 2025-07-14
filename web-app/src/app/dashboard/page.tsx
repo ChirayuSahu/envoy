@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import SidebarComp from '@/components/dashboard/sidebar'
 import LoadingPage from '@/components/misc/loadingPage'
-import { ArrowRight, CirclePlus } from 'lucide-react'
+import { ArrowRight, CirclePlus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import DialogBox from '@/components/dialogBox'
@@ -16,6 +16,11 @@ const DashboardPage = () => {
     description: "",
   });
   const [showModal, setShowModal] = useState(false);
+  const deleteWorkspace = useRef<any>({
+    id: "",
+    name: "",
+  });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -75,6 +80,26 @@ const DashboardPage = () => {
     }
   };
 
+  const handleDeleteWorkspace = async (workspaceId: string) => {
+    const res = await fetch("/api/workspace/delete", {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ workspaceId }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Failed to delete workspace:", res.status, errorText);
+      return;
+    }
+
+    const updatedRes = await fetch("/api/workspace");
+    const updatedData = await updatedRes.json();
+    setWorkspaces(updatedData.workspaces);
+  };
+
   if (loading) {
     return <LoadingPage />;
   }
@@ -92,9 +117,8 @@ const DashboardPage = () => {
               <CirclePlus className='' />
             </div>
             {workspaces.map((workspace: any) => (
-              <Link
+              <div
                 key={workspace._id}
-                href={`/dashboard/${workspace.uuid}`}
                 className="flex justify-between bg-white p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300"
               >
                 <div>
@@ -116,11 +140,24 @@ const DashboardPage = () => {
                     </p>
                   </div>
                 </div>
-
-                <div className="self-end p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200">
-                  <ArrowRight className="w-4 h-4" />
+                <div className='flex flex-col justify-center items-center'>
+                  <Link href={`/dashboard/${workspace.uuid}`}>
+                    <div className="self-end p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200">
+                      <ArrowRight className="w-5 h-5" />
+                    </div>
+                  </Link>
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteWorkspace.current = { id: workspace._id, name: workspace.name };
+                      setShowDeleteModal(true);
+                    }}
+                    className="self-end p-1 cursor-pointer hover:bg-red-600 text-red-600 hover:text-white rounded-sm transition-all duration-200"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -173,6 +210,25 @@ const DashboardPage = () => {
               required
             />
           </div>
+        </DialogBox>
+      )}
+
+      // modal for deleting a workspace
+      {showDeleteModal && (
+        <DialogBox
+          title={`Delete, ${deleteWorkspace.current.name}?`}
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onAction={() => {
+            handleDeleteWorkspace(deleteWorkspace.current.id);
+            setShowDeleteModal(false);
+          }}
+          loading={loading}
+          actionLabel="Delete"
+        >
+          <p className="text-sm text-red-600">
+            Are you sure you want to delete this workspace? This action cannot be undone.
+          </p>
         </DialogBox>
       )}
 
