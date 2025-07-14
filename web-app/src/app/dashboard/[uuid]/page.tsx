@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation';
 import SidebarComp from '@/components/dashboard/sidebar';
-import { Pencil } from 'lucide-react';
+import { ArrowRight, Trash2 } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
 import Link from 'next/link';
 
@@ -29,6 +29,7 @@ const GroupsPage = () => {
 
                 if (!res.ok) {
                     console.error('Failed to fetch groups:', res.statusText);
+                    return null;
                 }
 
                 const data = await res.json();
@@ -36,7 +37,7 @@ const GroupsPage = () => {
                 setWorkspace(data.workspace);
 
             } catch (err) {
-                console.error('Error fetching groups:', err);
+                console.log('Error fetching groups:', err);
             } finally {
                 setLoading(false);
             }
@@ -60,6 +61,11 @@ const GroupsPage = () => {
                         <p>{workspace?.description}</p>
                     </div>
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto'>
+                        {groups.length === 0 && (
+                            <div className="col-span-4 text-center text-gray-500">
+                                No groups found with this token.
+                            </div>
+                        )}
                         {groups.map((group: any) => (
                             <div key={group._id} className="flex gap-2 items-end justify-between bg-white p-4 rounded-md hover:rounded-xl transition-all duration-300 border-2 border-transparent hover:border-2 hover:border-[#00916C]">
                                 <div>
@@ -77,10 +83,17 @@ const GroupsPage = () => {
                                         </span>
                                     </div>
                                 </div>
-                                <div className='p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200 cursor-pointer'>
-                                    <Link href={`/dashboard/${workspace.uuid}`}>
-                                        <Pencil className='w-4 h-4' />
+                                <div className='flex flex-col gap-3 justify-center items-center'>
+                                    <Link href={`/dashboard/${workspace.uuid}/${group.token}`}>
+                                        <div className="self-end p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200">
+                                            <ArrowRight className="w-5 h-5" />
+                                        </div>
                                     </Link>
+                                    <div
+                                        className="self-end p-1 cursor-pointer hover:bg-red-600 text-red-600 hover:text-white rounded-sm transition-all duration-200"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </div>
                                 </div>
                             </div>
                         ))}

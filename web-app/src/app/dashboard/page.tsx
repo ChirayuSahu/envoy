@@ -140,7 +140,7 @@ const DashboardPage = () => {
                     </p>
                   </div>
                 </div>
-                <div className='flex flex-col justify-center items-center'>
+                <div className='flex flex-col gap-3 justify-center items-center'>
                   <Link href={`/dashboard/${workspace.uuid}`}>
                     <div className="self-end p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200">
                       <ArrowRight className="w-5 h-5" />
