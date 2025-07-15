@@ -151,7 +151,7 @@ const GroupPage = () => {
                 <SidebarComp />
                 <div className='sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden'>
                     <div className=''>
-                        <h1 className='font-bold text-2xl text-[#00916C]'>{group?.name}</h1>
+                        <h1 className='font-bold text-2xl text-[#00916C]'>{group?.name} - {new Date(group?.createdAt).toLocaleDateString()}</h1>
                     </div>
                     <div className='grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
                         {!group && (
