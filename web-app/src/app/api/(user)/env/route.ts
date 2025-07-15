@@ -13,8 +13,12 @@ export async function POST(request: NextRequest) {
 
     const { groupToken, envs } = await request.json();
 
-    if (!groupToken || !envs || !Array.isArray(envs)) {
+    if (!groupToken || !envs) {
         return NextResponse.json({ message: "Group token and environment variables are required." }, { status: 400 });
+    }
+
+    if (!Array.isArray(envs) || !envs.every(e => e.key && e.value)) {
+        return NextResponse.json({ message: "Invalid envs format." }, { status: 400 });
     }
 
     try {
