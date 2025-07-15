@@ -44,7 +44,7 @@ export async function POST(request: NextRequest){
         member.otherGroups.push(group._id);
         await member.save();
 
-        return NextResponse.json({ message: "Member added successfully." }, { status: 200 });
+        return NextResponse.json({ message: "Member added successfully.", group: group }, { status: 200 });
 
     } catch (error) {
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
