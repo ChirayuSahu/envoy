@@ -5,6 +5,7 @@ import Button from '../button';
 import { SquareUser, Settings } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import DialogBox from '../dialogBox';
+import Link from 'next/link';
 const SidebarComp = () => {
   const { data: session } = useSession();
   const user = session?.user;
@@ -22,8 +23,9 @@ const SidebarComp = () => {
         <div className="flex flex-col items-center gap-6 md:gap-8 xl:gap-12 flex-grow">
           <h1 className="text-white sm:text-sm md:text-md xl:text-2xl font-bold mb-2">.envShare</h1>
           <div className="flex flex-col gap-2 w-full">
-            <div className="text-white w-full text-left sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">Create Workspace</div>
-            <div className="text-white w-full text-left sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">Workspaces</div>
+            <Link href="/dashboard">
+              <div className="text-white w-full text-left sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">Workspaces</div>
+            </Link>
           </div>
         </div>
         <div className='flex flex-col gap-4'>
