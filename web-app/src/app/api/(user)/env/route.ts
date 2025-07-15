@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
+import { encrypt } from "@/utils/encryption";
+
 
 export async function POST(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -30,7 +32,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: "Group not found or you do not have permission to access it." }, { status: 404 });
         }
 
-        group.envs = envs;
+        group.envs = envs.map(({ key, value }) => ({
+            key,
+            value: encrypt(value)
+        }));
         await group.save();
 
         return NextResponse.json({ message: "Environment variables updated successfully.", envs: group.envs }, { status: 200 });
