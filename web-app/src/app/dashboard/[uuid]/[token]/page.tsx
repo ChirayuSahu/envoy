@@ -226,7 +226,7 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 sm:col-span-1 xl:col-span-1 rounded-lg hover:rounded-xl border-2 border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 sm:col-span-1 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] mb-2">Members</h2>
                                     <div className="flex items-center justify-center gap-3 bg-white text-[#00916C] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default">
                                         <PlusCircle />
