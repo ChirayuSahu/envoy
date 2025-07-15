@@ -1,28 +1,15 @@
+// app/login/page.tsx
 "use client";
 
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import LoginError from "@/components/loginError";
 
 const LoginPage = () => {
   const [form, setForm] = useState({ username: "", password: "" });
-  const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const searchParams = useSearchParams();
-  const errorParam = searchParams.get("error");
-
-  useEffect(() => {
-    if (errorParam === "CredentialsSignin") {
-      setErrorMsg("Invalid username or password.");
-    } else if (errorParam === "Callback") {
-      setErrorMsg("Google sign-in failed. Try again.");
-    } else if (errorParam) {
-      setErrorMsg(errorParam);
-    }
-  }, [errorParam]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,21 +19,11 @@ const LoginPage = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
-
-    const { username, password } = form;
-
-    const result = await signIn("credentials", {
-      username,
-      password,
+    await signIn("credentials", {
+      ...form,
       redirect: true,
       callbackUrl: "/dashboard",
     });
-
-    if (result?.error) {
-      setErrorMsg("Invalid credentials");
-      setLoading(false);
-    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -62,9 +39,10 @@ const LoginPage = () => {
       <div className="flex flex-col gap-5 items-center justify-between bg-[#FAFAFA] p-10 m-8 shadow-2xl rounded-2xl w-full max-w-md">
         <h1 className="text-2xl md:text-4xl font-black">Login</h1>
 
-        {errorMsg && (
-          <p className="text-red-500 text-sm text-center w-full">{errorMsg}</p>
-        )}
+        {/* Suspense wrapper for client component */}
+        <Suspense fallback={null}>
+          <LoginError />
+        </Suspense>
 
         <form className="flex flex-col gap-5 w-full" onSubmit={handleSignIn}>
           <div className="flex flex-col gap-1">
