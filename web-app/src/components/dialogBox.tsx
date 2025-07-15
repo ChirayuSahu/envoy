@@ -33,11 +33,12 @@ const DialogBox: React.FC<DialogBoxProps> = ({
 
                     <div className="flex flex-col gap-4">{children}</div>
 
-                    <div className="flex flex-col sm:flex-row gap-2 mt-6">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-6 w-full">
                         <Button
                             onClick={onAction}
                             disabled={loading}
                             variant="primary"
+                            className="w-full"
                         >
                             {loading ? "Processing..." : actionLabel}
                         </Button>
@@ -45,6 +46,7 @@ const DialogBox: React.FC<DialogBoxProps> = ({
                             onClick={onClose}
                             disabled={loading}
                             variant="outline"
+                            className="w-full"
                         >
                             Cancel
                         </Button>
