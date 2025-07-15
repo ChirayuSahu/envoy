@@ -56,12 +56,6 @@ export async function POST(request: NextRequest) {
         workspace.groups.push(group._id);
         await workspace.save();
 
-        user.otherGroups.push(group._id);
-        await user.save();
-
-        group.members.push(userId);
-        await group.save();
-
         return NextResponse.json({ message: "Group created successfully.", group }, { status: 201 });
 
     } catch (error: any) {
