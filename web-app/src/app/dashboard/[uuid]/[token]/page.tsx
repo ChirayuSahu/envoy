@@ -9,6 +9,7 @@ import { Copy, Plus, Trash2, Pencil, Save, PlusCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
+import { decrypt } from '@/utils/encryption';
 
 const GroupPage = () => {
 
@@ -50,9 +51,14 @@ const GroupPage = () => {
                     value,
                 }));
 
+                const decryptedEnvs = cleanEnvs.map((env: any) => ({
+                    ...env,
+                    value: decrypt(env.value),
+                }));
+
                 setGroup({
                     ...data.group,
-                    envs: cleanEnvs,
+                    envs: decryptedEnvs,
                 });
 
             } catch (err: any) {
@@ -89,7 +95,6 @@ const GroupPage = () => {
         });
     };
 
-
     const handleCopyEnvs = () => {
         if (!group?.envs || group.envs.length === 0) return;
 
@@ -100,10 +105,10 @@ const GroupPage = () => {
 
         navigator.clipboard.writeText(formatted)
             .then(() => {
-                alert("Copied to clipboard!");
+                toast.success("Copied to clipboard!");
             })
             .catch((err) => {
-                console.error("Failed to copy:", err);
+                toast.error("Failed to copy:", err);
             });
     };
 
@@ -187,7 +192,7 @@ const GroupPage = () => {
             toast.success(updatedGroup.message || 'Member added successfully.');
 
             getMembers();
-            
+
         } catch (err) {
             toast.error('Error adding member.');
         } finally {
@@ -300,7 +305,7 @@ const GroupPage = () => {
                                                     className="w-full h-10 bg-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Value"
-                                                    value={env.value}
+                                                    value={isEditing ? env.value : '********'}
                                                     readOnly={!isEditing}
                                                     onChange={(e) => handleEnvChange(index, 'value', e.target.value)}
                                                 />
