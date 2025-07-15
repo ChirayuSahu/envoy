@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, PT_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/providers/SessionProvider";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,7 +31,8 @@ export default function RootLayout({
         className={`${inter.variable} ${ptMono.variable} antialiased`}
       >
         <AuthSessionProvider>
-        {children}
+          <Toaster position="top-right" richColors />
+          {children}
         </AuthSessionProvider>
       </body>
     </html>
