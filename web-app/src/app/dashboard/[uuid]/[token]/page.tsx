@@ -9,7 +9,6 @@ import { Copy, Plus, Trash2, Pencil, Save, PlusCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
-import { useRouter } from 'next/navigation';
 
 const GroupPage = () => {
 
@@ -19,7 +18,6 @@ const GroupPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [newMemberEmail, setNewMemberEmail] = useState('');
-    const router = useRouter();
 
     const { data: session, status } = useSession();
 
@@ -86,7 +84,7 @@ const GroupPage = () => {
     const handleRemoveEnv = (index: number) => {
         setGroup((prevGroup: any) => {
             const updatedEnvs = [...prevGroup.envs];
-            updatedEnvs.splice(index, 1); // remove one item at the specified index
+            updatedEnvs.splice(index, 1);
             return { ...prevGroup, envs: updatedEnvs };
         });
     };
@@ -96,7 +94,7 @@ const GroupPage = () => {
         if (!group?.envs || group.envs.length === 0) return;
 
         const formatted = group.envs
-            .filter((env: any) => env.key?.trim()) // skip empty keys
+            .filter((env: any) => env.key?.trim())
             .map((env: any) => `${env.key}=${env.value}`)
             .join('\n');
 
@@ -253,7 +251,7 @@ const GroupPage = () => {
                         )}
                         {group && (
                             <>
-                                <div className="col-span-1 sm:col-span-3 xl:col-span-3 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
+                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-2 xl:col-span-3 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
                                     <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C]">
                                         {isEditing && (
                                             <Button
@@ -318,7 +316,7 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 sm:col-span-1 xl:col-span-3 rounded-lg hover:rounded-xl border-2 border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 sm:col-span-1 md:col-span-4 lg:col-span-2 xl:col-span-3 rounded-lg hover:rounded-xl border-2 border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] mb-2">Members</h2>
                                     <div onClick={() => { setDialogOpen(true) }} className="flex items-center justify-center gap-3 bg-white hover:bg-[#00916C] cursor-pointer hover:text-white text-[#00916C] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300">
                                         <PlusCircle />
@@ -354,7 +352,6 @@ const GroupPage = () => {
                 </div>
             </div >
 
-            // member add Modal
             <DialogBox
                 isOpen={dialogOpen}
                 title="Add New Member"
