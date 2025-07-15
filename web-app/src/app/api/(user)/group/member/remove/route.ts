@@ -39,6 +39,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: "Member does not exist in the group." }, { status: 400 });
         }
 
+        if(member._id.toString() === group.owner.toString()) {
+            return NextResponse.json({ message: "You cannot remove the group owner from the group." }, { status: 400 });
+        }
+
         group.members = group.members.filter((m: any) => m.toString() !== member._id.toString());
         await group.save();
 
