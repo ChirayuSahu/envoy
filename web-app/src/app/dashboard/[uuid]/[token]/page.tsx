@@ -128,8 +128,8 @@ const GroupPage = () => {
                 console.log('Failed to save changes:', res.statusText);
                 return;
             }
-
             const data = await res.json();
+            toast.success(data.message || 'Changes saved successfully.');
         } catch (err) {
             console.log('Error saving changes:', err);
         } finally {
@@ -248,7 +248,6 @@ const GroupPage = () => {
                                         </div>
                                     ))}
                                 </div>
-
                                 <div className='col-span-1 sm:col-span-4 xl:col-span-6 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col'>
 
                                 </div>
