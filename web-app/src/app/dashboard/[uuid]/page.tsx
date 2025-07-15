@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation';
 import SidebarComp from '@/components/dashboard/sidebar';
-import { ArrowRight, Trash2 } from 'lucide-react';
+import { ArrowRight, Trash2, CirclePlus } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
 import Link from 'next/link';
+import DialogBox from '@/components/dialogBox';
+import { toast } from 'sonner';
 
 const GroupsPage = () => {
 
@@ -13,6 +15,8 @@ const GroupsPage = () => {
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
     const [workspace, setWorkspace] = useState<any>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [newGroupName, setNewGroupName] = useState('');
 
     useEffect(() => {
 
@@ -47,6 +51,78 @@ const GroupsPage = () => {
 
     }, []);
 
+    const handleDeleteGroup = async (groupID: String) => {
+
+        try {
+            const res = await fetch(`/api/group/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    groupId: groupID,
+                }),
+            });
+
+            if (!res.ok) {
+                toast.error('Error deleting group. Please try again.');
+                return;
+            }
+
+            const updatedGroups = await fetch(`/api/workspace?id=${uuid}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await updatedGroups.json();
+            setGroups(data.workspace.groups || []);
+
+            toast.success('Group deleted successfully.');
+        } catch (err) {
+            toast.error('Error deleting group.');
+        }
+    }
+
+    const handleCreateGroup = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch(`/api/group/create`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    workspaceId: workspace._id,
+                    name: newGroupName,
+                }),
+            });
+
+            if (!res.ok) {
+                toast.error('Error creating group. Please try again.');
+            }
+
+            const newGroups = await fetch(`/api/workspace?id=${uuid}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await newGroups.json();
+            setGroups(data.workspace.groups || []);
+            setNewGroupName('');
+            setDialogOpen(false);
+            toast.success('Group created successfully.');
+
+        } catch (err) {
+            toast.error('Error creating group. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+
+    }
+
+
     if (loading) {
         return <LoadingPage />;
     }
@@ -66,6 +142,9 @@ const GroupsPage = () => {
                                 No groups found with this token.
                             </div>
                         )}
+                        <div onClick={() => setDialogOpen(true)} className='cursor-pointer flex justify-center items-center text-[#00916C] hover:text-white bg-white hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300'>
+                            <CirclePlus className='' />
+                        </div>
                         {groups.map((group: any) => (
                             <div key={group._id} className="flex gap-2 items-end justify-between bg-white p-4 rounded-md hover:rounded-xl transition-all duration-300 border-2 border-transparent hover:border-2 hover:border-[#00916C]">
                                 <div>
@@ -90,6 +169,7 @@ const GroupsPage = () => {
                                         </div>
                                     </Link>
                                     <div
+                                        onClick={() => handleDeleteGroup(group._id)}
                                         className="self-end p-1 cursor-pointer hover:bg-red-600 text-red-600 hover:text-white rounded-sm transition-all duration-200"
                                     >
                                         <Trash2 className="w-5 h-5" />
@@ -100,6 +180,23 @@ const GroupsPage = () => {
                     </div>
                 </div>
             </div>
+            {dialogOpen && (
+                <DialogBox
+                    isOpen={dialogOpen}
+                    title="Create New Group"
+                    onClose={() => setDialogOpen(false)}
+                    onAction={handleCreateGroup}
+                    loading={loading}
+                >
+                    <input
+                        placeholder="Group Name"
+                        value={newGroupName}
+                        onChange={(e) => setNewGroupName(e.target.value)}
+                        className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                        required
+                    />
+                </DialogBox>
+            )}
         </>
     )
 }
