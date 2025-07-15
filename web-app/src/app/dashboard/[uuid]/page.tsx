@@ -137,7 +137,7 @@ const GroupsPage = () => {
                         <p>{workspace?.description}</p>
                     </div>
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto'>
-                        {groups.length === 0 && (
+                        {!workspace && (
                             <div className="col-span-4 text-center text-gray-500">
                                 No workspace found with this token.
                             </div>
