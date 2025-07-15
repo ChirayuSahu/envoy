@@ -32,7 +32,7 @@ const GroupsPage = () => {
                     });
 
                 if (!res.ok) {
-                    console.error('Failed to fetch groups:', res.statusText);
+                    toast.error('Failed to fetch groups.');
                     return null;
                 }
 
@@ -41,7 +41,7 @@ const GroupsPage = () => {
                 setWorkspace(data.workspace);
 
             } catch (err) {
-                console.log('Error fetching groups:', err);
+                toast.error('Error fetching groups.');
             } finally {
                 setLoading(false);
             }
@@ -139,12 +139,14 @@ const GroupsPage = () => {
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-y-auto'>
                         {groups.length === 0 && (
                             <div className="col-span-4 text-center text-gray-500">
-                                No groups found with this token.
+                                No workspace found with this token.
                             </div>
                         )}
-                        <div onClick={() => setDialogOpen(true)} className='cursor-pointer flex justify-center items-center text-[#00916C] hover:text-white bg-white hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300'>
-                            <CirclePlus className='' />
-                        </div>
+                        {workspace && (
+                            <div onClick={() => setDialogOpen(true)} className='cursor-pointer flex justify-center items-center text-[#00916C] hover:text-white bg-white hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300'>
+                                <CirclePlus className='' />
+                            </div>
+                        )}
                         {groups.map((group: any) => (
                             <div key={group._id} className="flex gap-2 items-end justify-between bg-white p-4 rounded-md hover:rounded-xl transition-all duration-300 border-2 border-transparent hover:border-2 hover:border-[#00916C]">
                                 <div>
