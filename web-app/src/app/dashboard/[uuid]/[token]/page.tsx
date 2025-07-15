@@ -8,6 +8,8 @@ import Button from '@/components/button';
 import { Copy, Plus, Trash2, Pencil, Save, PlusCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
+import DialogBox from '@/components/dialogBox';
+import { useRouter } from 'next/navigation';
 
 const GroupPage = () => {
 
@@ -15,6 +17,9 @@ const GroupPage = () => {
     const [group, setGroup] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [newMemberEmail, setNewMemberEmail] = useState('');
+    const router = useRouter();
 
     const { data: session, status } = useSession();
 
@@ -47,14 +52,9 @@ const GroupPage = () => {
                     value,
                 }));
 
-                const cleanMembers = (data.group?.members || []).filter(
-                    (member: any) => member.email !== userEmail
-                );
-
                 setGroup({
                     ...data.group,
                     envs: cleanEnvs,
-                    members: cleanMembers,
                 });
 
             } catch (err: any) {
@@ -138,6 +138,98 @@ const GroupPage = () => {
         }
     }
 
+    const getMembers = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch(`/api/group/member/get?token=${token}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!res.ok) {
+                toast.error('Failed to fetch members.');
+                return;
+            }
+
+            const data = await res.json();
+            setGroup((prevGroup: any) => ({
+                ...prevGroup,
+                members: data.members || [],
+            }));
+        } catch (err) {
+            toast.error('Error fetching members.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleAddMember = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/group/member/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    groupId: group._id,
+                    memberEmail: newMemberEmail,
+                }),
+            })
+
+            if (!res.ok) {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to add member.');
+                return;
+            }
+
+            const updatedGroup = await res.json();
+            toast.success(updatedGroup.message || 'Member added successfully.');
+
+            getMembers();
+            
+        } catch (err) {
+            toast.error('Error adding member.');
+        } finally {
+            setLoading(false);
+            setDialogOpen(false);
+            setNewMemberEmail('');
+        }
+    }
+
+    const handleRemoveMember = async (memberEmail: string) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/group/member/remove`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    groupId: group._id,
+                    memberEmail,
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to remove member.');
+                return;
+            }
+
+            const updatedGroup = await res.json();
+            toast.success(updatedGroup.message || 'Member removed successfully.');
+            getMembers();
+
+        } catch (err) {
+            toast.error('Error removing member.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
 
 
     if (loading || !session) {
@@ -161,7 +253,7 @@ const GroupPage = () => {
                         )}
                         {group && (
                             <>
-                                <div className="col-span-1 sm:col-span-3 xl:col-span-4 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
+                                <div className="col-span-1 sm:col-span-3 xl:col-span-3 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
                                     <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C]">
                                         {isEditing && (
                                             <Button
@@ -226,25 +318,30 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 sm:col-span-1 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 sm:col-span-1 xl:col-span-3 rounded-lg hover:rounded-xl border-2 border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] mb-2">Members</h2>
-                                    <div className="flex items-center justify-center gap-3 bg-white text-[#00916C] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default">
+                                    <div onClick={() => { setDialogOpen(true) }} className="flex items-center justify-center gap-3 bg-white hover:bg-[#00916C] cursor-pointer hover:text-white text-[#00916C] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300">
                                         <PlusCircle />
                                     </div>
 
                                     {group.members.map((member: any, index: number) => (
                                         <div
                                             key={index}
-                                            className="flex items-center gap-3 bg-white p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default"
+                                            className="overflow-x-auto flex items-center justify-between gap-3 bg-white p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default"
                                         >
-                                            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-[#00916C] text-white font-bold text-sm uppercase">
-                                                {member.name?.[0] || "?"}
-                                            </div>
-
                                             <div className="flex flex-col text-sm">
                                                 <span className="font-medium text-gray-800">{member.name}</span>
                                                 <span className="text-gray-500">{member.email}</span>
                                             </div>
+                                            {isEditing && (
+                                                <div
+                                                    onClick={() => { handleRemoveMember(member.email) }}
+                                                    className="p-1 cursor-pointer hover:bg-red-600 text-red-600 hover:text-white rounded-sm transition-all duration-200"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </div>
+                                            )}
+
                                         </div>
                                     ))}
                                 </div>
@@ -256,6 +353,26 @@ const GroupPage = () => {
                     </div>
                 </div>
             </div >
+
+            // member add Modal
+            <DialogBox
+                isOpen={dialogOpen}
+                title="Add New Member"
+                onClose={() => setDialogOpen(false)}
+                onAction={() => { handleAddMember() }}
+                loading={loading}
+            >
+                <div className="flex flex-col gap-4">
+                    <input
+                        placeholder="Member Email"
+                        value={newMemberEmail}
+                        onChange={(e) => setNewMemberEmail(e.target.value)}
+                        className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                        required
+                    />
+                </div>
+            </DialogBox>
+
         </>
     )
 }
