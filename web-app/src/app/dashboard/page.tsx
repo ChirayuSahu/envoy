@@ -6,6 +6,7 @@ import { ArrowRight, CirclePlus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import DialogBox from '@/components/dialogBox'
+import { toast } from 'sonner'
 
 const DashboardPage = () => {
 
@@ -31,15 +32,14 @@ const DashboardPage = () => {
 
         if (!res.ok) {
           const errorText = await res.text();
-          console.error("Failed to fetch workspaces:", res.status, errorText);
+          toast.error("Failed to fetch workspaces.");
           return;
         }
 
         const data = await res.json();
         setWorkspaces(data.workspaces);
-        console.log("Fetched workspaces:", data.workspaces);
       } catch (err) {
-        console.error("Failed to fetch workspaces:", err);
+        toast.error("Failed to fetch workspaces.");
       } finally {
         setLoading(false);
       }
@@ -71,9 +71,10 @@ const DashboardPage = () => {
       const updatedRes = await fetch("/api/workspace");
       const updatedData = await updatedRes.json();
       setWorkspaces(updatedData.workspaces);
+      toast.success("Workspace created successfully.");
 
     } catch (err) {
-      console.error("Error creating workspace:", err);
+      toast.error("Error creating workspace.");
     } finally {
       setLoading(false);
       setShowModal(false);
@@ -90,14 +91,14 @@ const DashboardPage = () => {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Failed to delete workspace:", res.status, errorText);
+      toast.error("Failed to delete workspace.");
       return;
     }
 
     const updatedRes = await fetch("/api/workspace");
     const updatedData = await updatedRes.json();
     setWorkspaces(updatedData.workspaces);
+    toast.success(`Workspace deleted successfully.`);
   };
 
   if (loading) {
