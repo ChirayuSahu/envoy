@@ -9,7 +9,7 @@ export async function DELETE(request: NextRequest) {
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const userId = token?.id;
-    
+
     if (!userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -39,15 +39,18 @@ export async function DELETE(request: NextRequest) {
         workspace.groups = workspace.groups.filter((id: any) => id.toString() !== groupId);
         await workspace.save();
 
-        await User.updateMany(
-            { _id: { $in: group.members } },
-            { $pull: { otherGroups: groupId } }
-        );
+        if (Array.isArray(group.members) && group.members.length > 0) {
+            await User.updateMany(
+                { _id: { $in: group.members } },
+                { $pull: { otherGroups: group._id } }
+            );
+        }
+
 
         return NextResponse.json({ message: "Group deleted successfully." }, { status: 200 });
 
     } catch (error: any) {
-        return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
 
 }
