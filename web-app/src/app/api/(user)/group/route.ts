@@ -50,9 +50,10 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ group }, { status: 200 });
         }
 
-        if (group.members.map((id: any) => id.toString()).includes(userId)) {
+        if (group.members.map((member: any) => member._id.toString()).includes(userId.toString())) {
             return NextResponse.json({ group }, { status: 200 });
         }
+
 
         return NextResponse.json({ message: "You do not have permission to access this group." }, { status: 403 });
 
