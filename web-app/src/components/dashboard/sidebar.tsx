@@ -26,6 +26,9 @@ const SidebarComp = () => {
             <Link href="/dashboard">
               <div className="text-white w-full text-left sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">Workspaces</div>
             </Link>
+            <Link href="/dashboard/shared">
+              <div className="text-white w-full text-left sm:text-xs xl:text-base hover:underline transition-all cursor-pointer">Shared Workspaces</div>
+            </Link>
           </div>
         </div>
         <div className='flex flex-col gap-4'>
