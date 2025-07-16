@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${inter.variable} ${ptMono.variable} antialiased`}
       >
         <AuthSessionProvider>
-          <Toaster position="top-right" richColors />
+          <Toaster position="top-right" />
           {children}
         </AuthSessionProvider>
       </body>
