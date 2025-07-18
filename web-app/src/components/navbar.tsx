@@ -1,10 +1,14 @@
+"use client"
 import React from 'react'
 import Button from './button'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 const Navbar = () => {
 
     const router = useRouter();
+    const { data: session } = useSession();
+    const isAuthenticated = session?.user?.email;
 
     return (
         <>
@@ -16,7 +20,7 @@ const Navbar = () => {
                     <Button variant="outline" className='text-white'>FAQs</Button>
                 </div>
                 <div className='flex items-center justify-center gap-4'>
-                    <Button onClick={()=>router.push("/login")} variant="secondary" className=''>Login </Button>
+                    <Button onClick={()=>router.push("/login")} variant="secondary" className=''>{isAuthenticated ? "Dashboard" : "Login"}</Button>
                     <Button onClick={()=>router.push("/signup")} variant="primary" className=''>SignUp</Button>
                 </div>
             </div>
