@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
@@ -20,6 +20,7 @@ const GroupPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [newMemberEmail, setNewMemberEmail] = useState('');
+    const prevIsEditingRef = useRef(isEditing);
 
     const { data: session, status } = useSession();
 
@@ -143,7 +144,6 @@ const GroupPage = () => {
 
     const handleSaveChanges = async () => {
         setLoading(true);
-
         try {
             const res = await fetch(`/api/env`, {
                 method: 'POST',
@@ -156,19 +156,32 @@ const GroupPage = () => {
                 }),
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                console.log('Failed to save changes:', res.statusText);
+                toast.error(data.message || 'Failed to save changes.');
+                window.location.reload();
                 return;
             }
-            const data = await res.json();
+
             toast.success(data.message || 'Changes saved successfully.');
         } catch (err) {
             console.log('Error saving changes:', err);
+            toast.error('Something went wrong while saving.');
         } finally {
             setLoading(false);
             setIsEditing(false);
         }
-    }
+    };
+
+
+    useEffect(() => {
+        if (prevIsEditingRef.current && !isEditing) {
+            handleSaveChanges();
+        }
+        prevIsEditingRef.current = isEditing;
+    }, [isEditing]);
+
 
     const getMembers = async () => {
         try {
