@@ -8,10 +8,12 @@ export default function Home() {
 
   return (
     <>
+    <div className="">
     <Navbar />
     <HeroSection />
     <CommunitySection />
     <FeatureSection />
+    </div>
     </>
   );
 }

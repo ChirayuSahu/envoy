@@ -25,28 +25,32 @@ const CommunitySection = () => {
 
   return (
     <>
-      <section className="font-inter bg-[#F5F7FA] py-30 px-20 text-center">
+      <section className="font-inter bg-[#F5F7FA] dark:bg-[#121212] py-30 px-20 text-center">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
+          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">
             Manage your entire community <br /> in a single place
           </h2>
-          <p className="text-sm text-gray-500 mt-2 mb-10">Who is [Name] suitable for?</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-10">
+            Who is [Name] suitable for?
+          </p>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {cards.map((card, idx) => (
               <div
                 key={idx}
-                className="bg-white p-6 rounded shadow-sm hover:shadow-md transition"
+                className="bg-white dark:bg-[#1e1e1e] p-6 rounded shadow-sm hover:shadow-md transition border border-transparent dark:border-gray-700"
               >
-                <div className="bg-green-100 w-fit mx-auto p-2 rounded mb-4">
+                <div className="bg-green-100 dark:bg-[#004d3d] w-fit mx-auto p-2 rounded mb-4">
                   {card.icon}
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-2">{card.title}</h3>
-                <p className="text-sm text-gray-600">{card.description}</p>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">{card.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{card.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
     </>
   );
 };

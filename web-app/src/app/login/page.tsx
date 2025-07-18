@@ -35,8 +35,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center w-full min-h-screen bg-[#00916C]">
-      <div className="flex flex-col gap-5 items-center justify-between bg-[#FAFAFA] p-10 m-8 shadow-2xl rounded-2xl w-full max-w-md">
+    <div className="flex items-center justify-center w-full min-h-screen bg-[#00916C] dark:bg-[#121212]">
+      <div className="flex flex-col gap-5 items-center justify-between bg-[#FAFAFA] dark:bg-[#1a1a1a] text-black dark:text-white p-10 m-8 shadow-2xl rounded-2xl w-full max-w-md">
         <h1 className="text-2xl md:text-4xl font-black">Login</h1>
 
         {/* Suspense wrapper for client component */}
@@ -52,7 +52,7 @@ const LoginPage = () => {
               name="username"
               value={form.username}
               onChange={handleChange}
-              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none"
+              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none bg-white dark:bg-[#121212] text-black dark:text-white"
               required
             />
           </div>
@@ -64,12 +64,12 @@ const LoginPage = () => {
               name="password"
               value={form.password}
               onChange={handleChange}
-              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none"
+              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none bg-white dark:bg-[#121212] text-black dark:text-white"
               required
             />
-            <label className="text-right text-sm mt-2 text-gray-500">
+            <label className="text-right text-sm mt-2 text-gray-500 dark:text-gray-400">
               Forgot Password?{" "}
-              <Link href="/" className="text-[#00916C] underline">
+              <Link href="/" className="text-[#00916C] underline dark:text-[#00b388]">
                 Click Here
               </Link>
             </label>
@@ -88,7 +88,7 @@ const LoginPage = () => {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="bg-[#1A1B22] text-white font-black p-3 rounded-xl hover:bg-[#040405] transition-colors cursor-pointer w-full flex items-center justify-center gap-4"
+          className="bg-[#1A1B22] dark:bg-[#373737] dark:hover:bg-[#232323] text-white font-black p-3 rounded-xl hover:bg-[#040405] transition-colors cursor-pointer w-full flex items-center justify-center gap-4"
         >
           <Image
             src="/assets/google.svg"
@@ -99,14 +99,15 @@ const LoginPage = () => {
           {loading ? "Please wait..." : "Sign in with Google"}
         </button>
 
-        <label className="text-sm mt-2 text-black">
+        <label className="text-sm mt-2 text-black dark:text-white">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-[#00916C] underline">
+          <Link href="/signup" className="text-[#00916C] underline dark:text-[#00b388]">
             Sign up
           </Link>
         </label>
       </div>
     </div>
+
   );
 };
 

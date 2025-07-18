@@ -90,25 +90,29 @@ const SharedGroupPage = () => {
 
     return (
         <>
-            <div className='bg-[#F0F0F0] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
+            <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
                 <SidebarComp />
-                <div className='sm:col-span-4 xl:col-span-10 p-2 h-full rounded-2xl flex flex-col gap-6 overflow-hidden'>
-                    <div className=''>
-                        <h1 className='font-bold text-2xl text-[#00916C]'>{group?.name} - {new Date(group?.createdAt).toLocaleDateString()}</h1>
+                <div className="sm:col-span-4 xl:col-span-10 p-2 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
+                    <div>
+                        <h1 className="font-bold text-2xl text-[#00916C] dark:text-[#00916C]">
+                            {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
+                        </h1>
                     </div>
-                    <div className='grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
                         {!group && (
-                            <div className="col-span-4 text-center text-gray-500">
+                            <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
                                 No groups found with this token.
                             </div>
                         )}
+
                         {group && (
                             <>
-                                <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col">
+                                <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
                                     <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C]">
                                         <Button
                                             onClick={handleCopyEnvs}
-                                            className='w-full flex items-center justify-center'
+                                            className="w-full flex items-center justify-center"
                                         >
                                             <Copy />
                                         </Button>
@@ -120,19 +124,17 @@ const SharedGroupPage = () => {
                                                     toast.info("Sensitive values hidden.");
                                                 }, 5000);
                                             }}
-                                            className='w-full flex items-center justify-center'
+                                            className="w-full flex items-center justify-center"
                                         >
                                             {isViewing ? <EyeOffIcon /> : <Eye />}
                                         </Button>
-
-
                                     </div>
 
-                                    <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar text-gray-200}`}>
-                                        {group && group.envs.map((env: any, index: number) => (
+                                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-gray-200">
+                                        {group.envs.map((env: any, index: number) => (
                                             <div key={index} className="font-pt-mono flex items-center gap-2 mb-2">
                                                 <input
-                                                    className="w-full h-10 bg-white p-2 rounded-md focus:outline-none"
+                                                    className="w-full h-10 bg-white dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Key"
                                                     value={env.key}
@@ -140,7 +142,7 @@ const SharedGroupPage = () => {
                                                 />
                                                 :
                                                 <input
-                                                    className="w-full h-10 bg-white p-2 rounded-md focus:outline-none"
+                                                    className="w-full h-10 bg-white dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Value"
                                                     value={isViewing ? env.value : '********'}
@@ -155,7 +157,6 @@ const SharedGroupPage = () => {
                     </div>
                 </div>
             </div>
-
         </>
     )
 }

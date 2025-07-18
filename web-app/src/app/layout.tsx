@@ -3,6 +3,7 @@ import { Inter, PT_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/providers/SessionProvider";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "next-themes";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,14 +27,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${ptMono.variable} antialiased`}
-      >
-        <AuthSessionProvider>
-          <Toaster position="top-right" />
-          {children}
-        </AuthSessionProvider>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${ptMono.variable}`}
+    >
+      <body className="antialiased">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <AuthSessionProvider>
+            <Toaster position="top-right" />
+            {children}
+          </AuthSessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

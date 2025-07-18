@@ -107,43 +107,47 @@ const DashboardPage = () => {
 
   return (
     <>
-      <div className='absolute w-full z-40 bg-[#F0F0F0] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
+      <div className="absolute w-full z-40 bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
         <SidebarComp />
-        <div className='sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6'>
-          <div className='font-bold text-2xl'>
-            Workspaces
-          </div>
+        <div className="sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6">
+          <div className="font-bold text-2xl text-black dark:text-white">Workspaces</div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div onClick={() => setShowModal(true)} className='cursor-pointer flex justify-center items-center text-[#00916C] hover:text-white bg-white hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300'>
-              <CirclePlus className='' />
+            <div
+              onClick={() => setShowModal(true)}
+              className="cursor-pointer flex justify-center items-center text-[#00916C] dark:text-[#00916C] hover:text-white bg-white dark:bg-[#1e1e1e] hover:bg-[#00916C] dark:hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] dark:hover:border-[#00916C] transition-all duration-300"
+            >
+              <CirclePlus />
             </div>
+
             {workspaces.map((workspace: any) => (
               <div
                 key={workspace._id}
-                className="flex justify-between bg-white p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] transition-all duration-300"
+                className="flex justify-between bg-white dark:bg-[#1e1e1e] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] dark:hover:border-[#00916C] transition-all duration-300"
               >
                 <div>
-                  <h3 className="text-sm font-semibold">{workspace.name}</h3>
-                  <p className="text-xs text-gray-600">{workspace.description}</p>
+                  <h3 className="text-sm font-semibold text-black dark:text-white">{workspace.name}</h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{workspace.description}</p>
                   <div className="mt-2">
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       Groups: {workspace.groups?.length ?? 0}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Created on: {
-                        new Date(workspace.createdAt).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                        }).replace(' ', ', ')
-                      }
-
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      Created on:{" "}
+                      {new Date(workspace.createdAt)
+                        .toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })
+                        .replace(" ", ", ")}
                     </p>
                   </div>
                 </div>
-                <div className='flex flex-col gap-3 justify-center items-center'>
+
+                <div className="flex flex-col gap-3 justify-center items-center">
                   <Link href={`/dashboard/${workspace.uuid}`}>
-                    <div className="self-end p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200">
+                    <div className="self-end p-1 hover:bg-[#00916C] dark:hover:bg-[#00916C] text-[#00916C] dark:text-[#00916C] hover:text-white rounded-sm transition-all duration-200">
                       <ArrowRight className="w-5 h-5" />
                     </div>
                   </Link>
@@ -153,7 +157,7 @@ const DashboardPage = () => {
                       deleteWorkspace.current = { id: workspace._id, name: workspace.name };
                       setShowDeleteModal(true);
                     }}
-                    className="self-end p-1 cursor-pointer hover:bg-red-600 text-red-600 hover:text-white rounded-sm transition-all duration-200"
+                    className="self-end p-1 cursor-pointer hover:bg-red-600 text-red-600 dark:text-red-500 hover:text-white rounded-sm transition-all duration-200"
                   >
                     <Trash2 className="w-5 h-5" />
                   </div>
@@ -164,8 +168,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      //modal for creating a new workspace
-
+      {/* Modal for creating a new workspace */}
       {showModal && (
         <DialogBox
           title="New Workspace"
@@ -176,7 +179,7 @@ const DashboardPage = () => {
           actionLabel="Submit"
         >
           <div className="flex flex-col gap-1">
-            <label htmlFor="name" className="text-sm font-semibold text-black">
+            <label htmlFor="name" className="text-sm font-semibold text-black dark:text-white">
               Name
             </label>
             <input
@@ -187,16 +190,13 @@ const DashboardPage = () => {
               onChange={(e) => {
                 workspace.current.name = e.target.value;
               }}
-              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+              className="p-3 border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] text-black dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] dark:focus:ring-[#00916C] transition"
               required
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label
-              htmlFor="description"
-              className="text-sm font-semibold text-black"
-            >
+            <label htmlFor="description" className="text-sm font-semibold text-black dark:text-white">
               Description
             </label>
             <input
@@ -207,14 +207,14 @@ const DashboardPage = () => {
               onChange={(e) => {
                 workspace.current.description = e.target.value;
               }}
-              className="p-3 border-2 border-[#00916C] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+              className="p-3 border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] text-black dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] dark:focus:ring-[#00916C] transition"
               required
             />
           </div>
         </DialogBox>
       )}
 
-      // modal for deleting a workspace
+      {/* Modal for deleting a workspace */}
       {showDeleteModal && (
         <DialogBox
           title={`Delete, ${deleteWorkspace.current.name}?`}
@@ -227,7 +227,7 @@ const DashboardPage = () => {
           loading={loading}
           actionLabel="Delete"
         >
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-red-600 dark:text-red-400">
             Are you sure you want to delete this workspace? This action cannot be undone.
           </p>
         </DialogBox>
