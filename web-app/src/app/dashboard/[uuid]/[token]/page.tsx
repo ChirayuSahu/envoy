@@ -5,11 +5,12 @@ import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Plus, Trash2, Pencil, Save, PlusCircle } from 'lucide-react';
+import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, PencilOff } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
 import { decrypt } from '@/utils/encryption';
+import getEnvVarsFromClipboard from '@/utils/getEnvFromClipbaord';
 
 const GroupPage = () => {
 
@@ -70,6 +71,34 @@ const GroupPage = () => {
 
         fetchGroup();
     }, [token, status]);
+
+    const handlePasteEnvs = async () => {
+        const newEnvs = await getEnvVarsFromClipboard();
+
+        if (newEnvs.length === 0) {
+            toast.error("No valid envs found in clipboard.");
+            return;
+        }
+
+        toast("Paste envs?", {
+            description: `${newEnvs.length} variable${newEnvs.length > 1 ? 's' : ''} detected.`,
+            action: {
+                label: "Yes",
+                onClick: () => {
+                    const merged = [...(group.envs ?? []), ...newEnvs];
+
+                    // Deduplicate by key (last one wins)
+                    const deduped = Array.from(
+                        new Map(merged.map((env) => [env.key, env])).values()
+                    );
+
+                    setGroup({ ...group, envs: deduped });
+
+                    toast.success("Variables updated.");
+                },
+            },
+        });
+    };
 
 
     const handleEnvChange = (index: number, field: 'key' | 'value', value: string) => {
@@ -259,12 +288,21 @@ const GroupPage = () => {
                                 <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-2 xl:col-span-3 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
                                     <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C]">
                                         {isEditing && (
-                                            <Button
-                                                onClick={handleAddEnv}
-                                                className='w-full flex items-center justify-center'
-                                            >
-                                                <Plus />
-                                            </Button>
+                                            <>
+                                                <Button
+                                                    onClick={handlePasteEnvs}
+                                                    className='w-full flex items-center justify-center'
+                                                >
+                                                    <Clipboard />
+                                                </Button>
+
+                                                <Button
+                                                    onClick={handleAddEnv}
+                                                    className='w-full flex items-center justify-center'
+                                                >
+                                                    <Plus />
+                                                </Button>
+                                            </>
                                         )}
                                         <Button
                                             onClick={handleCopyEnvs}
@@ -285,7 +323,7 @@ const GroupPage = () => {
                                             onClick={() => setIsEditing(!isEditing)}
                                             className='w-full flex items-center justify-center'
                                         >
-                                            <Pencil />
+                                            {isEditing ? <PencilOff /> : <Pencil />}
                                         </Button>
                                     </div>
 
@@ -296,7 +334,7 @@ const GroupPage = () => {
                                                     className="w-full h-10 bg-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Key"
-                                                    value={env.key}
+                                                    value={env.key ?? ""}
                                                     readOnly={!isEditing}
                                                     onChange={(e) => handleEnvChange(index, 'key', e.target.value)}
                                                 />
