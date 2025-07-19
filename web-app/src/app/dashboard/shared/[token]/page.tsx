@@ -93,14 +93,16 @@ const SharedGroupPage = () => {
             <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
                 <SidebarComp />
                 <div className="sm:col-span-4 xl:col-span-10 p-2 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
-                    <div>
-                        <h1 className="font-bold text-2xl text-[#00916C] dark:text-[#00916C]">
-                            {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
-                        </h1>
-                        <p className="text-gray-500 dark:text-gray-400">
-                            Shared by: {group?.owner?.email || 'Unknown'}
-                        </p>
-                    </div>
+                    {group?.name && (
+                        <div>
+                            <h1 className="font-bold text-2xl text-[#00916C] dark:text-[#00916C]">
+                                {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
+                            </h1>
+                            <p className="text-gray-500 dark:text-gray-400">
+                                Shared by: {group?.owner?.email || 'Unknown'}
+                            </p>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
                         {!group && (
