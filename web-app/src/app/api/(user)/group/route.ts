@@ -36,7 +36,11 @@ export async function GET(request: NextRequest) {
     try {
         await connectMongo();
 
-        const group = await Group.findOne({ token: groupToken }).populate({ path: "members", select: "name email" });
+        const group = await Group.findOne({ token: groupToken }).populate([
+            { path: "members", select: "name email" },
+            { path: "owner", select: "name email" },
+        ]);
+
 
         if (!group) {
             return NextResponse.json({ message: "Group not found." }, { status: 404 });
