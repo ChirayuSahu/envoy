@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, PencilOff } from 'lucide-react';
+import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, PencilOff, Lock, LockOpen } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
@@ -40,12 +40,13 @@ const GroupPage = () => {
                     },
                 });
 
+                const data = await res.json();
+
                 if (!res.ok) {
-                    console.log('Failed to fetch group:', res.statusText);
+                    toast.error(data.message || 'Failed to fetch group.');
                     return;
                 }
 
-                const data = await res.json();
 
                 // Strip `_id` from envs
                 const cleanEnvs = (data.group?.envs || []).map(({ key, value }: any) => ({
@@ -72,6 +73,39 @@ const GroupPage = () => {
 
         fetchGroup();
     }, [token, status]);
+
+    const handleChangeVisibility = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/group/visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    groupToken: group?.token
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data.message || 'Failed to change visibility.');
+                return;
+            }
+
+            setGroup((prevGroup: any) => ({
+                ...prevGroup,
+                isPublic: !prevGroup.isPublic,
+            }));
+
+            toast.success(data.message || 'Visibility updated successfully.');
+        } catch (err) {
+            toast.error('Something went wrong while changing visibility.');
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const handlePasteEnvs = async () => {
         const newEnvs = await getEnvVarsFromClipboard();
@@ -288,11 +322,18 @@ const GroupPage = () => {
                 <SidebarComp />
 
                 <div className='sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden'>
-                    <div>
-                        <h1 className='font-bold text-2xl text-[#00916C] dark:text-white'>
-                            {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
-                        </h1>
-                    </div>
+                    {group && (
+                        <div className='flex items-center justify-between w-full'>
+                            <h1 className='font-bold text-2xl text-[#00916C] dark:text-white'>
+                                {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
+                            </h1>
+
+                            <Button variant='outline' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C] dark:text-white' : 'light:bg-gray-500 text-white '}`}>
+                                {group?.isPublic ? 'Public' : 'Private'}
+                                {!group?.isPublic ? <Lock className='w-4 h-4' /> : <LockOpen className='w-4 h-4' />}
+                            </Button>
+                        </div>
+                    )}
 
                     <div className='grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
 
