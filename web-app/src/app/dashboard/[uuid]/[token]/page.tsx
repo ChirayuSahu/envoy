@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, PencilOff, Lock, LockOpen } from 'lucide-react';
+import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, PencilOff, Lock, LockOpen, Link } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
@@ -309,6 +309,21 @@ const GroupPage = () => {
         }
     }
 
+    console.log("Group Data:", group);
+
+    const handleCopyLink = () => {
+        if (!group?.token) return;
+
+        const link = `${window.location.origin}/group?token=${group.token}`;
+        navigator.clipboard.writeText(link)
+            .then(() => {
+                toast.success("Link copied to clipboard!");
+            })
+            .catch((err) => {
+                toast.error("Failed to copy link:", err);
+            });
+    };
+
 
 
     if (loading || !session) {
@@ -327,11 +342,17 @@ const GroupPage = () => {
                             <h1 className='font-bold text-2xl text-[#00916C] dark:text-white'>
                                 {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
                             </h1>
-
-                            <Button variant='outline' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C] dark:text-white' : 'light:bg-gray-500 text-white '}`}>
-                                {group?.isPublic ? 'Public' : 'Private'}
-                                {!group?.isPublic ? <Lock className='w-4 h-4' /> : <LockOpen className='w-4 h-4' />}
-                            </Button>
+                            <div className='flex items-center gap-3'>
+                                {group?.isPublic && (
+                                    <Button variant='outline' onClick={handleCopyLink} className='flex gap-3 items-center justify-center'>
+                                        <Link className='w-5 h-5' />
+                                    </Button>
+                                )}
+                                <Button variant='outline' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C] dark:text-white' : 'light:bg-gray-500 text-white '}`}>
+                                    {group?.isPublic ? 'Public' : 'Private'}
+                                    {!group?.isPublic ? <Lock className='w-4 h-4' /> : <LockOpen className='w-4 h-4' />}
+                                </Button>
+                            </div>
                         </div>
                     )}
 
