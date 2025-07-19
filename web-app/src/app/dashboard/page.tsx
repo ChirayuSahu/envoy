@@ -107,7 +107,7 @@ const DashboardPage = () => {
 
   return (
     <>
-      <div className="absolute w-full z-40 bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
+      <div className="w-full bg-[#F0F0F0] dark:bg-[#121212] min-h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
         <SidebarComp />
         <div className="sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6">
           <div className="font-bold text-2xl text-black dark:text-white">Workspaces</div>
