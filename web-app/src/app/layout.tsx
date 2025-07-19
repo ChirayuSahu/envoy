@@ -3,7 +3,7 @@ import { Inter, PT_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/providers/SessionProvider";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "next-themes";
+import MyThemeProvider from "@/providers/MyThemeProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,13 +32,13 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${ptMono.variable}`}
     >
-      <body className="antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <body className="antialiased" >
+        <MyThemeProvider>
           <AuthSessionProvider>
             <Toaster position="top-right" />
             {children}
           </AuthSessionProvider>
-        </ThemeProvider>
+        </MyThemeProvider>
       </body>
     </html>
   );
