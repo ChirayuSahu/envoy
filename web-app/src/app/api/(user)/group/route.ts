@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
             { path: "owner", select: "name email" },
         ]);
 
-
         if (!group) {
             return NextResponse.json({ message: "Group not found." }, { status: 404 });
         }
@@ -50,7 +49,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ group }, { status: 200 });
         }
 
-        if (group.owner.toString() === userId) {
+        if (group.owner._id.toString() === userId) {
             return NextResponse.json({ group }, { status: 200 });
         }
 
