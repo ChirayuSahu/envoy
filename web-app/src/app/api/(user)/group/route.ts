@@ -9,13 +9,13 @@ export async function GET(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const userId = token?.id;
 
-    if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const groupToken = searchParams.get("token");
     const type = searchParams.get("type");
+
+    if (!groupToken) {
+        return NextResponse.json({ message: "Group token is required." }, { status: 400 });
+    }
 
     if (type === "basic") {
         try {
@@ -47,6 +47,10 @@ export async function GET(request: NextRequest) {
 
         if (group.isPublic) {
             return NextResponse.json({ group }, { status: 200 });
+        }
+
+        if (!userId) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
         if (group.owner._id.toString() === userId) {
