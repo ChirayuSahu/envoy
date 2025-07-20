@@ -21,14 +21,14 @@ const GroupPage = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [newMemberEmail, setNewMemberEmail] = useState('');
     const prevIsEditingRef = useRef(isEditing);
+    const [originalEnvs, setOriginalEnvs] = useState<any[]>([]);
+
 
     const { data: session, status } = useSession();
 
     useEffect(() => {
 
         if (status !== "authenticated") return;
-
-        const userEmail = session?.user?.email;
 
         const fetchGroup = async () => {
             setLoading(true);
@@ -43,8 +43,7 @@ const GroupPage = () => {
                 const data = await res.json();
 
                 if (!res.ok) {
-                    toast.error(data.message || 'Failed to fetch group.');
-                    return;
+                    throw Error(data.message || 'Failed to fetch group data.');
                 }
 
 
@@ -63,9 +62,10 @@ const GroupPage = () => {
                     ...data.group,
                     envs: decryptedEnvs,
                 });
+                setOriginalEnvs(decryptedEnvs);
 
             } catch (err: any) {
-                toast.error('Error fetching group.');
+                toast.error(err);
             } finally {
                 setLoading(false);
             }
@@ -73,6 +73,17 @@ const GroupPage = () => {
 
         fetchGroup();
     }, [token, status]);
+
+    const haveEnvsChanged = (envs: any[], original: any[]) => {
+        if (envs.length !== original.length) return true;
+        for (let i = 0; i < envs.length; i++) {
+            if (envs[i].key !== original[i].key || envs[i].value !== original[i].value) {
+                return true;
+            }
+        }
+        return false;
+    };
+
 
     const handleChangeVisibility = async () => {
         setLoading(true);
@@ -177,6 +188,12 @@ const GroupPage = () => {
     };
 
     const handleSaveChanges = async () => {
+        const envsChanged = haveEnvsChanged(group.envs, originalEnvs);
+        if (!envsChanged) {
+            setIsEditing(false);
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await fetch(`/api/env`, {
@@ -199,6 +216,7 @@ const GroupPage = () => {
             }
 
             toast.success(data.message || 'Changes saved successfully.');
+            setOriginalEnvs(group.envs);
         } catch (err) {
             console.log('Error saving changes:', err);
             toast.error('Something went wrong while saving.');
@@ -207,6 +225,7 @@ const GroupPage = () => {
             setIsEditing(false);
         }
     };
+
 
 
     useEffect(() => {
@@ -368,27 +387,24 @@ const GroupPage = () => {
                             <>
                                 {/* ENV EDITOR CARD */}
                                 <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-2 xl:col-span-3 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
-                                    <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
+                                    <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
                                         {isEditing && (
                                             <>
-                                                <Button onClick={handlePasteEnvs} className='w-full flex items-center justify-center'>
+                                                <Button onClick={handlePasteEnvs} className='flex items-center justify-center'>
                                                     <Clipboard />
                                                 </Button>
-                                                <Button onClick={handleAddEnv} className='w-full flex items-center justify-center'>
+                                                <Button onClick={handleAddEnv} className='flex items-center justify-center'>
                                                     <Plus />
                                                 </Button>
                                             </>
                                         )}
-                                        <Button onClick={handleCopyEnvs} className='w-full flex items-center justify-center'>
-                                            <Copy />
-                                        </Button>
-                                        {isEditing && (
-                                            <Button onClick={handleSaveChanges} className='w-full flex items-center justify-center' disabled={!isEditing}>
-                                                <Save />
+                                        {!isEditing && (
+                                            <Button onClick={handleCopyEnvs} className='flex items-center justify-center'>
+                                                <Copy />
                                             </Button>
                                         )}
-                                        <Button onClick={() => setIsEditing(!isEditing)} className='w-full flex items-center justify-center'>
-                                            {isEditing ? <PencilOff /> : <Pencil />}
+                                        <Button onClick={() => setIsEditing(!isEditing)} className='flex items-center justify-center'>
+                                            {isEditing ? <Save /> : <Pencil />}
                                         </Button>
                                     </div>
 
