@@ -367,7 +367,7 @@ const GroupPage = () => {
                                         <Link className='w-5 h-5' />
                                     </Button>
                                 )}
-                                <Button variant='outline' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C] dark:text-white' : 'light:bg-gray-500 text-white '}`}>
+                                <Button variant='outline' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C] dark:text-white' : 'light:bg-gray-500 text-[#00916C]'}`}>
                                     {group?.isPublic ? 'Public' : 'Private'}
                                     {!group?.isPublic ? <Lock className='w-4 h-4' /> : <LockOpen className='w-4 h-4' />}
                                 </Button>
