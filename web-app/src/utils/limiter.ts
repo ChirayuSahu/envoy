@@ -1,12 +1,16 @@
 import { RateLimiterMemory } from "rate-limiter-flexible";
-import { headers } from "next/headers";
+import { NextRequest } from "next/server";
 
-export async function getUserIP() {
-    const headersList = await headers();
+export function getUserIP(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "127.0.0.1";
 
-    const ip = headersList.get("x-forwarded-for")?.split(",")[0] || headersList.get("x-real-ip") || '127.0.0.1';
-    return ip;
-} 
+  console.log("User IP:", ip);
+  return ip;
+}
+
 
 export const generalLimiter = new RateLimiterMemory({
   points: 10,
