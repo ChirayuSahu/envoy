@@ -16,12 +16,12 @@ export const authOptions: NextAuthOptions = {
                 username: { label: "Username", type: "text" },
                 password: { label: "Password", type: "password" }
             },
-            async authorize(credentials) {
+            async authorize(credentials, req: any) {
                 if (!credentials) {
                     throw new Error("No credentials provided");
                 }
 
-                const ip = await getUserIP();
+                const ip = getUserIP(req);
 
                 try {
                     await connectMongo();
@@ -33,8 +33,8 @@ export const authOptions: NextAuthOptions = {
                         ]
                     })).select("+password");
 
-                    if (!user){
-                        loginLimiter.consume(ip);
+                    if (!user) {
+                        await loginLimiter.consume(ip);
                         return null;
                     }
 
@@ -47,8 +47,8 @@ export const authOptions: NextAuthOptions = {
                         user.password
                     );
 
-                    if (!isPasswordValid){
-                        loginLimiter.consume(ip);
+                    if (!isPasswordValid) {
+                        await loginLimiter.consume(ip);
                         return null;
                     }
 
@@ -59,7 +59,13 @@ export const authOptions: NextAuthOptions = {
                         name: user.name,
                         email: user.email,
                     };
-                } catch (error) {
+                } catch (error: any) {
+
+                    if (error?.msBeforeNext) {
+                        const retrySecs = Math.ceil(error.msBeforeNext / 1000);
+                        throw new Error(`Too many login attempts. Try again in ${retrySecs}s.`);
+                    }
+
                     throw new Error((error as Error).message || "Authentication failed");
                 }
             }
