@@ -3,14 +3,23 @@ import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
 import { encrypt } from "@/utils/encryption";
-
+import { generalLimiter } from "@/utils/limiter";
+import { getUserIP } from "@/utils/limiter";
 
 export async function POST(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const userId = token?.id;
+    const ip = await getUserIP(request);
+
 
     if (!userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const { groupToken, envs } = await request.json();
