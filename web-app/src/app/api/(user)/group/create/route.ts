@@ -5,6 +5,7 @@ import { getToken } from "next-auth/jwt";
 import { randomUUID } from "crypto";
 import Workspace from "@/models/workspace";
 import User from "@/models/user";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function POST(request: NextRequest) {
 
@@ -15,31 +16,38 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const { name, workspaceId, isPublic } = await request.json();
 
     if (!workspaceId || !name) {
         return NextResponse.json({ message: "Workspace ID and name are required." }, { status: 400 });
     }
 
-    
+
     try {
         await connectMongo();
-        
+
         const workspace = await Workspace.findOne({ _id: workspaceId, owner: userId });
-         
+
         if (!workspace) {
             return NextResponse.json({ message: "Workspace not found." }, { status: 404 });
         }
 
         const user = await User.findById(userId);
-        
+
         if (!user) {
             return NextResponse.json({ message: "User not found." }, { status: 404 });
         }
 
         let uuid = randomUUID();
 
-        const existingToken = await Group.exists({token: uuid});
+        const existingToken = await Group.exists({ token: uuid });
 
         if (existingToken) {
             uuid = randomUUID();

@@ -4,6 +4,7 @@ import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
 import User from "@/models/user";
 import { generateShortUuid } from "custom-uuid";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function POST(request: NextRequest) {
 
@@ -12,6 +13,13 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const { name, description } = await request.json();
@@ -24,19 +32,19 @@ export async function POST(request: NextRequest) {
 
         await connectMongo();
         const user = await User.findById(userId);
-        
+
         if (!user) {
             return NextResponse.json({ message: "User not found." }, { status: 404 });
         }
 
         let uuid = generateShortUuid();
 
-        if( await Workspace.exists({ uuid })) {
+        if (await Workspace.exists({ uuid })) {
             uuid = generateShortUuid();
         }
 
         const workspace = await Workspace.create({ name, description, owner: userId, uuid });
-        
+
         user.workspaces.push(workspace._id);
         await user.save();
 

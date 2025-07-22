@@ -2,9 +2,10 @@ import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import BasicGroup from "@/models/basicGroup";
 import { randomUUID } from "crypto";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function POST(request: NextRequest) {
- 
+
     const { envs, expireAt } = await request.json();
 
     if (!envs || !expireAt) {
@@ -20,12 +21,19 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
+    try {
 
         await connectMongo();
 
         let uuid = randomUUID();
 
-        if(await BasicGroup.exists({ token: uuid })) {
+        if (await BasicGroup.exists({ token: uuid })) {
             uuid = randomUUID();
         }
 
@@ -35,7 +43,7 @@ export async function POST(request: NextRequest) {
             expireAt: new Date(Date.now() + expireAt * 1000), // expireAt in seconds
         });
 
-        return NextResponse.json({ message:"Group Created Successfully.", token: basicGroup.token }, { status: 201 });
+        return NextResponse.json({ message: "Group Created Successfully.", token: basicGroup.token }, { status: 201 });
 
     } catch (error: any) {
         return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });

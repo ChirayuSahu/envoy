@@ -3,6 +3,7 @@ import User from "@/models/user";
 import connectMongo from "@/utils/connectMongo";
 import { sanitizeFilter } from "mongoose";
 import { hashPassword } from "@/utils/bcrypt";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function POST(request: NextRequest) {
 
@@ -14,6 +15,13 @@ export async function POST(request: NextRequest) {
 
     if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
         return NextResponse.json({ message: "Invalid email format." }, { status: 400 });
+    }
+
+    try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     try {

@@ -3,14 +3,22 @@ import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
 import User from "@/models/user";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
-export async function POST(request: NextRequest){
+export async function POST(request: NextRequest) {
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const userId = token?.id;
 
     if (!userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const { groupId, memberEmail } = await request.json();
@@ -34,7 +42,7 @@ export async function POST(request: NextRequest){
             return NextResponse.json({ message: "Member not found with provided email." }, { status: 404 });
         }
 
-        if(group.members.map((member: any) => member.toString()).includes(member._id.toString())) {
+        if (group.members.map((member: any) => member.toString()).includes(member._id.toString())) {
             return NextResponse.json({ message: "Member already exists in the group." }, { status: 400 });
         }
 

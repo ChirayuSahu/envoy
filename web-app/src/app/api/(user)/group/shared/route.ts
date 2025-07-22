@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import User from "@/models/user";
 import { getToken } from "next-auth/jwt";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function GET(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -9,6 +10,13 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     try {

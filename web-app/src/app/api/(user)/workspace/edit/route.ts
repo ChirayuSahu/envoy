@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import Workspace from "@/models/workspace";
 import { getToken } from "next-auth/jwt";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function PATCH(request: NextRequest) {
 
@@ -10,6 +11,13 @@ export async function PATCH(request: NextRequest) {
 
     if (!userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const ip = getUserIP(request);
+        await generalLimiter.consume(ip);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const { workspaceId, name, description } = await request.json();
