@@ -3,6 +3,7 @@ import connectMongo from "@/utils/connectMongo";
 import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
 import BasicGroup from "@/models/basicGroup";
+import { generalLimiter, getUserIP } from "@/utils/limiter";
 
 export async function GET(request: NextRequest) {
 
@@ -15,6 +16,13 @@ export async function GET(request: NextRequest) {
 
     if (!groupToken) {
         return NextResponse.json({ message: "Group token is required." }, { status: 400 });
+    }
+
+    try {
+        const userIP = getUserIP(request);
+        await generalLimiter.consume(userIP);
+    } catch (error) {
+        return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     if (type === "basic") {
