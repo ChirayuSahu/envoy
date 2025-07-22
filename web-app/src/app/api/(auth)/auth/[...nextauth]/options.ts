@@ -23,6 +23,8 @@ export const authOptions: NextAuthOptions = {
 
                 const ip = getUserIP(req);
 
+                await loginLimiter.consume(ip);
+
                 try {
                     await connectMongo();
 
