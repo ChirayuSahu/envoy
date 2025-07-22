@@ -5,6 +5,8 @@ import connectMongo from "@/utils/connectMongo";
 import User from "@/models/user";
 import { comparePassword } from "@/utils/bcrypt";
 import { sanitizeFilter } from "mongoose";
+import { loginLimiter } from "@/utils/limiter";
+import { getUserIP } from "@/utils/limiter";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -19,6 +21,8 @@ export const authOptions: NextAuthOptions = {
                     throw new Error("No credentials provided");
                 }
 
+                const ip = await getUserIP();
+
                 try {
                     await connectMongo();
 
@@ -29,7 +33,10 @@ export const authOptions: NextAuthOptions = {
                         ]
                     })).select("+password");
 
-                    if (!user) return null;
+                    if (!user){
+                        loginLimiter.consume(ip);
+                        return null;
+                    }
 
                     if (user.provider !== "credentials") {
                         throw new Error("User does not use credentials for authentication. Try signing in with Google.");
@@ -40,7 +47,12 @@ export const authOptions: NextAuthOptions = {
                         user.password
                     );
 
-                    if (!isPasswordValid) return null;
+                    if (!isPasswordValid){
+                        loginLimiter.consume(ip);
+                        return null;
+                    }
+
+                    await loginLimiter.delete(ip);
 
                     return {
                         id: user._id.toString(),
