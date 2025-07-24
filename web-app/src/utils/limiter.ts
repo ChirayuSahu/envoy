@@ -11,10 +11,6 @@ export function getUserIP(req: any): string {
   return ip || "127.0.0.1";
 }
 
-
-
-
-
 export const generalLimiter = new RateLimiterMemory({
   points: 10,
   duration: 1,

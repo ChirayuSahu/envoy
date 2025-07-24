@@ -358,8 +358,14 @@ const GroupPage = () => {
                 <div className='sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden'>
                     {group && (
                         <div className='flex items-center justify-between w-full'>
-                            <h1 className='font-bold text-2xl text-[#00916C] dark:text-white'>
-                                {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
+                            <h1 className='font-bold text-lg md:text-2xl text-[#00916C] dark:text-white mr-10'>
+                                {group?.name} - {new Date(group?.createdAt)
+                                    .toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "long",
+                                        year: "numeric",
+                                    })
+                                    .replace(" ", ", ")}
                             </h1>
                             <div className='flex items-center gap-3'>
                                 {group?.isPublic && (
@@ -385,8 +391,7 @@ const GroupPage = () => {
 
                         {group && (
                             <>
-                                {/* ENV EDITOR CARD */}
-                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-2 xl:col-span-3 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col">
+                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col">
                                     <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
                                         {isEditing && (
                                             <>
@@ -438,8 +443,7 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                {/* MEMBERS CARD */}
-                                <div className='col-span-1 sm:col-span-1 md:col-span-4 lg:col-span-2 xl:col-span-3 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-5 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 sm:col-span-1 md:col-span-4 lg:col-span-4 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-6 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] dark:text-white mb-2">Members</h2>
 
                                     <div
@@ -468,11 +472,6 @@ const GroupPage = () => {
                                             )}
                                         </div>
                                     ))}
-                                </div>
-
-                                {/* PLACEHOLDER CARD */}
-                                <div className='col-span-1 sm:col-span-4 xl:col-span-6 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-5 h-full flex flex-col'>
-                                    {/* Reserved for future content */}
                                 </div>
                             </>
                         )}
