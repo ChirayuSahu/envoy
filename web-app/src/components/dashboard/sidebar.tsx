@@ -54,10 +54,10 @@ const SidebarComp = () => {
             <SquareUser className="w-4 h-4 xl:w-6 xl:h-6 text-white" />
             Logout
           </button>
-          <button className="text-white w-full flex items-center gap-2 sm:text-xs xl:text-base hover:underline dark:hover:underline transition-all cursor-pointer">
+          {/* <button className="text-white w-full flex items-center gap-2 sm:text-xs xl:text-base hover:underline dark:hover:underline transition-all cursor-pointer">
             <Settings className="w-4 h-4 xl:w-6 xl:h-6 text-white" />
             Settings
-          </button>
+          </button> */}
         </div>
       </div>
 
