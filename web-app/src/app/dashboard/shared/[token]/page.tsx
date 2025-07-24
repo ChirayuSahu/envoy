@@ -21,8 +21,6 @@ const SharedGroupPage = () => {
 
         if (status !== "authenticated") return;
 
-        const userEmail = session?.user?.email;
-
         const fetchGroup = async () => {
             setLoading(true);
             try {
@@ -96,7 +94,13 @@ const SharedGroupPage = () => {
                     {group?.name && (
                         <div>
                             <h1 className="font-bold text-2xl text-[#00916C] dark:text-[#00916C]">
-                                {group?.name} - {new Date(group?.createdAt).toLocaleDateString()}
+                                {group?.name} - {new Date(group?.createdAt)
+                                    .toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "long",
+                                        year: "numeric",
+                                    })
+                                    .replace(" ", ", ")}
                             </h1>
                             <p className="text-gray-500 dark:text-gray-400">
                                 Shared by: {group?.owner?.email || 'Unknown'}
@@ -105,13 +109,13 @@ const SharedGroupPage = () => {
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
-                        {!group && (
+                        {!group?.envs && (
                             <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
                                 No groups found with this token.
                             </div>
                         )}
 
-                        {group && (
+                        {group?.envs && (
                             <>
                                 <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
                                     <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C]">
@@ -136,7 +140,7 @@ const SharedGroupPage = () => {
                                     </div>
 
                                     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-gray-200">
-                                        {group.envs.map((env: any, index: number) => (
+                                        {group?.envs?.map((env: any, index: number) => (
                                             <div key={index} className="font-pt-mono flex items-center gap-2 mb-2">
                                                 <input
                                                     className="w-full h-10 bg-white dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
