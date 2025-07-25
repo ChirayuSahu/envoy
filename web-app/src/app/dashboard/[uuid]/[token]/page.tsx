@@ -391,7 +391,7 @@ const GroupPage = () => {
 
                         {group && (
                             <>
-                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col">
+                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col">
                                     <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
                                         {isEditing && (
                                             <>
@@ -413,23 +413,23 @@ const GroupPage = () => {
                                         </Button>
                                     </div>
 
-                                    <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar ${isEditing ? 'text-black dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                    <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-white`}>
                                         {group.envs.map((env: any, index: number) => (
-                                            <div key={index} className="font-pt-mono flex items-center gap-2 mb-2">
+                                            <div key={index} className="font-pt-mono text-xs sm:text-sm flex items-center gap-2 mb-2">
                                                 <input
-                                                    className="w-full h-10 bg-white dark:bg-[#1e1e1e] text-black dark:text-white p-2 rounded-md focus:outline-none"
+                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Key"
-                                                    value={env.key ?? ""}
+                                                    value={env?.key ?? ""}
                                                     readOnly={!isEditing}
                                                     onChange={(e) => handleEnvChange(index, 'key', e.target.value)}
                                                 />
-                                                :
+                                                <span className="font-black">:</span>
                                                 <input
-                                                    className="w-full h-10 bg-white dark:bg-[#1e1e1e] text-black dark:text-white p-2 rounded-md focus:outline-none"
+                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Value"
-                                                    value={isEditing ? env.value : '********'}
+                                                    value={isEditing ? env?.value : '••••••••'}
                                                     readOnly={!isEditing}
                                                     onChange={(e) => handleEnvChange(index, 'value', e.target.value)}
                                                 />
@@ -443,12 +443,12 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 sm:col-span-1 md:col-span-4 lg:col-span-4 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-6 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-6 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] dark:text-white mb-2">Members</h2>
 
                                     <div
                                         onClick={() => setDialogOpen(true)}
-                                        className="flex items-center justify-center gap-3 bg-white dark:bg-[#007a5a] hover:bg-[#00916C] dark:hover:bg-[#02614b] cursor-pointer text-[#00916C] dark:text-white hover:text-white p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300"
+                                        className="flex items-center justify-center gap-3 bg-[#F0F0F0] dark:bg-[#007a5a] hover:bg-[#00916C] dark:hover:bg-[#02614b] cursor-pointer text-[#00916C] dark:text-white hover:text-white p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300"
                                     >
                                         <PlusCircle />
                                     </div>
@@ -456,7 +456,7 @@ const GroupPage = () => {
                                     {group.members.map((member: any, index: number) => (
                                         <div
                                             key={index}
-                                            className="overflow-x-auto flex items-center justify-between gap-3 bg-white dark:bg-[#1e1e1e] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default"
+                                            className="overflow-x-auto flex items-center justify-between gap-3 bg-[#F0F0F0] dark:bg-[#2b2b2b] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default"
                                         >
                                             <div className="flex flex-col text-sm">
                                                 <span className="font-medium text-gray-800 dark:text-gray-200">{member.name}</span>

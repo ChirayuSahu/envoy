@@ -141,20 +141,20 @@ const SharedGroupPage = () => {
 
                                     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-gray-200">
                                         {group?.envs?.map((env: any, index: number) => (
-                                            <div key={index} className="font-pt-mono flex items-center gap-2 mb-2">
+                                            <div key={index} className="font-pt-mono text-xs sm:text-sm flex items-center gap-2 mb-2">
                                                 <input
-                                                    className="w-full h-10 bg-white dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
+                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Key"
-                                                    value={env.key}
+                                                    value={env?.key}
                                                     readOnly
                                                 />
-                                                :
+                                                <span className="font-black">:</span>
                                                 <input
-                                                    className="w-full h-10 bg-white dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
+                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
                                                     type="text"
                                                     placeholder="Value"
-                                                    value={isViewing ? env.value : '********'}
+                                                    value={isViewing ? env?.value : '••••••••'}
                                                     readOnly
                                                 />
                                             </div>
