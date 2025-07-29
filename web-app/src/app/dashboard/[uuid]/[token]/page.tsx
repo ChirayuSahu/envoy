@@ -211,7 +211,7 @@ const GroupPage = () => {
 
             if (!res.ok) {
                 toast.error(data.message || 'Failed to save changes.');
-                window.location.reload();
+                setTimeout(() => {window.location.reload()}, 500);
                 return;
             }
 
