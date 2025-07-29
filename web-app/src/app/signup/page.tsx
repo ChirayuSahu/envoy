@@ -1,8 +1,13 @@
 "use client"
 import React, { useState } from 'react'
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 const SignUpPage = () => {
+
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
         name: "",
@@ -21,19 +26,28 @@ const SignUpPage = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true)
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(form),
+            });
 
-        const res = await fetch('/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(form),
-        });
+            const data = await res.json();
 
-        if (res.ok) {
-            // Handle successful registration
-        } else {
-            // Handle registration error
+            if (!res.ok) {
+                toast.error(data.message);
+            }
+
+            toast.info(data.message)
+            router.push("/login")
+        } catch (err: any) {
+            toast.error(err.message)
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -44,7 +58,6 @@ const SignUpPage = () => {
                     <h1 className="text-2xl md:text-4xl font-black">Sign Up</h1>
 
                     <form className="flex flex-col gap-5 w-full" onSubmit={handleSubmit}>
-                        {/* Name */}
                         <div className="flex flex-col gap-1">
                             <label className="text-sm md:text-base lg:text-md font-semibold">
                                 Name
@@ -58,7 +71,6 @@ const SignUpPage = () => {
                             />
                         </div>
 
-                        {/* Username */}
                         <div className="flex flex-col gap-1">
                             <label className="text-sm md:text-base lg:text-md font-semibold">
                                 Username
@@ -72,7 +84,6 @@ const SignUpPage = () => {
                             />
                         </div>
 
-                        {/* Email */}
                         <div className="flex flex-col gap-1">
                             <label className="text-sm md:text-base lg:text-md font-semibold">
                                 Email
@@ -86,7 +97,6 @@ const SignUpPage = () => {
                             />
                         </div>
 
-                        {/* Password */}
                         <div className="flex flex-col gap-1">
                             <label className="text-sm md:text-base lg:text-md font-semibold">
                                 Password
@@ -100,7 +110,6 @@ const SignUpPage = () => {
                             />
                         </div>
 
-                        {/* Submit Button */}
                         <button
                             type="submit"
                             className="bg-[#00916C] text-sm md:text-base lg:text-md text-white font-black p-3 rounded-xl hover:bg-[#007a5a] transition-colors cursor-pointer"
@@ -109,7 +118,6 @@ const SignUpPage = () => {
                         </button>
                     </form>
 
-                    {/* Login Redirect */}
                     <label className="text-left text-sm md:text-base lg:text-md mt-2 text-black dark:text-white">
                         Already have an account?{" "}
                         <Link href={"/login"} className="text-[#00916C] underline dark:text-[#00b388]">
