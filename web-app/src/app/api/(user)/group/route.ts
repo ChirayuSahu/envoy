@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const groupToken = searchParams.get("token");
     const type = searchParams.get("type");
+    const edit = searchParams.get("edit")
 
     if (!groupToken) {
         return NextResponse.json({ message: "Group token is required." }, { status: 400 });
@@ -49,8 +50,15 @@ export async function GET(request: NextRequest) {
             { path: "owner", select: "name email" },
         ]);
 
+
         if (!group) {
             return NextResponse.json({ message: "Group not found." }, { status: 404 });
+        }
+
+        if (edit === "true") {
+            if (group.owner._id.toString() != userId) {
+                return NextResponse.json({ message: "Unauthorized for edits" }, { status: 401 });
+            }
         }
 
         if (group.isPublic) {
