@@ -211,7 +211,7 @@ const GroupPage = () => {
 
             if (!res.ok) {
                 toast.error(data.message || 'Failed to save changes.');
-                setTimeout(() => {window.location.reload()}, 500);
+                setTimeout(() => { window.location.reload() }, 500);
                 return;
             }
 
@@ -343,6 +343,13 @@ const GroupPage = () => {
             });
     };
 
+    const getInitials = (name: string = '') =>
+        name
+            .split(' ')
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
 
 
     if (loading || !session) {
@@ -369,19 +376,19 @@ const GroupPage = () => {
                             </h1>
                             <div className='flex items-center gap-3'>
                                 {group?.isPublic && (
-                                    <Button variant='outline' onClick={handleCopyLink} className='flex gap-3 items-center justify-center'>
+                                    <Button variant='modern' onClick={handleCopyLink} className='flex gap-3 items-center justify-center'>
                                         <Link className='w-5 h-5' />
                                     </Button>
                                 )}
-                                <Button variant='outline' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C] dark:text-white' : 'light:bg-gray-500 text-[#00916C]'}`}>
-                                    {group?.isPublic ? 'Public' : 'Private'}
+                                <Button variant='modern' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C]/20 text-[#00916C]' : 'light:bg-gray-500 text-[#00916C]'}`}>
+                                    {group?.isPublic ? 'Public' : ''}
                                     {!group?.isPublic ? <Lock className='w-4 h-4' /> : <LockOpen className='w-4 h-4' />}
                                 </Button>
                             </div>
                         </div>
                     )}
 
-                    <div className='grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
+                    <div className='grid grid-cols-1 grid-rows-2 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
 
                         {!group && (
                             <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
@@ -391,84 +398,101 @@ const GroupPage = () => {
 
                         {group && (
                             <>
-                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col">
-                                    <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
-                                        {isEditing && (
-                                            <>
-                                                <Button onClick={handlePasteEnvs} className='flex items-center justify-center'>
-                                                    <Clipboard />
-                                                </Button>
-                                                <Button onClick={handleAddEnv} className='flex items-center justify-center'>
-                                                    <Plus />
-                                                </Button>
-                                            </>
-                                        )}
-                                        {!isEditing && (
-                                            <Button onClick={handleCopyEnvs} className='flex items-center justify-center'>
-                                                <Copy />
-                                            </Button>
-                                        )}
-                                        <Button onClick={() => setIsEditing(!isEditing)} className='flex items-center justify-center'>
-                                            {isEditing ? <Save /> : <Pencil />}
-                                        </Button>
+                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 row-span-1 sm:row-span-2 lg:row-span-6 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] hover:rounded-xl transition-all duration-300 h-full flex flex-col">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
+                                        <h3 className="font-semibold text-base text-black dark:text-white shrink-0">
+                                            Environment Variables
+                                        </h3>
+                                        <div className="flex items-center gap-2 self-end sm:self-center">
+                                            {isEditing && (
+                                                <>
+                                                    <button title="Paste from Clipboard" onClick={handlePasteEnvs} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
+                                                        <Clipboard size={20} />
+                                                    </button>
+                                                    <button title="Add Variable" onClick={handleAddEnv} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
+                                                        <Plus size={20} />
+                                                    </button>
+                                                </>
+                                            )}
+                                            {!isEditing && (
+                                                <button title="Copy All" onClick={handleCopyEnvs} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
+                                                    <Copy size={20} />
+                                                </button>
+                                            )}
+
+                                            <button
+                                                title={isEditing ? "Save Changes" : "Edit Variables"}
+                                                onClick={() => setIsEditing(!isEditing)}
+                                                className="flex items-center gap-2 py-2 px-3 sm:px-4 rounded-lg font-semibold text-[#00916C] hover:bg-[#00916C]/10 dark:hover:bg-[#007356]/20 active:scale-95 transition-all duration-200"
+                                            >
+                                                {isEditing ? <Save size={16} /> : <Pencil size={16} />}
+                                                <span>{isEditing ? 'Save' : 'Edit'}</span>
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-white`}>
-                                        {group.envs.map((env: any, index: number) => (
-                                            <div key={index} className="font-pt-mono text-xs sm:text-sm flex items-center gap-2 mb-2">
-                                                <input
-                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none"
-                                                    type="text"
-                                                    placeholder="Key"
-                                                    value={env?.key ?? ""}
-                                                    readOnly={!isEditing}
-                                                    onChange={(e) => handleEnvChange(index, 'key', e.target.value)}
-                                                />
-                                                <span className="font-black">:</span>
-                                                <input
-                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none"
-                                                    type="text"
-                                                    placeholder="Value"
-                                                    value={isEditing ? env?.value : '••••••••'}
-                                                    readOnly={!isEditing}
-                                                    onChange={(e) => handleEnvChange(index, 'value', e.target.value)}
-                                                />
-                                                {isEditing && (
-                                                    <Button onClick={() => handleRemoveEnv(index)}>
-                                                        <Trash2 />
-                                                    </Button>
-                                                )}
+                                    <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar`}>
+                                        {group.envs?.length > 0 ? (
+                                            <div className="space-y-4 font-pt-mono text-xs sm:text-sm">
+                                                {group.envs.map((env: any, index: number) => (
+                                                    <div key={env.id || index} className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                                        <input className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition" type="text" placeholder="Key" value={env?.key ?? ""} readOnly={!isEditing} onChange={(e) => handleEnvChange(index, 'key', e.target.value)} />
+                                                        <span className="hidden sm:block text-black dark:text-white font-semibold text-lg">=</span>
+
+                                                        <input className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition" type={isEditing ? 'text' : 'password'} placeholder="Value" value={env?.value ?? ""} readOnly={!isEditing} onChange={(e) => handleEnvChange(index, 'value', e.target.value)} />
+                                                        {isEditing && (
+                                                            <div className="self-end sm:self-center">
+                                                                <button title="Remove Variable" onClick={() => handleRemoveEnv(index)} className="p-2 rounded-full text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:text-red-500 dark:hover:bg-red-900/40 transition-colors">
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-full text-center"><svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 text-[#00916C]"><path d="M4 7V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v4" /><path d="M4 10v4a2 2 0 0 0 2 2h2" /><path d="M11 16H6a2 2 0 0 1-2-2v-4" /><path d="M13.4 22H6a2 2 0 0 1-2-2V7" /><path d="M18 16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-1" /><path d="m22 17-4.5 4.5" /><path d="m17.5 17 4.5 4.5" /></svg><h4 className="font-semibold text-lg text-black dark:text-white">No Variables Yet</h4><p className="text-sm mt-1 text-black/70 dark:text-white/70">Click 'Edit' then the 'Add' button to create your first variable.</p></div>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-6 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 lg:row-span-6 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-2 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] dark:text-white mb-2">Members</h2>
 
-                                    <div
+                                    <button
                                         onClick={() => setDialogOpen(true)}
-                                        className="flex items-center justify-center gap-3 bg-[#F0F0F0] dark:bg-[#007a5a] hover:bg-[#00916C] dark:hover:bg-[#02614b] cursor-pointer text-[#00916C] dark:text-white hover:text-white p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300"
+                                        type="button"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-3 text-gray-500 transition-colors duration-200 hover:border-[#00916C] hover:bg-[#00916C]/10 hover:text-[#00916C] dark:border-gray-600 dark:text-gray-400 dark:hover:border-[#00916C] dark:hover:bg-[#00916C]/20 dark:hover:text-[#5fc9a9]"
                                     >
-                                        <PlusCircle />
-                                    </div>
+                                        <PlusCircle size={20} />
+                                        <span className="font-semibold">Add Member</span>
+                                    </button>
 
-                                    {group.members.map((member: any, index: number) => (
+                                    {group.members.map((member: any) => (
                                         <div
-                                            key={index}
-                                            className="overflow-x-auto flex items-center justify-between gap-3 bg-[#F0F0F0] dark:bg-[#2b2b2b] p-3 rounded-lg hover:rounded-xl shadow-sm transition-all duration-300 cursor-default"
+                                            key={member.email}
+                                            className="flex items-center justify-between p-2.5 rounded-xl transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/60"
                                         >
-                                            <div className="flex flex-col text-sm">
-                                                <span className="font-medium text-gray-800 dark:text-gray-200">{member.name}</span>
-                                                <span className="text-gray-500 dark:text-gray-400">{member.email}</span>
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#00916C] text-white font-semibold text-sm select-none">
+                                                    {getInitials(member.name)}
+                                                </div>
+
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-gray-800 dark:text-gray-100">{member.name}</span>
+                                                    <span className="text-sm text-gray-500 dark:text-gray-400">{member.email}</span>
+                                                </div>
                                             </div>
+
                                             {isEditing && (
-                                                <div
+                                                <button
                                                     onClick={() => handleRemoveMember(member.email)}
-                                                    className="p-1 cursor-pointer hover:bg-red-600 text-red-600 hover:text-white rounded-sm transition-all duration-200"
+                                                    aria-label={`Remove ${member.name}`}
+                                                    title={`Remove ${member.name}`}
+                                                    className="p-2 text-gray-500 rounded-full transition-colors duration-200 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
-                                                </div>
+                                                </button>
                                             )}
                                         </div>
                                     ))}
