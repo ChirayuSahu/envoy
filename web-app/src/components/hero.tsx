@@ -6,52 +6,53 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 
 const HeroSection = () => {
-    const { data: session } = useSession()
-    const isAuthenticated = session?.user?.email;
+    const { data: session } = useSession();
+    const isAuthenticated = !!session?.user;
+
     return (
         <>
-            <div className='font-inter flex justify-center items-center dark:bg-[#121212] gap-30 p-20'>
-                {/* Left Section */}
-                <div className='flex items-center justify-start max-w-[40vw]'>
-                    <div className='flex flex-col'>
-                        <h1 className='text-2xl lg:text-4xl xl:text-5xl font-bold text-wrap text-black dark:text-white'>
-                            A Platform for Managing and Sharing Environment Variables Securely.
-                        </h1>
+            <div className='font-inter flex flex-col lg:flex-row items-center justify-center lg:justify-between dark:bg-[#121212] gap-12 lg:gap-8 p-8 md:p-12 lg:p-20'>
+                
+                <div className='flex flex-col w-full lg:w-1/2 text-center lg:text-left'>
+                    <h1 className='text-3xl lg:text-4xl xl:text-5xl font-bold text-wrap text-black dark:text-white'>
+                        A Platform for Managing and Sharing Environment Variables Securely.
+                    </h1>
 
-                        <p className='text-sm xl:text-lg text-gray-500 dark:text-gray-400 mt-4'>
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Veniam, atque omnis. Ducimus dolorum ipsa molestiae rerum eum expedita fug
-                        </p>
+                    <p className='text-base xl:text-lg text-gray-600 dark:text-gray-400 mt-6'>
+                        Simplify your development workflow by securely managing and sharing your .env files with your team, ensuring consistency and preventing leaks.
+                    </p>
 
-                        <div className='flex gap-2 mt-6'>
-                            <Link href={"/login"}>
-                                <Button className='rounded-3xl' variant='outline'>
-                                    {isAuthenticated ? "Dashboard" : "Get Started"}
-                                </Button>
-                            </Link>
+                    <div className='flex gap-4 mt-8 justify-center lg:justify-start'>
+                        <Link href={isAuthenticated ? "/dashboard" : "/login"}>
+                            <Button className='rounded-full px-6 py-3' variant='outline'>
+                                {isAuthenticated ? "Dashboard" : "Get Started"}
+                            </Button>
+                        </Link>
+                        
+                        {!isAuthenticated && (
                             <Link href={"/signup"}>
-                                <Button className='rounded-3xl' variant='primary'>
+                                <Button className='rounded-full px-6 py-3' variant='primary'>
                                     Sign Up
                                 </Button>
                             </Link>
-                        </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Right Section */}
-                <div className='flex items-center justify-center min-w-[30vw]'>
+                <div className='flex items-center justify-center w-full lg:w-1/2 mt-8 lg:mt-0 order-first lg:order-last'>
                     <Image
                         src="/assets/hero-img.svg"
-                        alt="Hero Image"
-                        width={400}
-                        height={400}
-                        className='lg:w-75 xl:w-100'
+                        alt="Securely sharing environment variables illustration"
+                        width={500}
+                        height={500}
+                        className='w-100 max-w-xs md:max-w-sm lg:max-w-full'
                         draggable={false}
+                        priority
                     />
                 </div>
             </div>
-
         </>
     )
 }
 
-export default HeroSection
+export default HeroSection;
