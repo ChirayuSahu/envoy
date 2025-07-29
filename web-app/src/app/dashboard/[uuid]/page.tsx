@@ -148,7 +148,7 @@ const GroupsPage = () => {
                         {workspace && (
                             <div
                                 onClick={() => setDialogOpen(true)}
-                                className="cursor-pointer flex justify-center items-center text-[#00916C] dark:text-[#00916C] hover:text-white bg-white dark:bg-[#1e1e1e] hover:bg-[#00916C] dark:hover:bg-[#00916C] p-4 rounded-md hover:rounded-xl border-2 border-transparent hover:border-[#00916C] dark:hover:border-[#00916C] transition-all duration-300"
+                                className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-3 text-gray-500 transition-colors duration-200 hover:border-[#00916C] hover:bg-[#00916C]/10 hover:text-[#00916C] dark:border-gray-600 dark:text-gray-400 dark:hover:border-[#00916C] dark:hover:bg-[#00916C]/20 dark:hover:text-[#5fc9a9]"
                             >
                                 <CirclePlus />
                             </div>
@@ -206,14 +206,23 @@ const GroupsPage = () => {
                     onClose={() => setDialogOpen(false)}
                     onAction={handleCreateGroup}
                     loading={loading}
+                    isActionDisabled={!newGroupName.trim()}
                 >
-                    <input
-                        placeholder="Group Name"
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        className="p-3 border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] text-black dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00916C] dark:focus:ring-[#00916C] transition"
-                        required
-                    />
+                    <div className="flex flex-col gap-2 py-2">
+                        <label htmlFor="groupName" className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            Group Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="groupName"
+                            type="text"
+                            placeholder="Enter Group Name"
+                            value={newGroupName}
+                            onChange={(e) => setNewGroupName(e.target.value)}
+                            className="p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1E1F1F] text-black dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00916C] focus:border-transparent transition-colors duration-200"
+                            required
+                            autoFocus
+                        />
+                    </div>
                 </DialogBox>
             )}
 
