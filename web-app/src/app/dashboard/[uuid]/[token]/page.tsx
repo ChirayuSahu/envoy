@@ -328,8 +328,6 @@ const GroupPage = () => {
         }
     }
 
-    console.log("Group Data:", group);
-
     const handleCopyLink = () => {
         if (!group?.token) return;
 
