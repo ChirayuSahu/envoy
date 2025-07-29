@@ -7,18 +7,21 @@ import { decrypt } from '@/utils/encryption';
 import Button from '@/components/button';
 import { Copy, Eye, EyeOffIcon } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
+import { useRouter } from 'next/navigation';
 
 const GroupContent = () => {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
-    const [loading, setLoading] = useState(true); // Start with loading true
-    const [group, setGroup] = useState<any>(null); // Initialize as null
+    const [loading, setLoading] = useState(true);
+    const [group, setGroup] = useState<any>(null);
     const [isViewing, setIsViewing] = useState(false);
     const hasFetchedRef = useRef(false);
+    const router = useRouter()
 
     useEffect(() => {
         if (!token || hasFetchedRef.current) {
-            if (!token) setLoading(false); // Stop loading if no token
+            if (!token) setLoading(false);
+            router.push("/")
             return;
         }
 
@@ -68,14 +71,6 @@ const GroupContent = () => {
 
     if (loading) {
         return <LoadingPage />;
-    }
-
-    if (!token) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <h1 className="text-2xl font-bold text-gray-500">No token provided.</h1>
-            </div>
-        );
     }
 
     if (!group) {
