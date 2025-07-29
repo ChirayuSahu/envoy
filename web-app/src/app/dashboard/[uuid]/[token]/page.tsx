@@ -492,7 +492,7 @@ const GroupPage = () => {
                         placeholder="Member Email"
                         value={newMemberEmail}
                         onChange={(e) => setNewMemberEmail(e.target.value)}
-                        className="p-3 border-2 border-[#00916C] dark:border-[#00916C] rounded-xl bg-white dark:bg-[#1e1e1e] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00916C] dark:focus:ring-[#00916C] transition"
+                        className="p-3 border-1 border-[#00916C] dark:border-[#00916C] rounded-xl bg-white dark:bg-[#1e1e1e] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00916C] dark:focus:ring-[#00916C] transition"
                         required
                     />
                 </div>
