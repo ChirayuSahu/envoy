@@ -1,27 +1,26 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { decrypt } from '@/utils/encryption';
 import Button from '@/components/button';
 import { Copy, Eye, EyeOffIcon } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
-import { useRouter } from 'next/navigation';
 
-const GroupContent = () => {
+function GroupContentInner() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
     const [loading, setLoading] = useState(true);
     const [group, setGroup] = useState<any>(null);
     const [isViewing, setIsViewing] = useState(false);
     const hasFetchedRef = useRef(false);
-    const router = useRouter()
+    const router = useRouter();
 
     useEffect(() => {
         if (!token || hasFetchedRef.current) {
             if (!token) setLoading(false);
-            router.push("/")
+            router.push("/");
             return;
         }
 
@@ -47,7 +46,7 @@ const GroupContent = () => {
                 });
             } catch (err: any) {
                 toast.error(err.message || "Error fetching group.");
-                setGroup(null); 
+                setGroup(null);
             } finally {
                 setLoading(false);
             }
@@ -57,7 +56,6 @@ const GroupContent = () => {
     }, [token]);
 
     const handleCopyEnvs = () => {
-        // ... (your existing handleCopyEnvs function)
         if (!group?.envs || group.envs.length === 0) return;
         const formatted = group.envs
             .filter((env: any) => env.key?.trim())
@@ -68,10 +66,7 @@ const GroupContent = () => {
             .catch((err) => toast.error("Failed to copy:", err));
     };
 
-
-    if (loading) {
-        return <LoadingPage />;
-    }
+    if (loading) return <LoadingPage />;
 
     if (!group) {
         return (
@@ -80,7 +75,7 @@ const GroupContent = () => {
                     No group found with this token or an error occurred.
                 </p>
             </div>
-        )
+        );
     }
 
     return (
@@ -97,17 +92,12 @@ const GroupContent = () => {
             <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
                 <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
                     <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C]">
-                        {/* ... (Your Button components) ... */}
-                        <Button
-                            onClick={handleCopyEnvs}
-                            className="flex items-center justify-center"
-                            variant='modern'
-                        >
-                            <Copy className='w-4 h-4' />
+                        <Button onClick={handleCopyEnvs} className="flex items-center justify-center" variant="modern">
+                            <Copy className="w-4 h-4" />
                         </Button>
                         <Button
                             onClick={() => {
-                                setIsViewing(() => !isViewing);
+                                setIsViewing((prev) => !prev);
                                 if (isViewing) {
                                     setTimeout(() => {
                                         setIsViewing(false);
@@ -115,9 +105,9 @@ const GroupContent = () => {
                                 }
                             }}
                             className="flex items-center justify-center"
-                            variant='modern'
+                            variant="modern"
                         >
-                            {isViewing ? <EyeOffIcon className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
+                            {isViewing ? <EyeOffIcon className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                     </div>
 
@@ -125,10 +115,21 @@ const GroupContent = () => {
                         <div className="space-y-4 font-pt-mono text-xs sm:text-sm">
                             {group.envs.map((env: any, index: number) => (
                                 <div key={env.id || index} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                    <input className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition" type="text" placeholder="Key" value={env?.key ?? ""} readOnly />
+                                    <input
+                                        className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                                        type="text"
+                                        placeholder="Key"
+                                        value={env?.key ?? ""}
+                                        readOnly
+                                    />
                                     <span className="hidden sm:block text-black dark:text-white font-semibold text-lg">=</span>
-
-                                    <input className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition" type={isViewing ? 'text' : 'password'} placeholder="Value" value={env?.value ?? ""} readOnly />
+                                    <input
+                                        className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                                        type={isViewing ? 'text' : 'password'}
+                                        placeholder="Value"
+                                        value={env?.value ?? ""}
+                                        readOnly
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -137,6 +138,12 @@ const GroupContent = () => {
             </div>
         </div>
     );
-};
+}
 
-export default GroupContent;
+export default function GroupContent() {
+    return (
+        <Suspense fallback={<LoadingPage />}>
+            <GroupContentInner />
+        </Suspense>
+    );
+}
