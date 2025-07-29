@@ -4,7 +4,7 @@ import clsx from "clsx";
 // Extend from standard button props to allow any valid button attribute (e.g., aria-label)
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "outline" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "danger" | "modern";
 };
 
 const Button = ({
@@ -26,13 +26,15 @@ const Button = ({
       "border border-[#00916C] text-[#00916C] bg-transparent hover:bg-[#00916C] hover:text-white focus-visible:ring-[#00916C] dark:border-[#00916C] dark:text-[#5fc9a9] dark:hover:bg-[#00916C]",
     danger:
       "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800",
+    modern:
+      "p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors",
   };
 
   return (
     <button
       type={type}
       className={clsx(base, variants[variant], className)}
-      {...props} // Spread props like 'onClick', 'disabled', etc.
+      {...props}
     >
       {children}
     </button>
