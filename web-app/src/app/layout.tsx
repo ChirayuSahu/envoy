@@ -3,7 +3,7 @@ import { Inter, PT_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/providers/SessionProvider";
 import { Toaster } from "sonner";
-import MyThemeProvider from "@/providers/MyThemeProvider";
+import { ThemeProvider } from "@/providers/MyThemeProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,12 +33,16 @@ export default function RootLayout({
       className={`${inter.variable} ${ptMono.variable}`}
     >
       <body className="antialiased" >
-        <MyThemeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+        >
           <AuthSessionProvider>
             <Toaster position="top-right" />
             {children}
           </AuthSessionProvider>
-        </MyThemeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,14 +1,13 @@
 "use client"
 
 import React, { useState } from 'react';
-import { useTheme } from 'next-themes';
-import { Moon, Sun, LogOut, LayoutGrid, Users } from 'lucide-react';
+import { LogOut, LayoutGrid, Users } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import DialogBox from '../dialogBox';
 import Link from 'next/link';
+import { ThemeToggleButton } from '../ToggleThemeButton';
 
 const SidebarComp = () => {
-  const { setTheme, resolvedTheme } = useTheme();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
@@ -40,14 +39,7 @@ const SidebarComp = () => {
         </div>
 
         <div className='flex flex-col gap-2'>
-          {/* <button
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className="text-white w-full flex items-center gap-3 p-2 rounded-md text-sm xl:text-base hover:bg-white/10 transition-colors cursor-pointer"
-            aria-label="Toggle theme"
-          >
-            {resolvedTheme === "dark" ? <Sun /> : <Moon />}
-            <span>Toggle Theme</span>
-          </button> */}
+          {/* <ThemeToggleButton /> */}
           <button
             onClick={() => setShowLogoutConfirm(true)}
             className="text-white w-full flex items-center gap-3 p-2 rounded-md text-sm xl:text-base hover:bg-white/10 transition-colors cursor-pointer"
