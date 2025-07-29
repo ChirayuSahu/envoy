@@ -14,6 +14,7 @@ interface DialogBoxProps {
     actionLabel?: string;
     children?: React.ReactNode;
     variant?: "primary" | "danger";
+    isActionDisabled?: boolean;
 }
 
 const DialogBox: React.FC<DialogBoxProps> = ({
@@ -25,6 +26,7 @@ const DialogBox: React.FC<DialogBoxProps> = ({
     actionLabel = "Submit",
     children,
     variant = "primary",
+    isActionDisabled = false,
 }) => {
     const titleId = useId();
 
@@ -84,7 +86,7 @@ const DialogBox: React.FC<DialogBoxProps> = ({
                         </Button>
                         <Button
                             onClick={onAction}
-                            disabled={loading}
+                            disabled={isActionDisabled || loading}
                             variant={variant}
                             className="w-full"
                         >
