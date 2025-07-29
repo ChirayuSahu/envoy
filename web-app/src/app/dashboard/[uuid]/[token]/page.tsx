@@ -33,7 +33,7 @@ const GroupPage = () => {
         const fetchGroup = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/api/group?token=${token}`, {
+                const res = await fetch(`/api/group?token=${token}&edit=true`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const GroupPage = () => {
                 setOriginalEnvs(decryptedEnvs);
 
             } catch (err: any) {
-                toast.error(err);
+                toast.error(err.message);
             } finally {
                 setLoading(false);
             }
@@ -390,13 +390,13 @@ const GroupPage = () => {
 
                     <div className='grid grid-cols-1 grid-rows-2 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
 
-                        {!group && (
+                        {!group?.envs && (
                             <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
                                 No groups found with this token.
                             </div>
                         )}
 
-                        {group && (
+                        {group?.envs && (
                             <>
                                 <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 row-span-1 sm:row-span-2 lg:row-span-6 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] hover:rounded-xl transition-all duration-300 h-full flex flex-col">
                                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
