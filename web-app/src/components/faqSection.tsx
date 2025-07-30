@@ -6,19 +6,19 @@ const FAQDropdown = () => {
 
   const faqs = [
     {
-      question: "What is .envShare?",
+      question: `What is ${process.env.NEXT_PUBLIC_APP_NAME}?`,
       answer:
-        ".envShare is a secure platform designed to help developers, teams, and organizations manage and synchronize their .env files and sensitive credentials efficiently and securely, eliminating the need to share them via insecure channels.",
+        `${process.env.NEXT_PUBLIC_APP_NAME} is a secure platform designed to help developers, teams, and organizations manage and synchronize their .env files and sensitive credentials efficiently and securely, eliminating the need to share them via insecure channels.`,
     },
     {
-      question: "How does .envShare enhance security?",
+      question: `How does ${process.env.NEXT_PUBLIC_APP_NAME} enhance security?`,
       answer:
-        ".envShare encrypts your environment variables both in transit and at rest. It provides granular access control and integrates with existing authentication systems to ensure only authorized personnel can access sensitive data.",
+        `${process.env.NEXT_PUBLIC_APP_NAME} encrypts your environment variables both in transit and at rest. It provides granular access control and integrates with existing authentication systems to ensure only authorized personnel can access sensitive data.`,
     },
     {
-      question: "Is .envShare suitable for small teams?",
+      question: `Is ${process.env.NEXT_PUBLIC_APP_NAME} suitable for small teams?`,
       answer:
-        "Absolutely! .envShare is designed to scale from individual developers and small teams to large enterprises. Its intuitive interface and robust features make it ideal for teams of any size looking to improve their secret management.",
+        `Absolutely! ${process.env.NEXT_PUBLIC_APP_NAME} is designed to scale from individual developers and small teams to large enterprises. Its intuitive interface and robust features make it ideal for teams of any size looking to improve their secret management.`,
     },
   ];
 
@@ -33,7 +33,7 @@ const FAQDropdown = () => {
           Frequently Asked Questions
         </h2>
         <p className="text-base text-gray-600 dark:text-gray-400 mb-12">
-          Find answers to the most common questions about .envShare.
+          Find answers to the most common questions about {process.env.NEXT_PUBLIC_APP_NAME}.
         </p>
 
         <div className="space-y-4">
