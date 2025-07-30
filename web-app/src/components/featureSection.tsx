@@ -7,10 +7,7 @@ import Link from 'next/link'
 const FeatureSection = () => {
     return (
         <>
-            <div className='relative bg-[#F5F7FA]'>
-            </div>
-
-            <div className='font-inter w-full flex flex-col lg:flex-row justify-center items-center gap-12 lg:gap-10 p-8 md:p-12 lg:p-20 bg-[#00916C]'>
+            <div id="features" className='font-inter w-full flex flex-col lg:flex-row justify-center items-center gap-12 lg:gap-10 p-8 md:p-12 lg:p-20 bg-[#00916C]'>
 
                 <div className='flex items-center justify-center w-full lg:w-1/2'>
                     <Image
