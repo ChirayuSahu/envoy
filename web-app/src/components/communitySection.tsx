@@ -14,7 +14,7 @@ const CommunitySection = () => {
       icon: <Building className="w-8 h-8 text-green-700 dark:text-green-400" />,
       title: "For Organizations",
       description:
-        "Implement organization-wide security policies. Manage access, audit changes, and ensure compliance with ease.",
+        "Implement organization-wide security policies. Manage access and ensure compliance with ease.",
     },
     {
       icon: <Network className="w-8 h-8 text-green-700 dark:text-green-400" />,
@@ -31,7 +31,7 @@ const CommunitySection = () => {
           Manage your entire community in a single system
         </h2>
         <p className="text-base text-gray-600 dark:text-gray-400 mt-4 mb-12">
-          Who is .envShare suitable for?
+          Who is {process.env.NEXT_PUBLIC_APP_NAME} suitable for?
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
