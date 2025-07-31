@@ -76,7 +76,7 @@ const MyAccountPage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            try{
+            try {
                 setLoading(true);
                 const res = await fetch('/api/me');
                 const data = await res.json();
@@ -105,16 +105,18 @@ const MyAccountPage = () => {
 
     return (
         <>
-            <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
+            <div className="bg-[#F0F0F0] dark:bg-[#121212] min-h-screen pb-18 sm:pb-6 p-6 grid grid-cols-1 sm:grid-cols-5 xl:grid-cols-12 gap-6">
                 <SidebarComp />
-                <div className="sm:col-span-5 lg:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-y-auto">
+                <div className="col-span-1 sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6">
                     <div className="flex items-center gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                         <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                             <User className="w-6 h-6 text-[#00916C]" />
                         </div>
                         <div>
                             <h1 className="font-bold text-xl text-black dark:text-white">Account Information</h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Manage your profile, workspace, and security settings.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Manage your profile, workspace, and security settings.
+                            </p>
                         </div>
                     </div>
 
@@ -122,7 +124,7 @@ const MyAccountPage = () => {
                         <AccountPageSkeleton />
                     ) : user && (
                         <div className="flex-grow space-y-6">
-                            <div className="bg-white dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div className="bg-white dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-x-auto">
                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Profile Details</h2>
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <InfoRow icon={<User className="w-5 h-5 text-[#00916C]" />} label="Name" value={user.name} />
@@ -141,28 +143,6 @@ const MyAccountPage = () => {
 
                             <div className="bg-white mb-12 sm:mb-0 dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Security</h2>
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                    <div className="bg-gray-100 dark:bg-gray-800 p-2.5 rounded-md flex-shrink-0">
-                                        <KeyRound className="w-5 h-5 text-[#00916C]" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">Password</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            {user.provider === 'google'
-                                                ? 'You are signed in with Google. Manage your password through your Google account.'
-                                                : 'Change your password regularly to keep your account secure.'
-                                            }
-                                        </p>
-                                    </div>
-                                    <div className="sm:ml-auto flex-shrink-0 mt-4 sm:mt-0">
-                                        <Button
-                                            disabled={user.provider === 'google'}
-                                            variant='outline'
-                                        >
-                                            Change Password
-                                        </Button>
-                                    </div>
-                                </div>
                                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="bg-gray-100 dark:bg-gray-800 p-2.5 rounded-md flex-shrink-0">
                                         <ShieldCheck className="w-5 h-5 text-[#00916C]" />
@@ -170,7 +150,8 @@ const MyAccountPage = () => {
                                     <div>
                                         <h3 className="font-semibold text-gray-800 dark:text-gray-200">Authentication Provider</h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            Your account is securely managed by <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{user.provider}</span>.
+                                            Your account is securely managed by{" "}
+                                            <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{user.provider}</span>.
                                         </p>
                                     </div>
                                 </div>
@@ -179,6 +160,7 @@ const MyAccountPage = () => {
                     )}
                 </div>
             </div>
+
         </>
     )
 }
