@@ -39,7 +39,7 @@ export default function RootLayout({
           enableSystem
         >
           <AuthSessionProvider>
-            <Toaster position="top-right" />
+            <Toaster position="bottom-right" />
             {children}
           </AuthSessionProvider>
         </ThemeProvider>
