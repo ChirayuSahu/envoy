@@ -86,7 +86,6 @@ const GroupPage = () => {
 
 
     const handleChangeVisibility = async () => {
-        setLoading(true);
         try {
             const res = await fetch(`/api/group/visibility`, {
                 method: 'POST',
@@ -114,7 +113,6 @@ const GroupPage = () => {
         } catch (err) {
             toast.error('Something went wrong while changing visibility.');
         } finally {
-            setLoading(false);
         }
     }
 
@@ -238,7 +236,6 @@ const GroupPage = () => {
 
     const getMembers = async () => {
         try {
-            setLoading(true);
             const res = await fetch(`/api/group/member/get?token=${token}`, {
                 method: 'GET',
                 headers: {
@@ -259,12 +256,10 @@ const GroupPage = () => {
         } catch (err) {
             toast.error('Error fetching members.');
         } finally {
-            setLoading(false);
         }
     }
 
     const handleAddMember = async () => {
-        setLoading(true);
         try {
             const res = await fetch('/api/group/member/add', {
                 method: 'POST',
@@ -291,14 +286,12 @@ const GroupPage = () => {
         } catch (err) {
             toast.error('Error adding member.');
         } finally {
-            setLoading(false);
             setDialogOpen(false);
             setNewMemberEmail('');
         }
     }
 
     const handleRemoveMember = async (memberEmail: string) => {
-        setLoading(true);
         try {
             const res = await fetch(`/api/group/member/remove`, {
                 method: 'POST',
@@ -323,8 +316,6 @@ const GroupPage = () => {
 
         } catch (err) {
             toast.error('Error removing member.');
-        } finally {
-            setLoading(false);
         }
     }
 
