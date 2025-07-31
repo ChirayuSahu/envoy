@@ -93,7 +93,7 @@ function GroupContentInner() {
                 <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
                     <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C]">
                         <Button onClick={handleCopyEnvs} className="flex items-center justify-center" variant="modern">
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-5 h-5" />
                         </Button>
                         <Button
                             onClick={() => {
@@ -102,7 +102,7 @@ function GroupContentInner() {
                             className="flex items-center justify-center"
                             variant="modern"
                         >
-                            {isViewing ? <EyeOffIcon className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {isViewing ? <EyeOffIcon className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </Button>
                     </div>
 
