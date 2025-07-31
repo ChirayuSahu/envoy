@@ -1,14 +1,15 @@
 "use client"
 
 import React, { useState } from 'react';
-import { LogOut, LayoutGrid, Users, User } from 'lucide-react';
+import { LogOut, LayoutGrid, Users, User, ArrowLeft } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import DialogBox from '../dialogBox';
 import Link from 'next/link';
-import { ThemeToggleButton } from '../ToggleThemeButton';
+import { useRouter } from 'next/navigation';
 
 const SidebarComp = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const router = useRouter();
 
   const handleLogout = async () => {
     setShowLogoutConfirm(false);
@@ -41,6 +42,13 @@ const SidebarComp = () => {
 
         <div className='flex flex-col gap-2'>
           {/* <ThemeToggleButton /> */}
+          <button
+            onClick={() => router.back()}
+            className="text-white w-full flex items-center gap-3 p-2 rounded-md text-sm xl:text-base hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <ArrowLeft />
+            <span>Back</span>
+          </button>
           <button
             onClick={() => setShowLogoutConfirm(true)}
             className="text-white w-full flex items-center gap-3 p-2 rounded-md text-sm xl:text-base hover:bg-white/10 transition-colors cursor-pointer"
