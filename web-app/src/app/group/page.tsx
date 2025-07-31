@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { decrypt } from '@/utils/encryption';
 import Button from '@/components/button';
-import { Copy, Eye, EyeOffIcon, Share2 } from 'lucide-react';
+import { Copy, Eye, EyeOffIcon, Share2, AlertTriangle, Link, Home } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
 
 function GroupContentInner() {
@@ -45,7 +45,7 @@ function GroupContentInner() {
                     envs: decryptedEnvs,
                 });
             } catch (err: any) {
-                toast.error(err.message || "Error fetching group.");
+                toast.error("Error fetching group.");
                 setGroup(null);
             } finally {
                 setLoading(false);
@@ -70,9 +70,15 @@ function GroupContentInner() {
 
     if (!group) {
         return (
-            <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500 dark:text-gray-400">
-                    No group found with this token or an error occurred.
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-full">
+                    <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400" />
+                </div>
+                <h2 className="mt-6 text-xl font-bold text-gray-800 dark:text-gray-200">
+                    Group Not Found
+                </h2>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                    The link may be broken, or the group may have been deleted. Please check the URL and try again.
                 </p>
             </div>
         );
