@@ -88,7 +88,7 @@ const SharedGroupPage = () => {
 
     return (
         <>
-            <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen pb-16 lg:pb-6 p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
+            <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen pb-18 sm:pb-6 p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
                 <SidebarComp />
                 <div className="sm:col-span-5 lg:col-span-4 xl:col-span-10 p-2 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
                     {group?.name && (
