@@ -7,7 +7,7 @@ import { decrypt } from '@/utils/encryption';
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Eye, EyeOffIcon } from 'lucide-react';
+import { Copy, Eye, EyeOffIcon, AlertTriangle, Share2 } from 'lucide-react';
 
 const SharedGroupPage = () => {
 
@@ -92,26 +92,35 @@ const SharedGroupPage = () => {
                 <SidebarComp />
                 <div className="sm:col-span-5 lg:col-span-4 xl:col-span-10 p-2 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
                     {group?.name && (
-                        <div>
-                            <h1 className="font-bold text-2xl text-[#00916C] dark:text-[#00916C]">
-                                {group?.name} - {new Date(group?.createdAt)
-                                    .toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "long",
-                                        year: "numeric",
-                                    })
-                                    .replace(" ", ", ")}
-                            </h1>
-                            <p className="text-gray-500 dark:text-gray-400">
-                                Shared by: {group?.owner?.email || 'Unknown'}
-                            </p>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
+                                    <Share2 className="w-6 h-6 text-[#00916C]" />
+                                </div>
+                                <div>
+                                    <h1 className="font-bold text-xl text-black dark:text-white">{group.name}</h1>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Shared by <span className="font-semibold text-black dark:text-white">{group?.owner?.email || 'Unknown'}</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
                         {!group?.envs && (
-                            <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
-                                No groups found with this token.
+                            <div className="col-span-full row-span-full text-center text-gray-500 dark:text-gray-400">
+                                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                                    <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-full">
+                                        <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400" />
+                                    </div>
+                                    <h2 className="mt-6 text-xl font-bold text-gray-800 dark:text-gray-200">
+                                        Group Not Found
+                                    </h2>
+                                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                                        The link may be broken, or the group may have been deleted. Please check the URL and try again.
+                                    </p>
+                                </div>
                             </div>
                         )}
 
