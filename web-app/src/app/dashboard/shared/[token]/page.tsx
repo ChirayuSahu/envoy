@@ -129,9 +129,11 @@ const SharedGroupPage = () => {
                                         <Button
                                             onClick={() => {
                                                 setIsViewing(() => !isViewing);
-                                                setTimeout(() => {
-                                                    setIsViewing(false);
-                                                }, 5000);
+                                                if (isViewing) {
+                                                    setTimeout(() => {
+                                                        setIsViewing(false);
+                                                    }, 5000);
+                                                }
                                             }}
                                             className="flex items-center justify-center"
                                             variant='modern'
