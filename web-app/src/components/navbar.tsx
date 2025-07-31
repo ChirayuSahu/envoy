@@ -29,14 +29,14 @@ const Navbar = () => {
                     className='text-white text-md lg:text-xl font-bold font-inter cursor-pointer'
                     onClick={() => router.push('/')}
                 >
-                    .envShare
+                    {process.env.NEXT_PUBLIC_APP_NAME}
                 </div>
 
                 <div className='hidden md:flex items-center justify-between gap-2'>
                     {navLinks.map((link) => (
                         <Button
                             key={link.href}
-                            variant="outline"
+                            variant="modern"
                             className='text-white dark:text-white border-none'
                             onClick={() => router.push(link.href)}
                         >
@@ -79,7 +79,7 @@ const Navbar = () => {
                         {navLinks.map((link) => (
                             <Button
                                 key={link.href}
-                                variant="outline"
+                                variant="modern"
                                 className='text-white dark:text-white border-none w-full'
                                 onClick={() => handleLinkClick(link.href)}
                             >
