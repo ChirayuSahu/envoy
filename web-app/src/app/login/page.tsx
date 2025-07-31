@@ -38,8 +38,6 @@ const LoginPage = () => {
     <div className="flex items-center justify-center w-full min-h-screen bg-[#00916C] dark:bg-[#121212]">
       <div className="flex flex-col gap-5 items-center justify-between bg-[#FAFAFA] dark:bg-[#1a1a1a] text-black dark:text-white p-10 m-8 shadow-2xl rounded-2xl w-full max-w-md">
         <h1 className="text-2xl md:text-4xl font-black">Login</h1>
-
-        {/* Suspense wrapper for client component */}
         <Suspense fallback={null}>
           <LoginError />
         </Suspense>

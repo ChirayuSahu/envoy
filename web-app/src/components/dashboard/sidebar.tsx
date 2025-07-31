@@ -22,7 +22,7 @@ const SidebarComp = () => {
 
   return (
     <>
-      <aside className="hidden font-inter sm:col-span-1 xl:col-span-2 bg-[#00916C] dark:bg-[#007a5a] p-4 md:p-6 xl:p-8 h-full w-full rounded-2xl sm:flex flex-col justify-between shadow-lg">
+      <aside className="hidden font-inter sm:col-span-1 xl:col-span-2 bg-[#00916C] dark:bg-[#007a5a] p-4 md:p-6 xl:p-8 h-full w-full rounded-2xl lg:flex flex-col justify-between shadow-lg">
         <div className="flex flex-col items-center gap-6 md:gap-8 xl:gap-12 flex-grow">
           <h1 className="text-white text-xl xl:text-2xl font-bold mb-4">{process.env.NEXT_PUBLIC_APP_NAME}</h1>
 
@@ -50,7 +50,7 @@ const SidebarComp = () => {
         </div>
       </aside>
 
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#121212]/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#121212]/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 z-50">
         <div className="flex justify-around items-center h-16">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href}>

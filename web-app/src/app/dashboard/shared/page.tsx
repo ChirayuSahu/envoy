@@ -45,7 +45,7 @@ const SharedGroups = () => {
       <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
         <SidebarComp />
         <div className="sm:col-span-5 lg:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3">
               <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
                 <Share2 className="w-6 h-6 text-[#00916C]" />
@@ -77,7 +77,7 @@ const SharedGroups = () => {
               ))
             )}
 
-            {sharedGroups && sharedGroups.length === 0 && (
+            {sharedGroups && sharedGroups.length === 0 && !loading&& (
               <div className="col-span-full flex flex-col items-center justify-center text-center py-16">
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full">
                   <FolderX className="w-12 h-12 text-gray-400 dark:text-gray-600" />
@@ -123,7 +123,9 @@ const SharedGroups = () => {
                         })}
                       </span>
                     </div>
-                    <ArrowRight className="absolute top-5 right-5 h-5 w-5 text-gray-400 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+                    <div className='absolute top-5 right-5 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'>
+                    <ArrowRight className="h-5 w-5" />
+                    </div>
                   </div>
                 </Link>
               ))
