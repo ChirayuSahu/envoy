@@ -98,11 +98,6 @@ function GroupContentInner() {
                         <Button
                             onClick={() => {
                                 setIsViewing((prev) => !prev);
-                                if (isViewing) {
-                                    setTimeout(() => {
-                                        setIsViewing(false);
-                                    }, 5000);
-                                }
                             }}
                             className="flex items-center justify-center"
                             variant="modern"
