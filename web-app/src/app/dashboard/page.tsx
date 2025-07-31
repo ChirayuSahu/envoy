@@ -114,7 +114,7 @@ const DashboardPage = () => {
               </div>
               <div>
                 <h1 className="font-bold text-xl text-black dark:text-white">Workspaces</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Your collaborative environments for managing projects.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Your collaborative environments.</p>
               </div>
             </div>
             <button

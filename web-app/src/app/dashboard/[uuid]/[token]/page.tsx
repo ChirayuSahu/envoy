@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, PencilOff, Lock, LockOpen, Link } from 'lucide-react';
+import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, Lock, LockOpen, Users, LinkIcon } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
@@ -357,31 +357,50 @@ const GroupPage = () => {
 
     return (
         <>
-            <div className='bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
+            <div className='bg-[#F0F0F0] dark:bg-[#121212] h-screen pb-16 lg:pb-6 p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
                 <SidebarComp />
 
                 <div className='sm:col-span-5 lg:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden'>
                     {group && (
-                        <div className='flex items-center justify-between w-full'>
-                            <h1 className='font-bold text-lg md:text-2xl text-[#00916C] dark:text-white mr-10'>
-                                {group?.name} - {new Date(group?.createdAt)
-                                    .toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "long",
-                                        year: "numeric",
-                                    })
-                                    .replace(" ", ", ")}
-                            </h1>
-                            <div className='flex items-center gap-3'>
-                                {group?.isPublic && (
-                                    <Button variant='modern' onClick={handleCopyLink} className='flex gap-3 items-center justify-center'>
-                                        <Link className='w-5 h-5' />
-                                    </Button>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
+                                    <Users className="w-6 h-6 text-[#00916C]" />
+                                </div>
+                                <div>
+                                    <h1 className="font-bold text-xl text-black dark:text-white">{group.name}</h1>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Created on {new Date(group.createdAt).toLocaleDateString("en-GB", {
+                                            day: "numeric",
+                                            month: "long",
+                                            year: "numeric",
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Action Buttons */}
+                            <div className="flex items-center gap-2 mt-4 sm:mt-0 flex-shrink-0">
+                                {group.isPublic && (
+                                    <button
+                                        onClick={handleCopyLink}
+                                        title="Copy public link"
+                                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                                    >
+                                        <LinkIcon className="w-5 h-5" />
+                                    </button>
                                 )}
-                                <Button variant='modern' onClick={handleChangeVisibility} className={`flex gap-3 items-center justify-center ${group.isPublic ? 'dark:bg-[#00916C]/20 text-[#00916C]' : 'light:bg-gray-500 text-[#00916C]'}`}>
-                                    {group?.isPublic ? 'Public' : ''}
-                                    {!group?.isPublic ? <Lock className='w-4 h-4' /> : <LockOpen className='w-4 h-4' />}
-                                </Button>
+                                <button
+                                    onClick={handleChangeVisibility}
+                                    title={group.isPublic ? "Change to Private" : "Change to Public"}
+                                    className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 active:scale-95 ${group.isPublic
+                                        ? 'bg-[#00916C]/10 text-[#00916C] hover:bg-[#00916C]/20'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                        }`}
+                                >
+                                    {group.isPublic ? <LockOpen className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                                    <span className="hidden md:inline">{group.isPublic ? 'Public' : 'Private'}</span>
+                                </button>
                             </div>
                         </div>
                     )}

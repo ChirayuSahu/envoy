@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { decrypt } from '@/utils/encryption';
 import Button from '@/components/button';
-import { Copy, Eye, EyeOffIcon } from 'lucide-react';
+import { Copy, Eye, EyeOffIcon, Share2 } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
 
 function GroupContentInner() {
@@ -80,13 +80,18 @@ function GroupContentInner() {
 
     return (
         <div className="sm:col-span-4 xl:col-span-10 p-6 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
-            <div>
-                <h1 className="font-bold text-2xl text-[#00916C] dark:text-[#00916C]">
-                    {group.name} - {new Date(group.createdAt).toLocaleDateString()}
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400">
-                    Shared by: {group.owner?.email || 'Unknown'}
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-4">
+                    <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
+                        <Share2 className="w-6 h-6 text-[#00916C]" />
+                    </div>
+                    <div>
+                        <h1 className="font-bold text-xl text-black dark:text-white">{group.name}</h1>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Shared by <span className="font-semibold text-black dark:text-white">{group?.owner?.email || 'Unknown'}</span>
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">

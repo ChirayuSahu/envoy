@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import { LogOut, LayoutGrid, Users } from 'lucide-react';
+import { LogOut, LayoutGrid, Users, User } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import DialogBox from '../dialogBox';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ const SidebarComp = () => {
   const navItems = [
     { href: "/dashboard", icon: <LayoutGrid className="w-5 h-5" />, label: "Workspaces" },
     { href: "/dashboard/shared", icon: <Users className="w-5 h-5" />, label: "Shared" },
+    { href: "/dashboard/account", icon: <User className="w-5 h-5" />, label: "My Account" },
   ];
 
   return (
