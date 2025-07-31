@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import SidebarComp from '@/components/dashboard/sidebar'
 import { toast } from 'sonner'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, FolderKanban, Layers, CalendarDays, Share2, FolderX } from 'lucide-react'
 import Link from 'next/link'
 import LoadingPage from '@/components/misc/loadingPage'
 
@@ -39,60 +39,95 @@ const SharedGroups = () => {
     fetchSharedGroups();
   }, []);
 
-  if (loading) {
-    return <LoadingPage />;
-  }
-
 
   return (
     <>
       <div className="bg-[#F0F0F0] dark:bg-[#121212] h-screen p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6">
         <SidebarComp />
-        <div className="sm:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
-          <div>
-            <h1 className="font-bold text-2xl text-black dark:text-white">Shared Groups</h1>
+        <div className="sm:col-span-5 lg:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+                <Share2 className="w-6 h-6 text-[#00916C]" />
+              </div>
+              <div>
+                <h1 className="font-bold text-xl text-black dark:text-white">
+                  Shared Groups
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Groups that have been shared with you.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto">
-            {!sharedGroups && (
-              <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
-                No workspace found with this token.
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {loading && (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white dark:bg-[#1f1f1f] rounded-xl border border-gray-200 dark:border-gray-800 p-5 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                    <div className="w-2/3 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    <div className="w-1/2 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {sharedGroups && sharedGroups.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center text-center py-16">
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full">
+                  <FolderX className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+                </div>
+                <h3 className="mt-5 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  No Shared Groups Found
+                </h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  It seems there are no groups associated with this token.
+                </p>
               </div>
             )}
 
-            {sharedGroups.map((group: any) => (
-              <div
-                key={group._id}
-                className="flex gap-2 items-end justify-between bg-white dark:bg-[#1e1e1e] p-4 rounded-md hover:rounded-xl transition-all duration-300 border-2 border-transparent hover:border-[#00916C] dark:hover:border-[#00916C]"
-              >
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#00916C] transition-colors duration-200">
-                    {group.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Envs: {group.envs.length}</p>
-                  <div className="mt-2">
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      Created on:{" "}
-                      {new Date(group.createdAt)
-                        .toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })
-                        .replace(" ", ", ")}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 justify-center items-center">
-                  <Link href={`/dashboard/shared/${group.token}`}>
-                    <div className="self-end p-1 hover:bg-[#00916C] text-[#00916C] hover:text-white rounded-sm transition-all duration-200 dark:hover:bg-[#00916C] dark:text-[#00916C] dark:hover:text-white">
-                      <ArrowRight className="w-5 h-5" />
+            {sharedGroups && sharedGroups.length > 0 && (
+              sharedGroups.map((group: any) => (
+                <Link
+                  href={`/dashboard/shared/${group.token}`}
+                  key={group._id}
+                  className="group relative block bg-white dark:bg-[#1f1f1f] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                >
+                  <div className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gray-100 dark:bg-gray-800 p-2.5 rounded-md">
+                        <FolderKanban className="w-5 h-5 text-[#00916C]" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-base text-gray-900 dark:text-gray-100">
+                          {group.name}
+                        </h3>
+                      </div>
                     </div>
-                  </Link>
-                </div>
-              </div>
-            ))}
+                    <div className="flex items-center gap-x-4 text-xs text-gray-500 dark:text-gray-400 mt-4">
+                      <span className="flex items-center gap-1.5">
+                        <Layers className="w-4 h-4" />
+                        {group.envs.length} Variables
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <CalendarDays className="w-4 h-4" />
+                        {new Date(group.createdAt).toLocaleDateString("en-GB", {
+                          month: "short",
+                          day: "numeric",
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <ArrowRight className="absolute top-5 right-5 h-5 w-5 text-gray-400 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </div>
