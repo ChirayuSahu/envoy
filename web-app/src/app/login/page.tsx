@@ -41,8 +41,7 @@ const LoginPage = () => {
         <Suspense fallback={null}>
           <LoginError />
         </Suspense>
-
-        <form className="flex flex-col gap-5 w-full" onSubmit={handleSignIn}>
+        {/* <form className="flex flex-col gap-5 w-full" onSubmit={handleSignIn}>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold">Username</label>
             <input
@@ -80,7 +79,7 @@ const LoginPage = () => {
           >
             {loading ? "Logging in..." : "Submit"}
           </button>
-        </form>
+        </form> */}
 
         <button
           type="button"
@@ -97,12 +96,12 @@ const LoginPage = () => {
           {loading ? "Please wait..." : "Sign in with Google"}
         </button>
 
-        <label className="text-sm mt-2 text-black dark:text-white">
+        {/* <label className="text-sm mt-2 text-black dark:text-white">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-[#00916C] underline dark:text-[#00b388]">
             Sign up
           </Link>
-        </label>
+        </label> */}
       </div>
     </div>
 

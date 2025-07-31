@@ -52,14 +52,6 @@ const Navbar = () => {
                     >
                         {isAuthenticated ? "Dashboard" : "Login"}
                     </Button>
-                    {!isAuthenticated && (
-                        <Button
-                            onClick={() => router.push("/signup")}
-                            variant="primary"
-                        >
-                            Sign Up
-                        </Button>
-                    )}
                 </div>
 
                 <div className='md:hidden'>
@@ -96,15 +88,6 @@ const Navbar = () => {
                         >
                             {isAuthenticated ? "Dashboard" : "Login"}
                         </Button>
-                        {!isAuthenticated && (
-                            <Button
-                                onClick={() => handleLinkClick("/signup")}
-                                variant="primary"
-                                className="w-full"
-                            >
-                                Sign Up
-                            </Button>
-                        )}
                     </div>
                 </div>
             )}

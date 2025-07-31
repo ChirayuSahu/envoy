@@ -28,14 +28,6 @@ const HeroSection = () => {
                                 {isAuthenticated ? "Dashboard" : "Get Started"}
                             </Button>
                         </Link>
-                        
-                        {!isAuthenticated && (
-                            <Link href={"/signup"}>
-                                <Button className='rounded-full px-6 py-3' variant='primary'>
-                                    Sign Up
-                                </Button>
-                            </Link>
-                        )}
                     </div>
                 </div>
 

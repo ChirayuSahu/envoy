@@ -24,32 +24,34 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Too many requests. Please try again later." }, { status: 429 });
     }
 
-    try {
+    return NextResponse.json({ message: "Please use Google Provider for authentication." }, { status: 400 });
 
-        await connectMongo();
+    // try {
 
-        const existingUser = await User.findOne(sanitizeFilter({ $or: [{ email }, { username }] }));
+    //     await connectMongo();
 
-        if (existingUser) {
-            return NextResponse.json({ message: "User with this email or username already exists." }, { status: 400 });
-        }
+    //     const existingUser = await User.findOne(sanitizeFilter({ $or: [{ email }, { username }] }));
 
-        const hashedPassword = await hashPassword(password);
+    //     if (existingUser) {
+    //         return NextResponse.json({ message: "User with this email or username already exists." }, { status: 400 });
+    //     }
 
-        const user = await User.create(sanitizeFilter({ name, email, username, password: hashedPassword }));
+    //     const hashedPassword = await hashPassword(password);
 
-        const userObj = user.toObject();
-        delete userObj.password;
+    //     const user = await User.create(sanitizeFilter({ name, email, username, password: hashedPassword }));
 
-        return NextResponse.json({ message: "User registered successfully.", user: userObj }, { status: 201 });
+    //     const userObj = user.toObject();
+    //     delete userObj.password;
 
-    } catch (error) {
+    //     return NextResponse.json({ message: "User registered successfully.", user: userObj }, { status: 201 });
+
+    // } catch (error) {
         
-        if (error instanceof Error) {
-            return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
-        }
+    //     if (error instanceof Error) {
+    //         return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
+    //     }
 
-        return NextResponse.json({ message: "An unknown error occurred." }, { status: 500 });
-    }
+    //     return NextResponse.json({ message: "An unknown error occurred." }, { status: 500 });
+    // }
 
 }
