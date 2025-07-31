@@ -118,24 +118,25 @@ const SharedGroupPage = () => {
                         {group?.envs && (
                             <>
                                 <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
-                                    <div className="flex justify-start items-center gap-4 p-4 border-b-2 border-[#00916C]">
+                                    <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C]">
                                         <Button
                                             onClick={handleCopyEnvs}
-                                            className="w-full flex items-center justify-center"
+                                            className="flex items-center justify-center"
+                                            variant='modern'
                                         >
-                                            <Copy />
+                                            <Copy className='w-5 h-5' />
                                         </Button>
                                         <Button
                                             onClick={() => {
-                                                setIsViewing(true);
+                                                setIsViewing(() => !isViewing);
                                                 setTimeout(() => {
                                                     setIsViewing(false);
-                                                    toast.info("Sensitive values hidden.");
                                                 }, 5000);
                                             }}
-                                            className="w-full flex items-center justify-center"
+                                            className="flex items-center justify-center"
+                                            variant='modern'
                                         >
-                                            {isViewing ? <EyeOffIcon /> : <Eye />}
+                                            {isViewing ? <EyeOffIcon className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
                                         </Button>
                                     </div>
 
@@ -149,12 +150,12 @@ const SharedGroupPage = () => {
                                                     value={env?.key}
                                                     readOnly
                                                 />
-                                                <span className="font-black">:</span>
+                                                <span className="font-black">=</span>
                                                 <input
-                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] dark:text-white p-2 rounded-md focus:outline-none"
-                                                    type="text"
+                                                    className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                                                    type={isViewing ? 'text' : 'password'}
                                                     placeholder="Value"
-                                                    value={isViewing ? env?.value : '••••••••'}
+                                                    value={env?.value ?? ""}
                                                     readOnly
                                                 />
                                             </div>
