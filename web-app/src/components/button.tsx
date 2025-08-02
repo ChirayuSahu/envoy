@@ -25,7 +25,7 @@ const Button = ({
     outline:
       "border border-[#00916C] text-[#00916C] bg-transparent hover:bg-[#00916C] hover:text-white focus-visible:ring-[#00916C] dark:border-[#00916C] dark:text-[#5fc9a9] dark:hover:bg-[#00916C]",
     danger:
-      "bg-red-600 text-white hover:bg-red-700/10 focus-visible:ring-red-500 dark:bg-red-700/0 dark:hover:bg-red-800/90",
+      "bg-red-600/0 text-red-600 hover:bg-red-700/20 focus-visible:ring-red-500 dark:bg-red-700/0 dark:hover:bg-red-800/20",
     modern:
       "p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors",
   };
