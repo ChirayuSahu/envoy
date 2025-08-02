@@ -79,7 +79,7 @@ const DialogBox: React.FC<DialogBoxProps> = ({
                         <Button
                             onClick={onClose}
                             disabled={loading}
-                            variant="outline"
+                            variant="modern"
                             className="w-full"
                         >
                             Cancel

@@ -104,7 +104,7 @@ const DashboardPage = () => {
       setWorkspaces(updatedData.workspaces);
       toast.success(`Workspace deleted successfully.`);
     } catch {
-      toast.error("")
+      toast.error("Unexpected error occurred while deleting workspace.")
     } finally {
       setLoading(false);
       workspace.current.name = "";
@@ -300,6 +300,7 @@ const DashboardPage = () => {
           }}
           loading={loading}
           actionLabel="Delete"
+          variant='danger'
         >
           <p className="text-sm text-red-600 dark:text-red-400">
             Are you sure you want to delete this workspace? This action cannot be undone.
