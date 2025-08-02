@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, Lock, LockOpen, Users, LinkIcon, AlertTriangle } from 'lucide-react';
+import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, Lock, LockOpen, Users, LinkIcon, AlertTriangle, Globe } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
@@ -356,7 +356,7 @@ const GroupPage = () => {
 
     return (
         <>
-            <div className='bg-[#F0F0F0] dark:bg-[#121212] h-screen pb-18 sm:pb-6 p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
+            <div className='bg-[#F0F0F0] dark:bg-[#121212] h-screen pb-18 lg:pb-6 p-6 grid sm:grid-cols-5 xl:grid-cols-12 gap-6'>
                 <SidebarComp />
 
                 <div className='sm:col-span-5 lg:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-hidden'>
@@ -461,7 +461,7 @@ const GroupPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar`}>
+                                    <div className={`flex-1 overflow-y-auto p-4`}>
                                         {group.envs?.length > 0 ? (
                                             <div className="space-y-4 font-pt-mono text-xs sm:text-sm">
                                                 {group.envs.map((env: any, index: number) => (
@@ -486,7 +486,7 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 lg:row-span-6 xl:col-span-2 rounded-lg hover:rounded-xl border border-gray-200 dark:border-gray-800 transition-all duration-300 row-span-2 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 lg:row-span-6 xl:col-span-2 rounded-lg hover:rounded-xl border border-gray-200 dark:border-gray-800 transition-all duration-300 row-span-2 h-full flex flex-col p-4 gap-3 overflow-y-auto'>
                                     <h2 className="text-lg font-semibold text-[#00916C] dark:text-white mb-2">Members</h2>
 
                                     <button
@@ -514,6 +514,19 @@ const GroupPage = () => {
                                                     </div>
                                                 </div>
                                             ))}
+                                        </>
+                                    )}
+                                    {group?.isPublic && !loading2 && (
+                                        <>
+                                            <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-900/50 dark:bg-[#00916C]/20 dark:text-green-200">
+                                                <Globe className="h-6 w-6 flex-shrink-0" />
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold">This is a public group</span>
+                                                    <span className="text-green-700/80 dark:text-green-200/80">
+                                                        It's visible to anyone with the link.
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </>
                                     )}
 

@@ -117,7 +117,7 @@ function GroupContentInner() {
                         </Button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-gray-200">
+                    <div className="flex-1 overflow-y-auto p-4 text-black dark:text-gray-200">
                         <div className="space-y-4 font-pt-mono text-xs sm:text-sm">
                             {group.envs.map((env: any, index: number) => (
                                 <div key={env.id || index} className="flex flex-col sm:flex-row sm:items-center gap-2">

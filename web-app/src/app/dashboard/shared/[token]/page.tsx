@@ -146,7 +146,7 @@ const SharedGroupPage = () => {
                                         </Button>
                                     </div>
 
-                                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-black dark:text-gray-200">
+                                    <div className="flex-1 overflow-y-auto p-4 text-black dark:text-gray-200">
                                         {group?.envs?.map((env: any, index: number) => (
                                             <div key={index} className="font-pt-mono text-xs sm:text-sm flex items-center gap-2 mb-2">
                                                 <input
