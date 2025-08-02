@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import SidebarComp from '@/components/dashboard/sidebar';
 import LoadingPage from '@/components/misc/loadingPage';
 import Button from '@/components/button';
-import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, Lock, LockOpen, Users, LinkIcon } from 'lucide-react';
+import { Copy, Plus, Trash2, Pencil, Save, PlusCircle, Clipboard, Lock, LockOpen, Users, LinkIcon, AlertTriangle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import DialogBox from '@/components/dialogBox';
@@ -410,8 +410,18 @@ const GroupPage = () => {
                     <div className='grid grid-cols-1 grid-rows-2 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto'>
 
                         {!group?.envs && (
-                            <div className="col-span-4 text-center text-gray-500 dark:text-gray-400">
-                                No groups found with this token.
+                            <div className="col-span-full row-span-full text-center text-gray-500 dark:text-gray-400">
+                                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                                    <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-full">
+                                        <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400" />
+                                    </div>
+                                    <h2 className="mt-6 text-xl font-bold text-gray-800 dark:text-gray-200">
+                                        Group Not Found
+                                    </h2>
+                                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                                        The link may be broken, or the group may have been deleted. Please check the URL and try again.
+                                    </p>
+                                </div>
                             </div>
                         )}
 
