@@ -5,8 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { decrypt } from '@/utils/encryption';
 import Button from '@/components/button';
-import { Copy, Eye, EyeOffIcon, Share2, AlertTriangle, Link, Home } from 'lucide-react';
+import { Copy, Eye, EyeOffIcon, Share2, AlertTriangle } from 'lucide-react';
 import LoadingPage from '@/components/misc/loadingPage';
+import Navbar from '@/components/navbar';
 
 function GroupContentInner() {
     const searchParams = useSearchParams();
@@ -85,64 +86,67 @@ function GroupContentInner() {
     }
 
     return (
-        <div className="sm:col-span-4 xl:col-span-10 p-6 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-4">
-                    <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
-                        <Share2 className="w-6 h-6 text-[#00916C]" />
-                    </div>
-                    <div>
-                        <h1 className="font-bold text-xl text-black dark:text-white">{group.name}</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Shared by <span className="font-semibold text-black dark:text-white">{group?.owner?.email || 'Unknown'}</span>
-                        </p>
+        <>
+            <Navbar />
+            <div className="sm:col-span-4 xl:col-span-10 p-6 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
+                            <Share2 className="w-6 h-6 text-[#00916C]" />
+                        </div>
+                        <div>
+                            <h1 className="font-bold text-xl text-black dark:text-white">{group.name}</h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Shared by <span className="font-semibold text-black dark:text-white">{group?.owner?.email || 'Unknown'}</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
-                <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
-                    <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C]">
-                        <Button onClick={handleCopyEnvs} className="flex items-center justify-center" variant="modern">
-                            <Copy className="w-5 h-5" />
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                setIsViewing((prev) => !prev);
-                            }}
-                            className="flex items-center justify-center"
-                            variant="modern"
-                        >
-                            {isViewing ? <EyeOffIcon className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </Button>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 xl:grid-cols-5 sm:grid-rows-4 xl:grid-rows-6 gap-4 h-full overflow-y-auto">
+                    <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
+                        <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C]">
+                            <Button onClick={handleCopyEnvs} className="flex items-center justify-center" variant="modern">
+                                <Copy className="w-5 h-5" />
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setIsViewing((prev) => !prev);
+                                }}
+                                className="flex items-center justify-center"
+                                variant="modern"
+                            >
+                                {isViewing ? <EyeOffIcon className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </Button>
+                        </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 text-black dark:text-gray-200">
-                        <div className="space-y-4 font-pt-mono text-xs sm:text-sm">
-                            {group.envs.map((env: any, index: number) => (
-                                <div key={env.id || index} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                    <input
-                                        className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
-                                        type="text"
-                                        placeholder="Key"
-                                        value={env?.key ?? ""}
-                                        readOnly
-                                    />
-                                    <span className="hidden sm:block text-black dark:text-white font-semibold text-lg">=</span>
-                                    <input
-                                        className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
-                                        type={isViewing ? 'text' : 'password'}
-                                        placeholder="Value"
-                                        value={env?.value ?? ""}
-                                        readOnly
-                                    />
-                                </div>
-                            ))}
+                        <div className="flex-1 overflow-y-auto p-4 text-black dark:text-gray-200">
+                            <div className="space-y-4 font-pt-mono text-xs sm:text-sm">
+                                {group.envs.map((env: any, index: number) => (
+                                    <div key={env.id || index} className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <input
+                                            className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                                            type="text"
+                                            placeholder="Key"
+                                            value={env?.key ?? ""}
+                                            readOnly
+                                        />
+                                        <span className="hidden sm:block text-black dark:text-white font-semibold text-lg">=</span>
+                                        <input
+                                            className="w-full h-10 bg-[#F0F0F0] dark:bg-[#2b2b2b] text-black dark:text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00916C] transition"
+                                            type={isViewing ? 'text' : 'password'}
+                                            placeholder="Value"
+                                            value={env?.value ?? ""}
+                                            readOnly
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 
