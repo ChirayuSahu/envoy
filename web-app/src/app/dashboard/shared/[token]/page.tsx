@@ -126,8 +126,8 @@ const SharedGroupPage = () => {
 
                         {group?.envs && (
                             <>
-                                <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border-2 border-[#00916C] hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
-                                    <div className="flex justify-end items-center gap-4 p-4 border-b-2 border-[#00916C]">
+                                <div className="col-span-1 sm:col-span-4 xl:col-span-5 rounded-lg border border-gray-200 dark:border-gray-800 hover:rounded-xl transition-all duration-300 row-span-6 h-full flex flex-col bg-white dark:bg-[#1e1e1e]">
+                                    <div className="flex justify-end items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-800">
                                         <Button
                                             onClick={handleCopyEnvs}
                                             className="flex items-center justify-center"

@@ -22,6 +22,7 @@ const GroupPage = () => {
     const [newMemberEmail, setNewMemberEmail] = useState('');
     const prevIsEditingRef = useRef(isEditing);
     const [originalEnvs, setOriginalEnvs] = useState<any[]>([]);
+    const [loading2, setLoading2] = useState<boolean>();
 
 
     const { data: session, status } = useSession();
@@ -86,6 +87,7 @@ const GroupPage = () => {
 
 
     const handleChangeVisibility = async () => {
+        setLoading2(true);
         try {
             const res = await fetch(`/api/group/visibility`, {
                 method: 'POST',
@@ -113,6 +115,7 @@ const GroupPage = () => {
         } catch (err) {
             toast.error('Something went wrong while changing visibility.');
         } finally {
+            setLoading2(false);
         }
     }
 
@@ -261,6 +264,8 @@ const GroupPage = () => {
 
     const handleAddMember = async () => {
         try {
+            setLoading2(true);
+            setDialogOpen(false);
             const res = await fetch('/api/group/member/add', {
                 method: 'POST',
                 headers: {
@@ -281,18 +286,19 @@ const GroupPage = () => {
             const updatedGroup = await res.json();
             toast.success(updatedGroup.message || 'Member added successfully.');
 
-            getMembers();
-
         } catch (err) {
             toast.error('Error adding member.');
         } finally {
-            setDialogOpen(false);
+            getMembers().then(() => {
+                setLoading2(false);
+            });
             setNewMemberEmail('');
         }
     }
 
     const handleRemoveMember = async (memberEmail: string) => {
         try {
+            setLoading2(true);
             const res = await fetch(`/api/group/member/remove`, {
                 method: 'POST',
                 headers: {
@@ -312,10 +318,12 @@ const GroupPage = () => {
 
             const updatedGroup = await res.json();
             toast.success(updatedGroup.message || 'Member removed successfully.');
-            getMembers();
-
         } catch (err) {
             toast.error('Error removing member.');
+        } finally {
+            getMembers().then(() => {
+                setLoading2(false);
+            })
         }
     }
 
@@ -370,19 +378,22 @@ const GroupPage = () => {
                                 </div>
                             </div>
 
-                            {/* Right Side: Action Buttons */}
                             <div className="flex items-center gap-2 mt-4 sm:mt-0 flex-shrink-0">
                                 {group.isPublic && (
-                                    <button
+                                    <Button
                                         onClick={handleCopyLink}
                                         title="Copy public link"
+                                        variant='modern'
+                                        disabled={loading2}
                                         className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                                     >
                                         <LinkIcon className="w-5 h-5" />
-                                    </button>
+                                    </Button>
                                 )}
-                                <button
+                                <Button
                                     onClick={handleChangeVisibility}
+                                    variant='modern'
+                                    disabled={loading2}
                                     title={group.isPublic ? "Change to Private" : "Change to Public"}
                                     className={`flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 active:scale-95 ${group.isPublic
                                         ? 'bg-[#00916C]/10 text-[#00916C] hover:bg-[#00916C]/20'
@@ -391,7 +402,7 @@ const GroupPage = () => {
                                 >
                                     {group.isPublic ? <LockOpen className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                                     <span className="hidden md:inline">{group.isPublic ? 'Public' : 'Private'}</span>
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -406,36 +417,37 @@ const GroupPage = () => {
 
                         {group?.envs && (
                             <>
-                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 row-span-1 sm:row-span-2 lg:row-span-6 rounded-lg border-2 border-[#00916C] dark:border-[#00916C] bg-white dark:bg-[#1e1e1e] hover:rounded-xl transition-all duration-300 h-full flex flex-col">
-                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-4 border-b-2 border-[#00916C] dark:border-[#00916C]">
+                                <div className="col-span-1 sm:col-span-3 md:col-span-4 lg:col-span-4 xl:col-span-3 row-span-1 sm:row-span-2 lg:row-span-6 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1e1e1e] hover:rounded-xl transition-all duration-300 h-full flex flex-col">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-800">
                                         <h3 className="font-semibold text-base text-black dark:text-white shrink-0">
                                             Environment Variables
                                         </h3>
                                         <div className="flex items-center gap-2 self-end sm:self-center">
                                             {isEditing && (
                                                 <>
-                                                    <button title="Paste from Clipboard" onClick={handlePasteEnvs} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
+                                                    <Button variant='modern' title="Paste from Clipboard" onClick={handlePasteEnvs} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
                                                         <Clipboard size={20} />
-                                                    </button>
-                                                    <button title="Add Variable" onClick={handleAddEnv} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
+                                                    </Button>
+                                                    <Button variant='modern' title="Add Variable" onClick={handleAddEnv} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
                                                         <Plus size={20} />
-                                                    </button>
+                                                    </Button>
                                                 </>
                                             )}
                                             {!isEditing && (
-                                                <button title="Copy All" onClick={handleCopyEnvs} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
+                                                <Button variant='modern' title="Copy All" onClick={handleCopyEnvs} className="p-2 rounded-lg text-[#00916C] hover:bg-[#00916C]/10 active:bg-[#00916C]/20 dark:hover:bg-[#00916C]/20 dark:active:bg-[#00916C]/30 transition-colors">
                                                     <Copy size={20} />
-                                                </button>
+                                                </Button>
                                             )}
 
-                                            <button
+                                            <Button
+                                                variant='modern'
                                                 title={isEditing ? "Save Changes" : "Edit Variables"}
                                                 onClick={() => setIsEditing(!isEditing)}
                                                 className="flex items-center gap-2 py-2 px-3 sm:px-4 rounded-lg font-semibold text-[#00916C] hover:bg-[#00916C]/10 dark:hover:bg-[#007356]/20 active:scale-95 transition-all duration-200"
                                             >
                                                 {isEditing ? <Save size={16} /> : <Pencil size={16} />}
                                                 <span>{isEditing ? 'Save' : 'Edit'}</span>
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
 
@@ -464,19 +476,38 @@ const GroupPage = () => {
                                     </div>
                                 </div>
 
-                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 lg:row-span-6 xl:col-span-2 rounded-lg hover:rounded-xl border-2 border-[#00916C] dark:border-[#00916C] transition-all duration-300 row-span-2 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
+                                <div className='col-span-1 bg-white dark:bg-[#1e1e1e] sm:col-span-1 md:col-span-4 lg:col-span-4 lg:row-span-6 xl:col-span-2 rounded-lg hover:rounded-xl border border-gray-200 dark:border-gray-800 transition-all duration-300 row-span-2 h-full flex flex-col p-4 gap-3 overflow-y-auto custom-scrollbar'>
                                     <h2 className="text-lg font-semibold text-[#00916C] dark:text-white mb-2">Members</h2>
 
                                     <button
                                         onClick={() => setDialogOpen(true)}
                                         type="button"
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-3 text-gray-500 transition-colors duration-200 hover:border-[#00916C] hover:bg-[#00916C]/10 hover:text-[#00916C] dark:border-gray-600 dark:text-gray-400 dark:hover:border-[#00916C] dark:hover:bg-[#00916C]/20 dark:hover:text-[#5fc9a9]"
+                                        className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-3 text-gray-500 transition-colors duration-200 hover:border-[#00916C] hover:bg-[#00916C]/10 hover:text-[#00916C] dark:border-gray-600 dark:text-gray-400 dark:hover:border-[#00916C] dark:hover:bg-[#00916C]/20 dark:hover:text-[#5fc9a9]"
                                     >
                                         <PlusCircle size={20} />
                                         <span className="font-semibold">Add Member</span>
                                     </button>
 
-                                    {group.members.map((member: any) => (
+                                    {loading2 && (
+                                        <>
+                                            {[...Array(4)].map((_, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between p-2.5"
+                                                >
+                                                    <div className="flex items-center gap-4 w-full">
+                                                        <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
+                                                        <div className="flex flex-col gap-2 w-full">
+                                                            <div className="h-4 w-3/5 rounded-md bg-gray-300 dark:bg-gray-700 animate-pulse"></div>
+                                                            <div className="h-3 w-4/5 rounded-md bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+
+                                    {!loading2 && group.members.map((member: any) => (
                                         <div
                                             key={member.email}
                                             className="flex items-center justify-between p-2.5 rounded-xl transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/60"
@@ -497,7 +528,7 @@ const GroupPage = () => {
                                                     onClick={() => handleRemoveMember(member.email)}
                                                     aria-label={`Remove ${member.name}`}
                                                     title={`Remove ${member.name}`}
-                                                    className="p-2 text-gray-500 rounded-full transition-colors duration-200 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500"
+                                                    className="cursor-pointer p-2 text-gray-500 rounded-full transition-colors duration-200 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-500"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
                                                 </button>

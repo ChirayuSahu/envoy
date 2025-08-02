@@ -78,27 +78,38 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
       setShowModal(false);
+      workspace.current.name = "";
+      workspace.current.description = "";
     }
   };
 
   const handleDeleteWorkspace = async (workspaceId: string) => {
-    const res = await fetch("/api/workspace/delete", {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ workspaceId }),
-    });
-
-    if (!res.ok) {
-      toast.error("Failed to delete workspace.");
-      return;
+    try{
+      setLoading(true);
+      const res = await fetch("/api/workspace/delete", {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ workspaceId }),
+      });
+      
+      if (!res.ok) {
+        toast.error("Failed to delete workspace.");
+        return;
+      }
+      
+      const updatedRes = await fetch("/api/workspace");
+      const updatedData = await updatedRes.json();
+      setWorkspaces(updatedData.workspaces);
+      toast.success(`Workspace deleted successfully.`);
+    } catch {
+      toast.error("")
+    } finally {
+      setLoading(false);
+      workspace.current.name = "";
+      workspace.current.description = "";
     }
-
-    const updatedRes = await fetch("/api/workspace");
-    const updatedData = await updatedRes.json();
-    setWorkspaces(updatedData.workspaces);
-    toast.success(`Workspace deleted successfully.`);
   };
 
   return (
@@ -166,11 +177,11 @@ const DashboardPage = () => {
                 </div>
               )}
 
-              {workspaces && workspaces.length > 0 && (
+              {!loading && workspaces && workspaces.length > 0 && (
                 workspaces.map((workspace: any) => (
                   <div
                     key={workspace._id}
-                    className="bg-white dark:bg-[#1f1f1f] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="bg-white dark:bg-[#1f1f1f] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300"
                   >
                     <div className="flex justify-between items-start p-5">
                       <Link href={`/dashboard/${workspace.uuid}`} className="group flex-grow">
@@ -217,7 +228,7 @@ const DashboardPage = () => {
                             setShowDeleteModal(true);
                           }}
                           aria-label="Delete workspace"
-                          className="p-2 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                          className="cursor-pointer p-2 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
