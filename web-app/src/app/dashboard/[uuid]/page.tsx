@@ -182,7 +182,7 @@ const GroupsPage = () => {
                                 </div>
                                 <button
                                     onClick={() => setDialogOpen(true)}
-                                    className="mt-4 sm:mt-0 flex-shrink-0 flex items-center justify-center gap-2 rounded-lg bg-[#00916C] px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#007558] active:scale-95"
+                                    className="cursor-pointer mt-4 sm:mt-0 flex-shrink-0 flex items-center justify-center gap-2 rounded-lg bg-[#00916C] px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#007558] active:scale-95"
                                 >
                                     <Plus className="w-4 h-4" />
                                     New Group
