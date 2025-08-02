@@ -124,7 +124,7 @@ const MyAccountPage = () => {
                         <AccountPageSkeleton />
                     ) : user && (
                         <div className="flex-grow space-y-6">
-                            <div className="bg-white dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-x-auto">
+                            <div className="bg-white dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-auto">
                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Profile Details</h2>
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <InfoRow icon={<User className="w-5 h-5 text-[#00916C]" />} label="Name" value={user.name} />
@@ -143,7 +143,7 @@ const MyAccountPage = () => {
 
                             <div className="bg-white mb-12 sm:mb-0 dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Security</h2>
-                                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="bg-gray-100 dark:bg-gray-800 p-2.5 rounded-md flex-shrink-0">
                                         <ShieldCheck className="w-5 h-5 text-[#00916C]" />
                                     </div>
