@@ -4,7 +4,6 @@ import SidebarComp from '@/components/dashboard/sidebar'
 import LoadingPage from '@/components/misc/loadingPage'
 import { ArrowRight, FolderPlus, Trash2, CalendarDays, Users, Briefcase, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import DialogBox from '@/components/dialogBox'
 import { toast } from 'sonner'
 
@@ -22,7 +21,6 @@ const DashboardPage = () => {
     name: "",
   });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -120,7 +118,7 @@ const DashboardPage = () => {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="bg-gray-100 dark:bg-gray-800 p-2.5 rounded-lg">
+              <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                 <Briefcase className="w-6 h-6 text-[#00916C]" />
               </div>
               <div>

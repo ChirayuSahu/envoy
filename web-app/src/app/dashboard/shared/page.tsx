@@ -47,7 +47,7 @@ const SharedGroups = () => {
         <div className="sm:col-span-5 lg:col-span-4 xl:col-span-10 p-4 h-full rounded-2xl flex flex-col gap-6 overflow-y-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3">
-              <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+              <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
                 <Share2 className="w-6 h-6 text-[#00916C]" />
               </div>
               <div>
