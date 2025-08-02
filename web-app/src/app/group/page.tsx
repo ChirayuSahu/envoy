@@ -88,7 +88,7 @@ function GroupContentInner() {
     return (
         <>
             <Navbar />
-            <div className="sm:col-span-4 xl:col-span-10 p-6 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
+            <div className="sm:col-span-4 xl:col-span-10 p-6 pt-0 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-4">
                         <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
