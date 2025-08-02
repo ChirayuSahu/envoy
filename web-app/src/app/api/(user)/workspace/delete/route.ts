@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import connectMongo from "@/utils/connectMongo";
 import Workspace from "@/models/workspace";
+import Group from "@/models/group";
 import { getToken } from "next-auth/jwt";
 import User from "@/models/user";
 import { generalLimiter, getUserIP } from "@/utils/limiter";
@@ -40,6 +41,8 @@ export async function DELETE(request: NextRequest) {
         if (!workspace) {
             return NextResponse.json({ message: "Workspace not found or you do not have permission to delete it." }, { status: 404 });
         }
+
+        await Group.deleteMany({ workspace: workspaceId });
 
         user.workspaces = user.workspaces.filter((w: any) => w.toString() !== workspaceId);
 
