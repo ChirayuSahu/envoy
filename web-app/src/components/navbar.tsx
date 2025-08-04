@@ -24,7 +24,7 @@ const Navbar = () => {
 
     return (
         <nav className='relative font-inter bg-[#00916C] dark:bg-[#121212]'>
-            <div className='flex items-center justify-between p-4 px-6'>
+            <div className='flex items-center justify-between p-6 md:px-12 lg:px-20'>
                 <div
                     className='text-white text-md lg:text-xl font-bold font-inter cursor-pointer'
                     onClick={() => router.push('/')}

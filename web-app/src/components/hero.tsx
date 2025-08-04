@@ -11,38 +11,37 @@ const HeroSection = () => {
 
     return (
         <>
-            <div className='font-inter flex flex-col lg:flex-row items-center justify-center lg:justify-between dark:bg-[#121212] gap-12 lg:gap-8 p-8 md:p-12 lg:p-20'>
-                
-                <div className='flex flex-col w-full lg:w-1/2 text-center lg:text-left'>
-                    <h1 className='text-3xl lg:text-4xl xl:text-5xl font-bold text-wrap text-black dark:text-white'>
+            <div className="font-inter flex flex-col-reverse lg:flex-row items-center justify-between dark:bg-[#121212] gap-8 p-8 md:p-12 lg:p-20">
+                <div className="flex flex-col w-full lg:w-1/2 text-center lg:text-left">
+                    <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-black dark:text-white">
                         A Platform for Managing and Sharing Environment Variables Securely.
                     </h1>
 
-                    <p className='text-base xl:text-lg text-gray-600 dark:text-gray-400 mt-6'>
+                    <p className="text-base xl:text-lg text-gray-600 dark:text-gray-400 mt-6">
                         Simplify your development workflow by securely managing and sharing your .env files with your team, ensuring consistency and preventing leaks.
                     </p>
 
-                    <div className='flex gap-4 mt-8 justify-center lg:justify-start'>
+                    <div className="flex gap-4 mt-8 justify-center lg:justify-start">
                         <Link href={isAuthenticated ? "/dashboard" : "/login"}>
-                            <Button className='rounded-full px-6 py-3' variant='outline'>
+                            <Button className="rounded-full px-6 py-3" variant="outline">
                                 {isAuthenticated ? "Dashboard" : "Get Started"}
                             </Button>
                         </Link>
                     </div>
                 </div>
-
-                <div className='flex items-center justify-center w-full lg:w-1/2 mt-8 lg:mt-0 order-first lg:order-last'>
+                <div className="flex items-center justify-center w-full lg:w-1/2 mt-8 lg:mt-0">
                     <Image
                         src="/assets/hero-img.svg"
                         alt="Securely sharing environment variables illustration"
                         width={500}
                         height={500}
-                        className='w-100 max-w-xs md:max-w-sm lg:max-w-full'
+                        className="max-w-[80%] sm:max-w-sm lg:max-w-full"
                         draggable={false}
                         priority
                     />
                 </div>
             </div>
+
         </>
     )
 }

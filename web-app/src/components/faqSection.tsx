@@ -66,7 +66,7 @@ const FAQDropdown = () => {
                   maxHeight: openIndex === index ? '1000px' : '0px',
                 }}
               >
-                <p className="px-6 pb-6 text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="px-6 pb-6 text-gray-600 dark:text-gray-400 leading-relaxed text-left">
                   {faq.answer}
                 </p>
               </div>
