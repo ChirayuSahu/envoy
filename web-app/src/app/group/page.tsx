@@ -20,8 +20,9 @@ function GroupContentInner() {
 
     useEffect(() => {
         if (!token || hasFetchedRef.current) {
-            if (!token) setLoading(false);
-            router.push("/");
+            if (!token) {
+                router.push("/");
+            };
             return;
         }
 
@@ -70,25 +71,31 @@ function GroupContentInner() {
     if (loading) return <LoadingPage />;
 
     if (!group) {
+
         return (
-            <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-full">
-                    <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400" />
+            <>
+                <div className='min-h-screen'>
+                    <Navbar />
+                    <div className="flex flex-col items-center justify-center h-[80vh] text-center p-8">
+                        <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-full">
+                            <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400" />
+                        </div>
+                        <h2 className="mt-6 text-xl font-bold text-gray-800 dark:text-gray-200">
+                            Group Not Found
+                        </h2>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                            The link may be broken, or the group may have been deleted. Please check the URL and try again.
+                        </p>
+                    </div>
                 </div>
-                <h2 className="mt-6 text-xl font-bold text-gray-800 dark:text-gray-200">
-                    Group Not Found
-                </h2>
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm">
-                    The link may be broken, or the group may have been deleted. Please check the URL and try again.
-                </p>
-            </div>
+            </>
         );
     }
 
     return (
         <>
             <Navbar />
-            <div className="sm:col-span-4 xl:col-span-10 p-6 pt-0 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
+            <div className="sm:col-span-4 xl:col-span-10 p-6 md:px-12 lg:px-20 pt-0 h-full rounded-2xl flex flex-col gap-6 overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-4">
                         <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex-shrink-0">
