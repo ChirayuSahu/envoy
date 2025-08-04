@@ -43,7 +43,7 @@ const FAQDropdown = () => {
               className="bg-white dark:bg-[#121212] rounded-lg shadow-md dark:border dark:border-gray-800 overflow-hidden"
             >
               <button
-                className="flex justify-between items-center w-full p-6 text-left text-gray-900 dark:text-white font-semibold text-lg focus:outline-none"
+                className="cursor-pointer flex justify-between items-center w-full p-6 text-left text-gray-900 dark:text-white font-semibold text-lg focus:outline-none"
                 onClick={() => toggleFAQ(index)}
                 aria-expanded={openIndex === index}
                 aria-controls={`faq-answer-${index}`}

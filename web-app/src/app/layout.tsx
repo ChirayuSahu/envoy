@@ -48,7 +48,15 @@ export default function RootLayout({
           enableSystem
         >
           <AuthSessionProvider>
-            <Toaster position="bottom-right" />
+            <Toaster position="bottom-right"
+              toastOptions={{
+                style: {
+                  background: "#00916C",
+                  color: "#fff",
+                  border: "#00916C",
+                },
+              }}
+            />
             {children}
           </AuthSessionProvider>
         </ThemeProvider>

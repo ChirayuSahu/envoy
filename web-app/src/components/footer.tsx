@@ -27,7 +27,7 @@ const Footer = () => {
                     </div>
 
                     <div className="flex space-x-4">
-                        <a href="#" aria-label="GitHub" className="text-gray-400 hover:text-green-400 transition-colors duration-200">
+                        <a href="https://github.com/GDGVIT/env-sharing" aria-label="GitHub" className="text-gray-400 hover:text-green-400 transition-colors duration-200">
                             <Github className="w-6 h-6" />
                         </a>
                     </div>
@@ -41,6 +41,7 @@ const Footer = () => {
                             width={16}
                             height={16}
                             className="mx-2 text-red-500 group-hover:scale-200 group-hover:mx-4 transition-all duration-700"
+                            draggable={false}
                         />
                     </span>
                     by{" "}
