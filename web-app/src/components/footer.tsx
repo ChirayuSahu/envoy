@@ -32,7 +32,7 @@ const Footer = () => {
                         </a>
                     </div>
                 </div>
-                <div className="border-t border-gray-300 dark:border-gray-700 mt-12 pt-8 text-center text-gray-600 dark:text-gray-400 text-sm group relative">
+                <div className="border-t border-gray-300 dark:border-gray-700 mt-12 pt-8 text-center text-gray-300 dark:text-gray-400 text-sm group relative">
                     Made with
                     <span className="inline-flex items-center text-red-500 align-middle">
                         <Image
