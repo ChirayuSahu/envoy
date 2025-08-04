@@ -43,7 +43,7 @@ const CommunitySection = () => {
               <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/50 dark:to-green-800/50 w-fit mx-auto p-4 rounded-full mb-6">
                 {card.icon}
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 dark:text-white mb-3">{card.title}</h3>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-3">{card.title}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{card.description}</p>
             </div>
           ))}

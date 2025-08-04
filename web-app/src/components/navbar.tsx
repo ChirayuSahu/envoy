@@ -4,6 +4,7 @@ import Button from './button'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Menu, X } from 'lucide-react'
+import Image from 'next/image'
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,9 +27,25 @@ const Navbar = () => {
         <nav className='relative font-inter bg-[#00916C] dark:bg-[#121212]'>
             <div className='flex items-center justify-between p-6 md:px-12 lg:px-20'>
                 <div
-                    className='text-white text-md lg:text-xl font-bold font-inter cursor-pointer'
+                    className='flex items-center text-white text-md lg:text-xl xl:text-2xl font-bold font-inter cursor-pointer'
                     onClick={() => router.push('/')}
                 >
+                    <Image 
+                    src="/assets/envoy-logo.svg"
+                    alt="Envoy Logo"
+                    width={100}
+                    height={100}
+                    className='hidden dark:block w-6 h-6 mr-2'
+                    draggable={false}
+                    />
+                    <Image 
+                    src="/assets/envoy-logo-white.svg"
+                    alt="Envoy Logo"
+                    width={100}
+                    height={100}
+                    className='dark:hidden w-6 h-6 mr-2'
+                    draggable={false}
+                    />
                     {process.env.NEXT_PUBLIC_APP_NAME}
                 </div>
 
@@ -37,7 +54,7 @@ const Navbar = () => {
                         <Button
                             key={link.href}
                             variant="modern"
-                            className='text-white dark:text-white border-none'
+                            className='text-white dark:text-white border-none text-lg'
                             onClick={() => router.push(link.href)}
                         >
                             {link.label}

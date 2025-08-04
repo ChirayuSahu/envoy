@@ -11,7 +11,7 @@ const HeroSection = () => {
 
     return (
         <>
-            <div className="font-inter flex flex-col-reverse lg:flex-row items-center justify-between dark:bg-[#121212] gap-8 p-8 md:p-12 lg:p-20">
+            <div className="font-inter flex flex-col-reverse lg:flex-row items-center justify-between bg-white dark:bg-[#121212] gap-8 p-8 md:p-12 lg:p-20">
                 <div className="flex flex-col w-full lg:w-1/2 text-center lg:text-left">
                     <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-black dark:text-white">
                         A Platform for Managing and Sharing Environment Variables Securely.

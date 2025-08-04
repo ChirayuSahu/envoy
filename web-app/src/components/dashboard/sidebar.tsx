@@ -6,6 +6,7 @@ import { signOut } from 'next-auth/react';
 import DialogBox from '../dialogBox';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const SidebarComp = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -26,7 +27,17 @@ const SidebarComp = () => {
     <>
       <aside className="hidden font-inter sm:col-span-1 xl:col-span-2 bg-[#00916C] dark:bg-[#007a5a] p-4 md:p-6 xl:p-8 h-full w-full rounded-2xl lg:flex flex-col justify-between shadow-lg">
         <div className="flex flex-col items-center gap-6 md:gap-8 xl:gap-12 flex-grow">
-          <h1 className="text-white text-xl xl:text-2xl font-bold mb-4">{process.env.NEXT_PUBLIC_APP_NAME}</h1>
+          <h1 className="flex items-center text-white text-xl xl:text-2xl font-bold mb-4">
+            <Image
+              src="/assets/envoy-logo-white.svg"
+              alt="Envoy Logo"
+              width={100}
+              height={100}
+              className='w-6 h-6 mr-2'
+              draggable={false}
+            />
+            {process.env.NEXT_PUBLIC_APP_NAME}
+          </h1>
 
           <nav className="flex flex-col gap-4 w-full">
             {navItems.map((item) => (

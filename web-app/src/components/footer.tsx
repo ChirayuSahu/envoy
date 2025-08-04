@@ -1,5 +1,6 @@
 import React from "react";
 import { Github } from "lucide-react";
+import Image from "next/image";
 
 const Footer = () => {
     return (
@@ -8,7 +9,17 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left">
 
                     <div className="mb-8 md:mb-0">
-                        <h3 className="text-2xl font-bold text-green-400 mb-2">{process.env.NEXT_PUBLIC_APP_NAME}</h3>
+                        <h3 className="flex items-center text-2xl font-bold mb-2">
+                            <Image
+                            src="/assets/envoy-logo.svg"
+                            alt="Envoy Logo"
+                            width={100}
+                            height={100}
+                            className='w-6 h-6 mr-2'
+                            draggable={false}
+                        />
+                        {process.env.NEXT_PUBLIC_APP_NAME}
+                        </h3>
                         <p className="text-gray-300 text-sm max-w-xs">
                             Securely manage and synchronize your environment variables.
                             End the chaos of scattered secrets.
