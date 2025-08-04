@@ -1,11 +1,11 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react'
 import SidebarComp from '@/components/dashboard/sidebar'
-import LoadingPage from '@/components/misc/loadingPage'
 import { ArrowRight, FolderPlus, Trash2, CalendarDays, Users, Briefcase, Plus } from 'lucide-react'
 import Link from 'next/link'
 import DialogBox from '@/components/dialogBox'
 import { toast } from 'sonner'
+
 
 const DashboardPage = () => {
 
