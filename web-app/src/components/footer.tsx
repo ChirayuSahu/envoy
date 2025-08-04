@@ -11,14 +11,14 @@ const Footer = () => {
                     <div className="mb-8 md:mb-0">
                         <h3 className="flex items-center text-2xl font-bold mb-2">
                             <Image
-                            src="/assets/envoy-logo.svg"
-                            alt="Envoy Logo"
-                            width={100}
-                            height={100}
-                            className='w-6 h-6 mr-2'
-                            draggable={false}
-                        />
-                        {process.env.NEXT_PUBLIC_APP_NAME}
+                                src="/assets/envoy-logo.svg"
+                                alt="Envoy Logo"
+                                width={100}
+                                height={100}
+                                className='w-6 h-6 mr-2'
+                                draggable={false}
+                            />
+                            {process.env.NEXT_PUBLIC_APP_NAME}
                         </h3>
                         <p className="text-gray-300 text-sm max-w-xs">
                             Securely manage and synchronize your environment variables.
@@ -32,12 +32,30 @@ const Footer = () => {
                         </a>
                     </div>
                 </div>
-
-                <div className="border-t border-gray-700 dark:border-gray-900 mt-12 pt-8 text-center text-gray-400 text-sm">
-                    &copy; {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME}. All rights reserved.
+                <div className="border-t border-gray-300 dark:border-gray-700 mt-12 pt-8 text-center text-gray-600 dark:text-gray-400 text-sm group relative">
+                    Made with
+                    <span className="inline-flex items-center text-red-500 align-middle">
+                        <Image
+                            src="/assets/heart.svg"
+                            alt="Love"
+                            width={16}
+                            height={16}
+                            className="mx-2 text-red-500 group-hover:scale-200 group-hover:mx-4 transition-all duration-700"
+                        />
+                    </span>
+                    by{" "}
+                    <a
+                        href="https://www.dscvit.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium relative inline-block"
+                    >
+                        GDSC-VIT
+                        <span className="absolute left-0 -bottom-[1px] w-0 h-[1px] bg-current transition-all duration-300 group-hover:w-full"></span>
+                    </a>
                 </div>
             </div>
-        </footer>
+        </footer >
     );
 };
 
