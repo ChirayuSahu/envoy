@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ message: "Shared groups fetched successfully.", otherGroups: user?.otherGroups }, { status: 200 });
     } catch (error: any) {
+        console.log("Error fetching shared groups:", error);
         return NextResponse.json({ message: "Internal Server Error." }, { status: 500 });
     }
 }
