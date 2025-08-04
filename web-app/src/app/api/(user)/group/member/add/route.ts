@@ -42,6 +42,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: "Member not found with provided email." }, { status: 404 });
         }
 
+        if(member._id.toString() === userId) {
+            return NextResponse.json({ message: "You cannot add yourself as a member." }, { status: 400 });
+        }
+
         if (group.members.map((member: any) => member.toString()).includes(member._id.toString())) {
             return NextResponse.json({ message: "Member already exists in the group." }, { status: 400 });
         }
