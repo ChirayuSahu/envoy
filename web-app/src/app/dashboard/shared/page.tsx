@@ -25,7 +25,7 @@ const SharedGroups = () => {
 
         if (!res.ok) {
           const data = await res.json();
-          console.error(data.message);
+          toast.error(data.message || 'Failed to fetch shared groups.');
           return;
         }
         const data = await res.json();
