@@ -20,7 +20,7 @@ const Footer = () => {
                             />
                             {process.env.NEXT_PUBLIC_APP_NAME}
                         </h3>
-                        <p className="text-gray-300 text-sm max-w-xs">
+                        <p className="text-gray-300 text-sm max-w-sm text-left">
                             Securely manage and synchronize your environment variables.
                             End the chaos of scattered secrets.
                         </p>
