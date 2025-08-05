@@ -178,7 +178,7 @@ web-app/
 
 ## Contributors
 
-<table>
+<table style>
 	<tr align="center">
 		<td>
 		Chirayu Sahu
@@ -193,6 +193,22 @@ web-app/
 					<img src = "http://www.iconninja.com/files/863/607/751/network-linkedin-social-connection-circular-circle-media-icon.svg" width="36" height="36" alt="LinkedIn"/>
 				</a>
 			</p>
+			<p>Frontend / Backend</p>
+		</td>
+		<td>
+		Humaidh
+		<p align="center">
+			<img src = "https://media.licdn.com/dms/image/v2/D4D03AQFmAoy4PEoWXw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1711743457657?e=1757548800&v=beta&t=8VSDF1dhaLC9naTbhrexTnI5p4Ci6EBA_KIDp6yzOpE" width="150" height="150" alt="Chirayu Sahu">
+		</p>
+			<p align="center">
+				<a href = "https://github.com/EvilPedia">
+					<img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36" alt="GitHub"/>
+				</a>
+				<a href = "https://www.linkedin.com/in/humaidh-ahmed-927134272">
+					<img src = "http://www.iconninja.com/files/863/607/751/network-linkedin-social-connection-circular-circle-media-icon.svg" width="36" height="36" alt="LinkedIn"/>
+				</a>
+			</p>
+			<p>Security</p>
 		</td>
 	</tr>
 </table>
