@@ -3,7 +3,6 @@
 import React, { useEffect, useId } from "react";
 import Button from "./button";
 import { X } from "lucide-react";
-import clsx from "clsx";
 
 interface DialogBoxProps {
     title: string;
@@ -31,18 +30,25 @@ const DialogBox: React.FC<DialogBoxProps> = ({
     const titleId = useId();
 
     useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => {
+        const handleKeydown = (event: KeyboardEvent) => {
+            if (!isOpen) return;
+
             if (event.key === 'Escape') {
                 onClose();
             }
+
+            if (event.key === 'Enter') {
+                if (!isActionDisabled && !loading) {
+                    onAction();
+                }
+            }
         };
-        if (isOpen) {
-            window.addEventListener('keydown', handleEsc);
-        }
+        window.addEventListener('keydown', handleKeydown);
+
         return () => {
-            window.removeEventListener('keydown', handleEsc);
+            window.removeEventListener('keydown', handleKeydown);
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, onAction, isActionDisabled, loading]);
 
     if (!isOpen) return null;
 
@@ -56,7 +62,7 @@ const DialogBox: React.FC<DialogBoxProps> = ({
             <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
             <div className="relative bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8">
-                
+
                 <div className="flex items-start justify-between mb-4">
                     <h2 id={titleId} className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                         {title}
@@ -73,7 +79,7 @@ const DialogBox: React.FC<DialogBoxProps> = ({
                 <div className="text-sm text-gray-600 dark:text-gray-300 my-6">
                     {children}
                 </div>
-                
+
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                     <div className="flex flex-col-reverse sm:flex-row gap-3">
                         <Button
