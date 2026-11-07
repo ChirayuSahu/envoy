@@ -16,9 +16,10 @@ async function membersWithout2fa(orgId: unknown) {
         { $lookup: { from: User.collection.name, localField: "user", foreignField: "_id", as: "u" } },
         { $unwind: "$u" },
         { $match: { "u.totpEnabled": { $ne: true }, $or: [{ "u.passkeyCount": { $exists: false } }, { "u.passkeyCount": { $lte: 0 } }] } },
-        { $project: { _id: 0, name: "$u.name", email: "$u.email" } },
+        { $sort: { "u.name": 1 } },
+        { $project: { _id: 0, name: "$u.name", email: "$u.email", image: "$u.image" } },
     ]);
-    return rows as { name: string; email: string }[];
+    return rows as { name: string; email: string; image?: string | null }[];
 }
 
 /** The org's two-factor requirement, and (for owners and admins) who hasn't set 2FA up yet. */

@@ -4,14 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { ShieldCheck } from "lucide-react";
+import { ArrowRight, CircleCheck, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ToneBadge } from "@/components/common";
+import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/common";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { api, fetcher } from "@/lib/api-client";
 
-type Security = { require2fa: boolean; membersWithout2fa: { name: string; email: string }[] | null };
+type Security = { require2fa: boolean; membersWithout2fa: { name: string; email: string; image?: string | null }[] | null };
 
 /** The org's "require two-factor" switch. Owner only; everyone else sees the current setting. */
 export function OrgSecurity({ slug, isOwner }: { slug: string; isOwner: boolean }) {
@@ -32,47 +33,62 @@ export function OrgSecurity({ slug, isOwner }: { slug: string; isOwner: boolean 
         }
     }
 
+    const shown = without.slice(0, 4);
+
     return (
-        <div className="flex max-w-2xl flex-col gap-3">
-            <div className="flex items-start gap-3 rounded-lg border p-4">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                    <ShieldCheck className="size-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                    <label htmlFor="require-2fa" className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        Require two-factor authentication
-                        {data.require2fa ? <ToneBadge tone="mint">On</ToneBadge> : <ToneBadge tone="neutral">Off</ToneBadge>}
-                    </label>
-                    <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
-                        Members must use a <strong className="font-medium text-foreground">passkey or an authenticator app</strong> to open anything in
-                        this organization. Turning it off never removes anyone&apos;s passkeys or apps; people who have them keep using them.
-                    </p>
-                    {without.length > 0 && (
-                        <p className="mt-2 text-[13px] text-muted-foreground">
+        <div className="max-w-2xl">
+            <div className="overflow-hidden rounded-xl border bg-background">
+                <div className="flex items-center gap-4 p-4">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-pastel-mint text-pastel-mint-fg">
+                        <ShieldCheck className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <label htmlFor="require-2fa" className="block text-sm font-medium text-foreground">
+                            Require two-factor authentication
+                        </label>
+                        <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+                            Members need a <strong className="font-medium text-foreground">passkey or an authenticator app</strong> to open anything in
+                            this organization.
+                        </p>
+                    </div>
+                    <Switch id="require-2fa" checked={data.require2fa} disabled={!isOwner} onCheckedChange={(v) => setPending(v)} />
+                </div>
+
+                {without.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t bg-muted/30 px-4 py-3">
+                        <div className="flex -space-x-1.5" aria-hidden>
+                            {shown.map((m) => (
+                                <UserAvatar key={m.email} name={m.name} src={m.image} className="size-6 ring-2 ring-background" />
+                            ))}
+                        </div>
+                        <p className="min-w-0 flex-1 text-[13px] text-muted-foreground">
                             <strong className="font-medium text-foreground">
                                 {without.length} member{without.length === 1 ? "" : "s"}
                             </strong>{" "}
-                            {without.length === 1 ? "hasn't" : "haven't"} set up two-factor yet
-                            {data.require2fa ? " and can't open the organization until they do" : ""}:{" "}
-                            {without
-                                .slice(0, 3)
-                                .map((m) => m.name)
-                                .join(", ")}
-                            {without.length > 3 ? ` and ${without.length - 3} more` : ""}.{" "}
-                            <Link href={`/o/${slug}/settings/members`} className="text-foreground underline underline-offset-4">
-                                See members
-                            </Link>
+                            {without.length === 1 ? "hasn't" : "haven't"} set up two-factor
+                            {data.require2fa ? ", so they can't open the organization yet" : " yet"}
+                            <span className="hidden sm:inline">
+                                {": "}
+                                {shown.map((m) => m.name.split(" ")[0]).join(", ")}
+                                {without.length > shown.length ? ` and ${without.length - shown.length} more` : ""}
+                            </span>
+                            .
                         </p>
-                    )}
-                    {!isOwner && <p className="mt-2 text-[12.5px] text-muted-foreground">Only the owner can change this.</p>}
-                </div>
-                <Switch
-                    id="require-2fa"
-                    checked={data.require2fa}
-                    disabled={!isOwner}
-                    onCheckedChange={(v) => setPending(v)}
-                />
+                        <Button asChild variant="ghost" size="sm" className="-my-1 text-[13px]">
+                            <Link href={`/o/${slug}/settings/members`}>
+                                See members <ArrowRight />
+                            </Link>
+                        </Button>
+                    </div>
+                ) : (
+                    data.require2fa && (
+                        <div className="flex items-center gap-2 border-t bg-muted/30 px-4 py-3 text-[13px] text-muted-foreground">
+                            <CircleCheck className="size-4 text-primary" /> Everyone in the organization has two-factor set up.
+                        </div>
+                    )
+                )}
             </div>
+            {!isOwner && <p className="mt-2 text-[12.5px] text-muted-foreground">Only the owner can change this.</p>}
 
             <ConfirmDialog
                 open={pending !== null}

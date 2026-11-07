@@ -1,17 +1,16 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { DatePicker, toISODate } from "@/components/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField } from "@/components/common";
 
 const DAY = 24 * 60 * 60 * 1000;
-const isoDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export type Expiry = { preset: string; date: string };
 
 /**
- * Expiry choice: preset durations (days, or "never" when allowed) plus "Custom date…", which reveals a date
- * picker limited to tomorrow through `maxDays` ahead.
+ * Expiry choice: preset durations (days, or "never" when allowed) plus "Custom date…", which reveals the
+ * calendar date picker limited to tomorrow through `maxDays` ahead.
  */
 export function ExpiryField({
     id,
@@ -28,8 +27,11 @@ export function ExpiryField({
     presets: { value: string; label: string }[];
     maxDays: number;
 }) {
-    const min = isoDate(new Date(Date.now() + DAY));
-    const max = isoDate(new Date(Date.now() + maxDays * DAY));
+    const minDate = new Date(Date.now() + DAY);
+    minDate.setHours(0, 0, 0, 0);
+    const maxDate = new Date(Date.now() + maxDays * DAY);
+    maxDate.setHours(0, 0, 0, 0);
+    const min = toISODate(minDate);
     return (
         <FormField label={label} htmlFor={id}>
             <div className="flex flex-col gap-2">
@@ -47,14 +49,12 @@ export function ExpiryField({
                     </SelectContent>
                 </Select>
                 {value.preset === "custom" && (
-                    <Input
-                        type="date"
+                    <DatePicker
                         aria-label="Expiry date"
-                        required
-                        min={min}
-                        max={max}
                         value={value.date}
-                        onChange={(e) => onChange({ ...value, date: e.target.value })}
+                        min={minDate}
+                        max={maxDate}
+                        onChange={(date) => onChange({ ...value, date })}
                     />
                 )}
             </div>

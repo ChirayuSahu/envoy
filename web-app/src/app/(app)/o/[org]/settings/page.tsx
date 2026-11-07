@@ -93,7 +93,7 @@ export default function GeneralSettingsPage() {
 
             <Section
                 title="Security"
-                description="How members prove it's them. People who already use a passkey or authenticator app always do, whatever this is set to."
+                description="Turning this off never removes anyone's passkeys or authenticator apps; people who have one keep using it."
             >
                 <OrgSecurity slug={slug!} isOwner={isOwner} />
             </Section>
