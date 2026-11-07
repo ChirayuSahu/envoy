@@ -123,7 +123,8 @@ async function main() {
     if (!uri) throw new Error("NEXT_MONGO_URI is not set");
     if (!process.env.ENCRYPTION_SECRET) throw new Error("ENCRYPTION_SECRET is not set (use the old NEXT_PUBLIC_ENCRYPTION_SECRET value)");
 
-    await mongoose.connect(uri);
+    // A dry run must not even create collections or indexes, so automatic index building is off for it.
+    await mongoose.connect(uri, DRY ? { autoIndex: false, autoCreate: false } : {});
     console.log(`Connected to ${mongoose.connection.name}${DRY ? " (dry run, nothing will be written)" : ""}\n`);
 
     const workspaces: any[] = await Workspace.find({}).lean();
