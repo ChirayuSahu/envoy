@@ -36,13 +36,13 @@ export function StatusScreen({
                 </Link>
             </header>
 
-            <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-end px-6 pb-16 sm:px-10 sm:pb-24">
+            <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-6 pb-24 text-center sm:px-10">
                 <p aria-hidden className="text-[7rem] font-normal leading-none tracking-[-0.06em] text-foreground/90 sm:text-[11rem]">
                     {code}
                 </p>
                 <h1 className="mt-4 text-2xl font-normal tracking-[-0.03em] text-foreground sm:text-4xl">{title}</h1>
                 <div className="mt-3 max-w-md text-[15px] leading-relaxed text-foreground/70">{children}</div>
-                <div className="mt-8 flex flex-wrap gap-2">
+                <div className="mt-8 flex flex-wrap justify-center gap-2">
                     {onRetry && (
                         <Button onClick={onRetry}>
                             <RotateCcw /> Try again

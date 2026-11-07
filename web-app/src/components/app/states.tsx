@@ -23,7 +23,8 @@ function StateBlock({
 }) {
     return (
         <PageContainer>
-            <div className="flex max-w-lg flex-col items-start gap-4 pt-6">
+            {/* Centred in the content area, for every not-found and error state. */}
+            <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 text-center">
                 <span className={`flex size-11 items-center justify-center rounded-lg ${tone}`}>
                     <Icon className="size-5" />
                 </span>
@@ -31,7 +32,7 @@ function StateBlock({
                     <h1 className="text-2xl font-semibold tracking-[-0.02em] text-foreground">{title}</h1>
                     <div className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</div>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-2">{actions}</div>
+                <div className="mt-2 flex flex-wrap justify-center gap-2">{actions}</div>
             </div>
         </PageContainer>
     );
