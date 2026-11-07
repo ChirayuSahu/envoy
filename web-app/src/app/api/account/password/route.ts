@@ -21,7 +21,7 @@ export const POST = route(async (req: NextRequest) => {
 
     await User.updateOne(
         { _id: me.id },
-        { $set: { password: await hashPassword(newPassword) }, $inc: { sessionVersion: 1 } }
+        { $set: { password: await hashPassword(newPassword) }, $inc: { sessionVersion: 1 }, $unset: { revealUntil: 1 } }
     );
     return json({ message: "Password changed. Please sign in again." });
 });

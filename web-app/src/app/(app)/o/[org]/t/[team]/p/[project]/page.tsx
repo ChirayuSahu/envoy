@@ -40,9 +40,12 @@ type EnvData = {
         version: number;
         updatedAt: string;
         updatedBy: string | null;
-        vars: { key: string; value: string }[];
+        /** Values are null until the user unlocks them with an authenticator code. */
+        vars: { key: string; value: string | null }[];
     };
     access: "manage" | "edit" | "view";
+    /** When the user's server-side unlock ends; null while values are locked. */
+    revealUntil: string | null;
 };
 
 function CliDialog({ open, onOpenChange, path }: { open: boolean; onOpenChange: (o: boolean) => void; path: string }) {
@@ -135,6 +138,8 @@ function ProjectView() {
         error: envError,
         mutate: mutateEnv,
     } = useSWR<EnvData>(envKey, fetcher, { revalidateOnFocus: false, revalidateIfStale: false });
+
+    const reloadEnv = useCallback(() => mutateEnv(), [mutateEnv]);
 
     const [dirty, setDirty] = useState(false);
     const [cliOpen, setCliOpen] = useState(false);
@@ -265,6 +270,8 @@ function ProjectView() {
                     vars={envData.environment.vars}
                     version={envData.environment.version}
                     updatedBy={envData.environment.updatedBy}
+                    revealUntil={envData.revealUntil}
+                    onReload={reloadEnv}
                     onDirtyChange={onDirtyChange}
                     onSaved={() => {
                         mutateEnv();

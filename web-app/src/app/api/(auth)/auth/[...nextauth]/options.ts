@@ -91,6 +91,15 @@ export const authOptions: NextAuthOptions = {
 
     secret: process.env.NEXTAUTH_SECRET,
 
+    events: {
+        // Signing out also ends any "reveal values" unlock (see lib/reveal).
+        async signOut({ token }) {
+            if (!token?.id) return;
+            await connectMongo();
+            await User.updateOne({ _id: token.id }, { $unset: { revealUntil: 1 } });
+        },
+    },
+
     callbacks: {
         async signIn({ account, profile }) {
             // Only accept Google accounts whose email Google has verified.

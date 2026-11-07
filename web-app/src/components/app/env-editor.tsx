@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ClipboardPaste, Copy, Download, Eye, EyeOff, Plus, RotateCcw, Trash2, TriangleAlert } from "lucide-react";
+import { ClipboardPaste, Copy, Download, Eye, EyeOff, LockKeyhole, LockOpen, Plus, RotateCcw, Trash2, TriangleAlert } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { CopyButton, EmptyState, SearchInput, copyText } from "@/components/common";
+import { EmptyState, SearchInput, copyText } from "@/components/common";
+import { OtpField } from "@/components/otp-field";
 import { ApiError, api } from "@/lib/api-client";
 import { parseDotenv, stringifyDotenv, type EnvVar } from "@/lib/dotenv";
 import { cn } from "@/lib/utils";
@@ -30,20 +31,35 @@ const ACTIONS_W = "w-[6.75rem]";
 /** Key column width, shared by the header and the rows. */
 const KEY_COL = "sm:w-[34%] sm:max-w-[360px] sm:shrink-0";
 
-type Row = { id: string; key: string; value: string };
+/** A stored value the server hasn't sent (values are locked): `null`. */
+type StoredVar = { key: string; value: string | null };
+/** `origKey` is the key the row was loaded with, so a hidden value can be kept through a rename. */
+type Row = { id: string; key: string; value: string | null; origKey: string | null };
 
 let rowSeq = 0;
-const toRows = (vars: EnvVar[]): Row[] => vars.map((v) => ({ id: `r${++rowSeq}`, ...v }));
-const toVars = (rows: Row[]): EnvVar[] => rows.map(({ key, value }) => ({ key: key.trim(), value }));
+const toRows = (vars: StoredVar[]): Row[] => vars.map((v) => ({ id: `r${++rowSeq}`, key: v.key, value: v.value, origKey: v.key }));
+/** Only rows whose values are known (for copy, download and the conflict fallback). */
+const knownVars = (rows: Row[]): EnvVar[] =>
+    rows.filter((r) => r.key.trim() && r.value !== null).map((r) => ({ key: r.key.trim(), value: r.value as string }));
 
-function diffCount(original: EnvVar[], rows: Row[]) {
-    const before = new Map(original.map((v) => [v.key, v.value]));
-    const after = new Map(toVars(rows).filter((v) => v.key).map((v) => [v.key, v.value]));
+function diffCount(baseline: StoredVar[], rows: Row[]) {
+    const before = new Map(baseline.map((v) => [v.key, v.value]));
+    const kept = new Set<string>();
     let n = 0;
-    for (const [k, v] of after) if (before.get(k) !== v) n++;
-    for (const k of before.keys()) if (!after.has(k)) n++;
-    // A row with a value but no key yet is a pending change too.
-    n += rows.filter((r) => !r.key.trim() && r.value).length;
+    for (const r of rows) {
+        const k = r.key.trim();
+        if (!k) {
+            if (r.value) n++; // a value without a key yet is a pending change
+            continue;
+        }
+        if (r.origKey !== null && before.has(r.origKey)) {
+            kept.add(r.origKey);
+            const renamed = k !== r.origKey;
+            const edited = r.value !== null && r.value !== before.get(r.origKey);
+            if (renamed || edited) n++;
+        } else n++; // new row
+    }
+    for (const k of before.keys()) if (!kept.has(k)) n++; // removed
     return n;
 }
 
@@ -74,6 +90,86 @@ function IconAction({
             </TooltipTrigger>
             <TooltipContent>{label}</TooltipContent>
         </Tooltip>
+    );
+}
+
+/**
+ * Asks for a fresh authenticator code before secret values are sent to the browser. The unlock lives on
+ * the server (10 minutes, per account); nothing is kept in the browser.
+ */
+function UnlockDialog({
+    open,
+    onOpenChange,
+    onUnlocked,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onUnlocked: () => Promise<unknown>;
+}) {
+    const [code, setCode] = useState("");
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (open) {
+            setCode("");
+            setError(null);
+        }
+    }, [open]);
+
+    const submit = async (value = code) => {
+        if (value.length !== 6 || busy) return;
+        setBusy(true);
+        setError(null);
+        try {
+            await api("/api/2fa/reveal", { method: "POST", body: { code: value } });
+            await onUnlocked();
+            onOpenChange(false);
+        } catch (e) {
+            setError(e instanceof ApiError ? e.message : "Couldn't check the code. Try again.");
+            setCode("");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                    <div className="mb-1 flex size-9 items-center justify-center rounded-lg bg-muted">
+                        <LockKeyhole className="size-4" />
+                    </div>
+                    <DialogTitle>Unlock secret values</DialogTitle>
+                    <DialogDescription>
+                        Enter the code from your <strong className="font-medium text-foreground">authenticator app</strong>. Values stay unlocked for{" "}
+                        <strong className="font-medium text-foreground">10 minutes</strong>.
+                    </DialogDescription>
+                </DialogHeader>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        submit();
+                    }}
+                    className="flex flex-col gap-3"
+                >
+                    <OtpField value={code} onChange={setCode} onComplete={submit} disabled={busy} invalid={!!error} />
+                    {error && (
+                        <p role="alert" className="text-[13px] text-destructive">
+                            {error}
+                        </p>
+                    )}
+                    <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" loading={busy} disabled={code.length !== 6}>
+                            Unlock
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }
 
@@ -151,17 +247,36 @@ function ValueCell({
     editable,
     revealed,
     onChange,
+    onUnlock,
     invalid,
 }: {
     row: Row;
     editable: boolean;
     revealed: boolean;
     onChange: (value: string) => void;
+    onUnlock: () => void;
     invalid?: boolean;
 }) {
     const [focused, setFocused] = useState(false);
+
+    // The server hasn't sent this value: it's locked until the user confirms an authenticator code.
+    if (row.value === null) {
+        return (
+            <button
+                type="button"
+                onClick={onUnlock}
+                title="Confirm your authenticator code to see or edit this value"
+                aria-label={`Unlock to see ${row.key || "this value"}`}
+                className="min-w-0 flex-1 truncate px-3 text-left font-mono text-[13px] leading-10 text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground"
+            >
+                {MASK}
+            </button>
+        );
+    }
+
+    const value = row.value;
     const show = revealed || focused;
-    const multiline = row.value.includes("\n");
+    const multiline = value.includes("\n");
 
     if (!editable) {
         return (
@@ -171,13 +286,13 @@ function ValueCell({
                     show ? "text-foreground" : "select-none text-muted-foreground"
                 )}
             >
-                {show ? row.value || <span className="italic text-muted-foreground">empty</span> : MASK}
+                {show ? value || <span className="italic text-muted-foreground">empty</span> : MASK}
             </div>
         );
     }
 
     const shared = {
-        value: show ? row.value : row.value ? MASK : "",
+        value: show ? value : value ? MASK : "",
         readOnly: !show,
         spellCheck: false,
         autoComplete: "off",
@@ -192,7 +307,7 @@ function ValueCell({
     return multiline && show ? (
         <Textarea
             {...shared}
-            rows={Math.min(8, row.value.split("\n").length)}
+            rows={Math.min(8, value.split("\n").length)}
             className={cn(cellInput, "h-auto min-h-0 flex-1 py-2 leading-5")}
         />
     ) : (
@@ -205,16 +320,21 @@ export type EnvEditorProps = {
     envName: string;
     envSlug: string;
     canEdit: boolean;
-    vars: EnvVar[];
+    /** Values are null while locked. */
+    vars: StoredVar[];
     version: number;
     updatedBy: string | null;
+    /** When the user's unlock ends (null while locked). Values are only sent while unlocked. */
+    revealUntil: string | null;
     onSaved: () => void;
+    /** Refetch this environment (after unlocking or locking, to get or drop values). */
+    onReload: () => Promise<unknown>;
     onDirtyChange: (dirty: boolean) => void;
 };
 
-export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, onSaved, onDirtyChange }: EnvEditorProps) {
+export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, revealUntil, onSaved, onReload, onDirtyChange }: EnvEditorProps) {
     const [rows, setRows] = useState<Row[]>(() => toRows(vars));
-    const [baseline, setBaseline] = useState<EnvVar[]>(vars);
+    const [baseline, setBaseline] = useState<StoredVar[]>(vars);
     const [baseVersion, setBaseVersion] = useState(version);
     const [filter, setFilter] = useState("");
     const [revealAll, setRevealAll] = useState(false);
@@ -222,13 +342,72 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
     const [saving, setSaving] = useState(false);
     const [conflict, setConflict] = useState<string | null>(null);
     const [pasteOpen, setPasteOpen] = useState(false);
+    const [unlockOpen, setUnlockOpen] = useState(false);
     const focusRowId = useRef<string | null>(null);
+    const rowsRef = useRef(rows);
+    rowsRef.current = rows;
+
+    // ── Unlock (server-side, 10 minutes): values arrive only after a fresh authenticator code.
+    const unlocked = !!revealUntil && new Date(revealUntil).getTime() > Date.now();
+    const pendingAction = useRef<(() => void) | null>(null);
+    /** Runs `action` now if values are unlocked; otherwise asks for a code first and runs it afterwards. */
+    const withValues = (action: () => void) => {
+        if (unlocked) return action();
+        pendingAction.current = action;
+        setUnlockOpen(true);
+    };
 
     // Reset only when the server version or environment changes (env switch, reload after
     // save/conflict). Keyed on version rather than the array so background revalidation
     // with identical data never wipes unsaved edits.
     const varsRef = useRef(vars);
     varsRef.current = vars;
+    const baselineRef = useRef(baseline);
+    baselineRef.current = baseline;
+
+    // Values arrived or were dropped without a new version (unlock or expiry): merge them into the rows,
+    // keeping any unsaved edits.
+    useEffect(() => {
+        const byKey = new Map(varsRef.current.map((v) => [v.key, v.value]));
+        const previous = new Map(baselineRef.current.map((v) => [v.key, v.value]));
+        setBaseline(varsRef.current);
+        setRows((rs) =>
+            rs.map((r) => {
+                if (r.origKey === null || !byKey.has(r.origKey)) return r;
+                const incoming = byKey.get(r.origKey)!;
+                if (incoming !== null && r.value === null) return { ...r, value: incoming }; // just unlocked
+                if (incoming === null && r.value !== null && r.value === previous.get(r.origKey)) {
+                    return { ...r, value: null }; // locked again; unchanged value goes back to hidden
+                }
+                return r;
+            })
+        );
+        if (!unlocked) {
+            setRevealAll(false);
+            setRevealed(new Set());
+        } else if (pendingAction.current) {
+            const run = pendingAction.current;
+            pendingAction.current = null;
+            setTimeout(run, 0); // after the merged rows are rendered
+        }
+    }, [unlocked]);
+
+    // Keep the "N min left" note current.
+    const [, tick] = useState(0);
+    useEffect(() => {
+        if (!unlocked) return;
+        const t = setInterval(() => tick((n) => n + 1), 30_000);
+        return () => clearInterval(t);
+    }, [unlocked]);
+
+    // Re-lock automatically when the unlock runs out.
+    useEffect(() => {
+        if (!revealUntil) return;
+        const ms = new Date(revealUntil).getTime() - Date.now();
+        if (ms <= 0) return;
+        const t = setTimeout(() => onReload(), ms + 500);
+        return () => clearTimeout(t);
+    }, [revealUntil, onReload]);
     useEffect(() => {
         setRows(toRows(varsRef.current));
         setBaseline(varsRef.current);
@@ -259,7 +438,7 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
         const id = `r${++rowSeq}`;
         focusRowId.current = id;
         setFilter("");
-        setRows((rs) => [...rs, { id, key: "", value: "" }]);
+        setRows((rs) => [...rs, { id, key: "", value: "", origKey: null }]);
     };
 
     useEffect(() => {
@@ -276,14 +455,19 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
             return;
         }
         setSaving(true);
-        const payload = toVars(rows).filter((v) => v.key);
+        const named = rows.filter((r) => r.key.trim());
+        // Rows whose value was never unlocked are sent without one: the server keeps the stored value.
+        const payload = named.map((r) =>
+            r.value !== null ? { key: r.key.trim(), value: r.value } : { key: r.key.trim(), from: r.origKey ?? r.key.trim() }
+        );
         try {
             const res = await api<{ version: number; added: string[]; removed: string[]; changed: string[] }>(`${apiBase}/vars`, {
                 method: "PUT",
                 body: { vars: payload, version: baseVersion },
             });
-            setBaseline(payload);
-            setRows(toRows(payload));
+            const saved = named.map((r) => ({ key: r.key.trim(), value: r.value }));
+            setBaseline(saved);
+            setRows(toRows(saved));
             setBaseVersion(res.version);
             const parts = [
                 res.added.length && `${res.added.length} added`,
@@ -322,10 +506,19 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
         return () => window.removeEventListener("beforeunload", warn);
     }, [dirty]);
 
-    const currentVars = toVars(rows).filter((v) => v.key);
+    const currentVars = knownVars(rows);
+    const minutesLeft = unlocked ? Math.max(1, Math.ceil((new Date(revealUntil!).getTime() - Date.now()) / 60000)) : 0;
+
+    const lock = async () => {
+        try {
+            await api("/api/2fa/reveal", { method: "DELETE" });
+        } finally {
+            await onReload();
+        }
+    };
 
     const download = () => {
-        const blob = new Blob([stringifyDotenv(currentVars)], { type: "text/plain" });
+        const blob = new Blob([stringifyDotenv(knownVars(rowsRef.current))], { type: "text/plain" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = envSlug === "development" ? ".env" : `.env.${envSlug}`;
@@ -353,7 +546,12 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
 
             <div className="mb-3 flex flex-wrap items-center gap-2">
                 <SearchInput size="sm" id={FILTER_ID} value={filter} onChange={setFilter} placeholder="Filter keys" label="Filter variables by key" shortcut="/" />
-                <Button size="sm" variant="ghost" onClick={() => setRevealAll((v) => !v)} aria-pressed={revealAll}>
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => (revealAll ? setRevealAll(false) : withValues(() => setRevealAll(true)))}
+                    aria-pressed={revealAll}
+                >
                     {revealAll ? <EyeOff /> : <Eye />} {revealAll ? "Hide values" : "Reveal values"}
                 </Button>
                 <ButtonGroup>
@@ -365,15 +563,28 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
                     <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => copyText(stringifyDotenv(currentVars), `Copied ${currentVars.length} variables`)}
-                        disabled={!currentVars.length}
+                        onClick={() =>
+                            withValues(() => {
+                                const all = knownVars(rowsRef.current);
+                                copyText(stringifyDotenv(all), `Copied ${all.length} variables`);
+                            })
+                        }
+                        disabled={!rows.some((r) => r.key.trim())}
                     >
                         <Copy /> Copy
                     </Button>
-                    <Button size="sm" variant="outline" onClick={download} disabled={!currentVars.length}>
+                    <Button size="sm" variant="outline" onClick={() => withValues(download)} disabled={!rows.some((r) => r.key.trim())}>
                         <Download /> Download
                     </Button>
                 </ButtonGroup>
+                {unlocked && (
+                    <span className="ml-auto flex items-center gap-1 text-[12.5px] text-muted-foreground">
+                        <LockOpen className="size-3.5" /> Values unlocked · {minutesLeft} min left
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[12.5px]" onClick={lock}>
+                            Lock
+                        </Button>
+                    </span>
+                )}
             </div>
 
             {rows.length === 0 ? (
@@ -413,8 +624,9 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
                             const keyInvalid = !!k && !KEY_RE.test(k);
                             const dup = !!k && (keyCounts.get(k) ?? 0) > 1;
                             const isRevealed = revealAll || revealed.has(row.id);
-                            const original = baseline.find((v) => v.key === k);
-                            const changed = canEdit && (!!k || !!row.value) && (!original || original.value !== row.value);
+                            const original = row.origKey !== null ? baseline.find((v) => v.key === row.origKey) : undefined;
+                            const changed =
+                                canEdit && (!!k || !!row.value) && (!original || k !== row.origKey || (row.value !== null && row.value !== original.value));
                             return (
                                 <li key={row.id} className="group flex items-start bg-background transition-colors focus-within:bg-muted/50 hover:bg-muted/25">
                                     <span
@@ -453,6 +665,7 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
                                             revealed={isRevealed}
                                             invalid={!k && !!row.value}
                                             onChange={(value) => update(row.id, { value })}
+                                            onUnlock={() => withValues(() => {})}
                                         />
                                     </div>
                                     <div className={cn(ACTIONS_W, "flex shrink-0 items-center justify-end gap-0.5 px-1 py-1 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100")}>
@@ -460,18 +673,29 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
                                             <IconAction
                                                 label={isRevealed ? "Hide value" : "Reveal value"}
                                                 onClick={() =>
-                                                    setRevealed((s) => {
-                                                        const n = new Set(s);
-                                                        if (n.has(row.id)) n.delete(row.id);
-                                                        else n.add(row.id);
-                                                        return n;
-                                                    })
+                                                    isRevealed
+                                                        ? setRevealed((s) => {
+                                                              const n = new Set(s);
+                                                              n.delete(row.id);
+                                                              return n;
+                                                          })
+                                                        : withValues(() => setRevealed((s) => new Set(s).add(row.id)))
                                                 }
                                             >
                                                 {isRevealed ? <EyeOff /> : <Eye />}
                                             </IconAction>
                                         )}
-                                        <CopyButton value={row.value} label={row.key || "value"} />
+                                        <IconAction
+                                            label="Copy value"
+                                            onClick={() =>
+                                                withValues(() => {
+                                                    const v = rowsRef.current.find((r) => r.id === row.id)?.value;
+                                                    if (v != null) copyText(v, `Copied ${row.key || "value"}`);
+                                                })
+                                            }
+                                        >
+                                            <Copy />
+                                        </IconAction>
                                         {canEdit && (
                                             <IconAction label="Delete variable" danger onClick={() => setRows((rs) => rs.filter((r) => r.id !== row.id))}>
                                                 <Trash2 />
@@ -523,6 +747,15 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
                 </div>
             )}
 
+            <UnlockDialog
+                open={unlockOpen}
+                onOpenChange={(open) => {
+                    setUnlockOpen(open);
+                    if (!open && !unlocked) pendingAction.current = null;
+                }}
+                onUnlocked={onReload}
+            />
+
             <PasteDialog
                 open={pasteOpen}
                 onOpenChange={setPasteOpen}
@@ -532,7 +765,7 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, o
                         const byKey = new Map(incoming.map((v) => [v.key, v.value]));
                         const merged = rs.map((r) => (byKey.has(r.key.trim()) ? { ...r, value: byKey.get(r.key.trim())! } : r));
                         const existing = new Set(rs.map((r) => r.key.trim()));
-                        const added = toRows(incoming.filter((v) => !existing.has(v.key)));
+                        const added = toRows(incoming.filter((v) => !existing.has(v.key))).map((r) => ({ ...r, origKey: null }));
                         return [...merged.filter((r) => r.key || r.value), ...added];
                     });
                     toast.success(`Imported ${incoming.length} variable${incoming.length === 1 ? "" : "s"}. Review and save.`);

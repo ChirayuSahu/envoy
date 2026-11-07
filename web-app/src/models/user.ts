@@ -64,6 +64,9 @@ const userSchema = new Schema(
         // jwt callback consumes it to mark the session as MFA-verified.
         mfaTicketHash: { type: String, select: false },
         mfaTicketExpiry: { type: Date, select: false },
+        // Until when this user may see secret values (set by confirming a TOTP code; see lib/reveal).
+        // Kept server-side only, so it can't be forged or replayed from the browser.
+        revealUntil: { type: Date, select: false },
         // Bumped to invalidate every outstanding session (2FA reset, password change, sign out everywhere).
         sessionVersion: { type: Number, default: 0 },
         lastOrgSlug: { type: String },

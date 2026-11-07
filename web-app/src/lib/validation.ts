@@ -29,6 +29,23 @@ export const envVarSchema = z.object({
     value: z.string().max(32 * 1024, "Value is too long (32KB max)."),
 });
 
+/** A row as sent by the editor: `value` may be omitted to keep the stored one (from `from`, or the same key). */
+export const envVarSaveSchema = z
+    .array(
+        envVarSchema.extend({
+            value: envVarSchema.shape.value.optional(),
+            from: envVarSchema.shape.key.optional(),
+        })
+    )
+    .max(1000, "Too many variables (1000 max).")
+    .superRefine((vars, ctx) => {
+        const seen = new Set<string>();
+        vars.forEach((v, i) => {
+            if (seen.has(v.key)) ctx.addIssue({ code: "custom", message: `Duplicate key "${v.key}".`, path: [i, "key"] });
+            seen.add(v.key);
+        });
+    });
+
 export const envVarsSchema = z
     .array(envVarSchema)
     .max(1000, "Too many variables (1000 max).")

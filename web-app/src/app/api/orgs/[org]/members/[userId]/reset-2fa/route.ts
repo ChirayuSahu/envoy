@@ -28,7 +28,7 @@ export const POST = route<{ org: string; userId: string }>(async (req: NextReque
         { _id: params.userId },
         {
             $set: { totpEnabled: false, backupCodes: [] },
-            $unset: { totpSecret: 1, totpPendingSecret: 1, totpLastStep: 1, mfaTicketHash: 1, mfaTicketExpiry: 1 },
+            $unset: { totpSecret: 1, totpPendingSecret: 1, totpLastStep: 1, mfaTicketHash: 1, mfaTicketExpiry: 1, revealUntil: 1 },
             $inc: { sessionVersion: 1 },
         }
     );

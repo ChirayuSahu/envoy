@@ -5,18 +5,21 @@ import User from "@/models/user";
 import { requireUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { assertCanEdit, loadEnvironment, loadOrg, loadProject, loadTeam } from "@/lib/authz";
-import { conflict, json, parseBody, route } from "@/lib/http";
-import { envVarsSchema } from "@/lib/validation";
+import { badRequest, conflict, json, parseBody, route } from "@/lib/http";
+import { envVarSaveSchema } from "@/lib/validation";
 import { decrypt, encrypt } from "@/utils/encryption";
 
 type P = { org: string; team: string; project: string; env: string };
 
-const schema = z.object({ vars: envVarsSchema, version: z.number().int().min(0) });
+const schema = z.object({ vars: envVarSaveSchema, version: z.number().int().min(0) });
 
 /**
  * Replaces the environment's variables. `version` must match the stored version
  * (optimistic concurrency) so two editors can't silently overwrite each other.
  * The audit log records key names that were added/changed/removed, never values.
+ *
+ * A row may omit `value` to keep the stored one, so editors can add, rename and remove keys without
+ * unlocking values. `from` names the key the kept value comes from (for a rename); it defaults to `key`.
  */
 export const PUT = route<P>(async (req: NextRequest, { params }) => {
     const me = await requireUser(req);
@@ -30,7 +33,13 @@ export const PUT = route<P>(async (req: NextRequest, { params }) => {
     const previous = new Map<string, string>(
         (ctx.environment.vars ?? []).map((v: any) => [v.key, decrypt(v.value)])
     );
-    const next = new Map(vars.map((v) => [v.key, v.value]));
+    const resolved = vars.map((v) => {
+        if (v.value !== undefined) return { key: v.key, value: v.value };
+        const source = v.from ?? v.key;
+        if (!previous.has(source)) throw badRequest(`"${source}" has no stored value to keep. Enter a value for "${v.key}".`, "missing_value");
+        return { key: v.key, value: previous.get(source)! };
+    });
+    const next = new Map(resolved.map((v) => [v.key, v.value]));
     const added = [...next.keys()].filter((k) => !previous.has(k));
     const removed = [...previous.keys()].filter((k) => !next.has(k));
     const changed = [...next.keys()].filter((k) => previous.has(k) && previous.get(k) !== next.get(k));
@@ -38,7 +47,7 @@ export const PUT = route<P>(async (req: NextRequest, { params }) => {
     const updated = await Environment.findOneAndUpdate(
         { _id: ctx.environment._id, version },
         {
-            $set: { vars: vars.map(({ key, value }) => ({ key, value: encrypt(value) })), updatedBy: me.id },
+            $set: { vars: resolved.map(({ key, value }) => ({ key, value: encrypt(value) })), updatedBy: me.id },
             $inc: { version: 1 },
         },
         { new: true }

@@ -4,6 +4,7 @@ import { loadEnvironment, loadOrg, loadProject, loadTeam } from "@/lib/authz";
 import { json, route } from "@/lib/http";
 import { stringifyDotenv } from "@/lib/dotenv";
 import { decrypt } from "@/utils/encryption";
+import { assertCanSeeValues } from "@/lib/reveal";
 
 type P = { org: string; team: string; project: string; env: string };
 
@@ -19,6 +20,8 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
         await loadProject(await loadTeam(await loadOrg(params.org, me), params.team, me), params.project),
         params.env
     );
+    // Tokens are fine; a browser session must have unlocked values like everywhere else.
+    await assertCanSeeValues(me);
 
     const vars = (ctx.environment.vars ?? []).map((v: any) => ({ key: v.key, value: decrypt(v.value) }));
 
