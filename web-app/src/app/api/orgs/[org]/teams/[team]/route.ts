@@ -6,7 +6,7 @@ import Project from "@/models/project";
 import Environment from "@/models/environment";
 import { requireUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
-import { assertOrgAdmin, loadOrg, loadTeam } from "@/lib/authz";
+import { assertOrgAdmin, loadOrg, loadTeam, visibleProjectsFilter } from "@/lib/authz";
 import { badRequest, json, parseBody, route } from "@/lib/http";
 import { nameSchema } from "@/lib/validation";
 import { trusted } from "mongoose";
@@ -19,7 +19,7 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
     const ctx = await loadTeam(await loadOrg(params.org, me), params.team, me);
 
     const [projectCount, memberCount] = await Promise.all([
-        Project.countDocuments({ team: ctx.team._id }),
+        Project.countDocuments({ team: ctx.team._id, ...visibleProjectsFilter(ctx.role, ctx.userId) }),
         TeamMembership.countDocuments({ team: ctx.team._id }),
     ]);
 

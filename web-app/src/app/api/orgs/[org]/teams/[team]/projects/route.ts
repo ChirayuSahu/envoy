@@ -4,7 +4,7 @@ import Project from "@/models/project";
 import Environment, { DEFAULT_ENVIRONMENTS } from "@/models/environment";
 import { requireUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
-import { assertCanEdit, loadOrg, loadTeam } from "@/lib/authz";
+import { assertCanEdit, loadOrg, loadTeam, visibleProjectsFilter } from "@/lib/authz";
 import { json, parseBody, route } from "@/lib/http";
 import { nameSchema, uniqueSlug } from "@/lib/validation";
 import { afterFilter, readPage, sortSpec, toPage, type SortField } from "@/lib/pagination";
@@ -14,17 +14,21 @@ const PROJECT_SORT: SortField[] = [
     { key: "_id", dir: 1, type: "id" },
 ];
 
-/** The team's projects by name, with environment and variable counts. Paginated; `total` counts them all. */
+/**
+ * The team's projects the caller can see, by name, with environment and variable counts.
+ * Paginated; `total` counts every visible one.
+ */
 export const GET = route<{ org: string; team: string }>(async (req: NextRequest, { params }) => {
     const me = await requireUser(req);
     const ctx = await loadTeam(await loadOrg(params.org, me), params.team, me);
     const { limit, after } = readPage(req, PROJECT_SORT);
+    const visible = visibleProjectsFilter(ctx.role, ctx.userId);
 
     const [rows, total] = await Promise.all([
-        Project.find({ team: ctx.team._id, ...afterFilter(PROJECT_SORT, after) })
+        Project.find({ team: ctx.team._id, ...visible, ...afterFilter(PROJECT_SORT, after) })
             .sort(sortSpec(PROJECT_SORT))
             .limit(limit + 1),
-        Project.countDocuments({ team: ctx.team._id }),
+        Project.countDocuments({ team: ctx.team._id, ...visible }),
     ]);
     const { items, nextCursor } = toPage(rows as any[], limit, (p) => [p.name, p._id]);
 
@@ -45,6 +49,7 @@ export const GET = route<{ org: string; team: string }>(async (req: NextRequest,
             name: p.name,
             slug: p.slug,
             description: p.description ?? "",
+            restricted: !!p.restricted,
             updatedAt: p.updatedAt,
             envCount: counts.get(String(p._id))?.envs ?? 0,
             varCount: counts.get(String(p._id))?.vars ?? 0,

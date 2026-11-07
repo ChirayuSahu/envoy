@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Plus, Terminal, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Lock, MoreHorizontal, Pencil, Plus, Terminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageContainer } from "@/components/app/app-shell";
 import { QuickCreateDialog } from "@/components/quick-create-dialog";
 import { EnvEditor } from "@/components/app/env-editor";
+import { ProjectAccessDialog, RestrictedLock } from "@/components/app/project-access-dialog";
+import { MoveProjectDialog } from "@/components/app/move-project-dialog";
 import { useOrg } from "@/components/app/org-context";
 import { LoadError, LoadingPage } from "@/components/app/states";
 import { api, fetcher } from "@/lib/api-client";
@@ -26,7 +28,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { envTone } from "@/lib/tones";
 
 type ProjectData = {
-    project: { id: string; name: string; slug: string; description: string };
+    project: { id: string; name: string; slug: string; description: string; restricted?: boolean };
     team: { name: string; slug: string };
     org: { name: string; slug: string };
     access: "manage" | "edit" | "view";
@@ -150,6 +152,8 @@ function ProjectView() {
     const [renameEnvOpen, setRenameEnvOpen] = useState(false);
     const [deleteEnvOpen, setDeleteEnvOpen] = useState(false);
     const [deleteProjectOpen, setDeleteProjectOpen] = useState(false);
+    const [accessOpen, setAccessOpen] = useState(false);
+    const [moveOpen, setMoveOpen] = useState(false);
     /** Environment the user tried to switch to while the current one has unsaved edits. */
     const [pendingEnv, setPendingEnv] = useState<string | null>(null);
     const onDirtyChange = useCallback((d: boolean) => setDirty(d), []);
@@ -174,6 +178,7 @@ function ProjectView() {
                 title={
                     <span className="flex items-center gap-3">
                         <span className="truncate">{data.project.name}</span>
+                        {data.project.restricted && <RestrictedLock className="[&_svg]:size-4" />}
                         {!canEdit && <ToneBadge tone="peach">Read-only</ToneBadge>}
                     </span>
                 }
@@ -203,6 +208,14 @@ function ProjectView() {
                                     )}
                                     {isAdmin && (
                                         <>
+                                            <DropdownMenuItem onSelect={() => setAccessOpen(true)}>
+                                                <Lock /> Manage access
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => (dirty ? toast.error("Save or discard your changes first.") : setMoveOpen(true))}
+                                            >
+                                                <ArrowRightLeft /> Move to another team
+                                            </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             {current && envs.length > 1 && (
                                                 <DropdownMenuItem variant="destructive" onSelect={() => setDeleteEnvOpen(true)}>
@@ -316,6 +329,33 @@ function ProjectView() {
                         await api(`${base}/envs/${current.slug}`, { method: "PATCH", body: { name } });
                         await Promise.all([mutate(), mutateEnv()]);
                         toast.success("Environment renamed");
+                    }}
+                />
+            )}
+            <MoveProjectDialog
+                open={moveOpen}
+                onOpenChange={setMoveOpen}
+                projectUrl={base}
+                projectName={data.project.name}
+                projectSlug={data.project.slug}
+                teamSlug={params.team}
+                restricted={!!data.project.restricted}
+                onMoved={async (teamSlug, teamName) => {
+                    toast.success(`Moved ${data.project.name} to ${teamName}`);
+                    await mutateOrg();
+                    router.replace(`/o/${params.org}/t/${teamSlug}/p/${data.project.slug}${current ? `?env=${current.slug}` : ""}`);
+                }}
+            />
+            {accessOpen && (
+                <ProjectAccessDialog
+                    open={accessOpen}
+                    onOpenChange={setAccessOpen}
+                    projectUrl={base}
+                    projectName={data.project.name}
+                    teamName={data.team.name}
+                    onSaved={() => {
+                        mutate();
+                        mutateOrg();
                     }}
                 />
             )}

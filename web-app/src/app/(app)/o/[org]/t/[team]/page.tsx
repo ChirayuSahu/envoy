@@ -13,6 +13,8 @@ import { CreateProjectDialog } from "@/components/app/dialogs";
 import { QuickCreateDialog } from "@/components/quick-create-dialog";
 import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
+import { PeoplePicker } from "@/components/app/people-picker";
+import { RestrictedLock } from "@/components/app/project-access-dialog";
 import { LoadError, LoadingPage } from "@/components/app/states";
 import { api, fetcher } from "@/lib/api-client";
 import { timeAgo } from "@/lib/format";
@@ -58,7 +60,13 @@ function AddMemberDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            {/* Start in the people search, not on the "invite them" link in the description. */}
+            <DialogContent
+                onOpenAutoFocus={(e) => {
+                    e.preventDefault();
+                    requestAnimationFrame(() => document.querySelector<HTMLInputElement>("[data-people-search]")?.focus());
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>Add team member</DialogTitle>
                     <DialogDescription>{
@@ -90,22 +98,22 @@ function AddMemberDialog({
                         }
                     }}
                 >
-                    <FormField label="Person" htmlFor="member" error={error}>
-                        <Select value={userId} onValueChange={setUserId} disabled={!candidates.length}>
-                            <SelectTrigger id="member" className="w-full">
-                                <SelectValue
-                                    placeholder={data ? (candidates.length ? "Select a member" : "Everyone is already on this team") : "Loading…"}
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {candidates.map((m) => (
-                                    <SelectItem key={m.userId} value={String(m.userId)}>
-                                        {m.name} <span className="text-muted-foreground">{m.email}</span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </FormField>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm font-medium">Person</p>
+                        {data ? (
+                            <PeoplePicker
+                                mode="single"
+                                autoFocus
+                                people={candidates.map((m) => ({ id: String(m.userId), name: m.name, email: m.email }))}
+                                isChecked={(id) => id === userId}
+                                onPick={setUserId}
+                                emptyText="Everyone in the organization is already on this team."
+                            />
+                        ) : (
+                            <Skeleton className="h-36 w-full rounded-lg" />
+                        )}
+                        {error && <p className="text-[13px] text-destructive">{error}</p>}
+                    </div>
                     <FormField
                         label="Access"
                         htmlFor="role"
@@ -164,7 +172,16 @@ function EditTeamDialog({
     );
 }
 
-type Project = { id: string; name: string; slug: string; description: string; updatedAt: string; envCount: number; varCount: number };
+type Project = {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    restricted?: boolean;
+    updatedAt: string;
+    envCount: number;
+    varCount: number;
+};
 type Member = { userId: string; name: string; email: string; image: string | null; role: "editor" | "viewer" };
 type Tab = "projects" | "members";
 
@@ -181,7 +198,10 @@ function ProjectCard({ p, href }: { p: Project; href: string }) {
             <div className="flex items-center gap-3">
                 <ToneTile name={p.name} className="size-8 text-[13px]" />
                 <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
+                    <p className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-foreground">
+                        <span className="truncate">{p.name}</span>
+                        {p.restricted && <RestrictedLock />}
+                    </p>
                     <p className="truncate font-mono text-[12px] text-muted-foreground">{p.slug}</p>
                 </div>
             </div>

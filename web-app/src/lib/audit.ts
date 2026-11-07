@@ -24,6 +24,8 @@ export type AuditAction =
     | "project.create"
     | "project.update"
     | "project.delete"
+    | "project.access_change"
+    | "project.move"
     | "env.create"
     | "env.update"
     | "env.delete"

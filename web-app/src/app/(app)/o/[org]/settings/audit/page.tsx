@@ -46,6 +46,8 @@ const ACTIONS: Record<string, string> = {
     "project.create": "created project",
     "project.update": "updated project",
     "project.delete": "deleted project",
+    "project.access_change": "changed who can open",
+    "project.move": "moved project",
     "env.create": "created environment",
     "env.update": "renamed environment",
     "env.delete": "deleted environment",

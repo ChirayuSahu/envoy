@@ -5,6 +5,7 @@ import Team from "@/models/team";
 import TeamMembership, { TeamRole } from "@/models/teamMembership";
 import Project from "@/models/project";
 import Environment from "@/models/environment";
+import { trusted } from "mongoose";
 import { forbidden, notFound } from "@/lib/http";
 import type { AuthedUser } from "@/lib/auth";
 
@@ -60,14 +61,15 @@ export async function loadTeam(ctx: OrgCtx, teamSlug: string, user: AuthedUser) 
     else if (teamRole === "viewer") access = "view";
 
     if (!access) throw notFound("Team not found.");
-    return { ...ctx, team, teamRole, access };
+    return { ...ctx, team, teamRole, access, userId: String(user.id) };
 }
 
 export type TeamCtx = Awaited<ReturnType<typeof loadTeam>>;
 
 export async function loadProject(ctx: TeamCtx, projectSlug: string) {
     const project = await Project.findOne({ team: ctx.team._id, slug: String(projectSlug).toLowerCase() });
-    if (!project) throw notFound("Project not found.");
+    // A restricted project the caller isn't allowed into is a 404 too, so hidden projects can't be probed.
+    if (!project || !canSeeProject(project, ctx.role, ctx.userId)) throw notFound("Project not found.");
     return { ...ctx, project };
 }
 
@@ -77,6 +79,26 @@ export async function loadEnvironment(ctx: ProjectCtx, envSlug: string) {
     const environment = await Environment.findOne({ project: ctx.project._id, slug: String(envSlug).toLowerCase() });
     if (!environment) throw notFound("Environment not found.");
     return { ...ctx, environment };
+}
+
+type ProjectAccessFields = { restricted?: boolean | null; allowedUsers?: unknown[] | null };
+
+/**
+ * Whether the user may see a project. Owners and admins see every project; a team member sees a
+ * project restricted to "Only selected people" only when they're on its allowlist.
+ */
+export function canSeeProject(project: ProjectAccessFields, role: OrgRole, userId: string) {
+    if (isOrgAdmin(role) || !project.restricted) return true;
+    return (project.allowedUsers ?? []).some((u) => String(u) === String(userId));
+}
+
+/**
+ * Project query filter for what the user may see; merge it into a `Project.find`/`countDocuments` filter.
+ * Uses `$nor`, so it combines with the `$or` that pagination cursors add.
+ */
+export function visibleProjectsFilter(role: OrgRole, userId: string): Record<string, unknown> {
+    if (isOrgAdmin(role)) return {};
+    return { $nor: [{ restricted: true, allowedUsers: trusted({ $ne: userId }) }] };
 }
 
 /** Team ids in `org` visible to the user: all of them for owner/admin, otherwise their memberships. */

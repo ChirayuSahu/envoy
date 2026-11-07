@@ -10,7 +10,7 @@ import Invite from "@/models/invite";
 import AuditLog from "@/models/auditLog";
 import { requireUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
-import { assertOrgAdmin, assertOrgOwner, isOrgAdmin, loadOrg, visibleTeamIds } from "@/lib/authz";
+import { assertOrgAdmin, assertOrgOwner, isOrgAdmin, loadOrg, visibleProjectsFilter, visibleTeamIds } from "@/lib/authz";
 import { badRequest, conflict, json, parseBody, route } from "@/lib/http";
 import { nameSchema, slugSchema } from "@/lib/validation";
 import { trusted } from "mongoose";
@@ -25,7 +25,9 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
     const teamIds = await visibleTeamIds(org._id, role, me.id);
     const [teams, projects, myTeamRoles, memberCount] = await Promise.all([
         Team.find({ _id: trusted({ $in: teamIds }) }).sort({ name: 1 }),
-        Project.find({ team: trusted({ $in: teamIds }) }).select("name slug team updatedAt").sort({ name: 1 }),
+        Project.find({ team: trusted({ $in: teamIds }), ...visibleProjectsFilter(role, me.id) })
+            .select("name slug team updatedAt restricted")
+            .sort({ name: 1 }),
         TeamMembership.find({ org: org._id, user: me.id }).select("team role"),
         OrgMembership.countDocuments({ org: org._id }),
     ]);
@@ -49,7 +51,7 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
             memberCount: countByTeam.get(String(t._id)) ?? 0,
             projects: projects
                 .filter((p: any) => String(p.team) === String(t._id))
-                .map((p: any) => ({ id: p._id, name: p.name, slug: p.slug, updatedAt: p.updatedAt })),
+                .map((p: any) => ({ id: p._id, name: p.name, slug: p.slug, updatedAt: p.updatedAt, restricted: !!p.restricted })),
         })),
     });
 });

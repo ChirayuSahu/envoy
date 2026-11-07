@@ -29,6 +29,7 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { RestrictedLock } from "@/components/app/project-access-dialog";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -179,7 +180,8 @@ function TeamsGroup({ onCreateTeam }: { onCreateTeam: () => void }) {
                                                         isActive={params.team === team.slug && params.project === p.slug}
                                                     >
                                                         <Link href={`/o/${slug}/t/${team.slug}/p/${p.slug}`}>
-                                                            <span className="font-mono text-[12.5px]">{p.slug}</span>
+                                                            <span className="min-w-0 flex-1 truncate font-mono text-[12.5px]">{p.slug}</span>
+                                                            {p.restricted && <RestrictedLock className="text-muted-foreground/70" />}
                                                         </Link>
                                                     </SidebarMenuSubButton>
                                                 </SidebarMenuSubItem>

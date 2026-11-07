@@ -4,7 +4,7 @@ import Team from "@/models/team";
 import Project from "@/models/project";
 import Environment from "@/models/environment";
 import { requireUser } from "@/lib/auth";
-import { loadOrg, visibleTeamIds } from "@/lib/authz";
+import { loadOrg, visibleProjectsFilter, visibleTeamIds } from "@/lib/authz";
 import { json, route } from "@/lib/http";
 
 type P = { org: string };
@@ -26,7 +26,7 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
     const teamIds = await visibleTeamIds(org._id, role, me.id);
     const [teams, projects] = await Promise.all([
         Team.find({ _id: trusted({ $in: teamIds }) }).select("name slug"),
-        Project.find({ team: trusted({ $in: teamIds }) }).select("name slug team"),
+        Project.find({ team: trusted({ $in: teamIds }), ...visibleProjectsFilter(role, me.id) }).select("name slug team"),
     ]);
     if (!projects.length) return json({ environments: [], variables: [] });
 

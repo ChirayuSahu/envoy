@@ -6,7 +6,14 @@ import type { KeyedMutator } from "swr";
 export type OrgRole = "owner" | "admin" | "member";
 export type Access = "manage" | "edit" | "view";
 
-export type NavProject = { id: string; name: string; slug: string; updatedAt: string };
+export type NavProject = {
+    id: string;
+    name: string;
+    slug: string;
+    updatedAt: string;
+    /** Set to "Only selected people": team members need to be on its allowlist. */
+    restricted?: boolean;
+};
 export type NavTeam = {
     id: string;
     name: string;

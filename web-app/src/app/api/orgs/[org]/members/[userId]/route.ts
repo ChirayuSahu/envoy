@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import OrgMembership from "@/models/orgMembership";
 import TeamMembership from "@/models/teamMembership";
+import Project from "@/models/project";
 import { requireUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { assertOrgAdmin, loadOrg } from "@/lib/authz";
@@ -56,6 +57,8 @@ export const DELETE = route<P>(async (req: NextRequest, { params }) => {
     }
 
     await TeamMembership.deleteMany({ org: org._id, user: targetId });
+    // Drop them from every "Only selected people" list in the org, so rejoining doesn't restore access.
+    await Project.updateMany({ org: org._id, allowedUsers: targetId }, { $pull: { allowedUsers: targetId } }, { timestamps: false });
     await OrgMembership.deleteOne({ _id: target._id });
     await audit(
         org,

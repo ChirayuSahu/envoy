@@ -28,6 +28,7 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
             name: ctx.project.name,
             slug: ctx.project.slug,
             description: ctx.project.description ?? "",
+            restricted: !!ctx.project.restricted,
         },
         team: { name: ctx.team.name, slug: ctx.team.slug },
         org: { name: ctx.org.name, slug: ctx.org.slug },
