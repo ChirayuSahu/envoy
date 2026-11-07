@@ -25,12 +25,24 @@ export function assertCanEdit(access: Access) {
     if (access === "view") throw forbidden("You have read-only access to this project.", "read_only");
 }
 
-export async function loadOrg(slug: string, user: AuthedUser) {
+/** Whether the org requires two-factor. Orgs from before the setting existed have none stored: they require it. */
+export const requires2fa = (org: { require2fa?: boolean | null }) => org.require2fa !== false;
+
+export async function loadOrg(slug: string, user: AuthedUser, opts: { skip2fa?: boolean } = {}) {
     const org = await Organization.findOne({ slug: String(slug).toLowerCase() });
     if (!org) throw notFound("Organization not found.");
     const membership = await OrgMembership.findOne({ org: org._id, user: user.id });
     // 404 rather than 403 so non-members can't probe which orgs exist.
     if (!membership) throw notFound("Organization not found.");
+    // Members get in only after the second step; `skip2fa` is for leaving the org, which shouldn't need it.
+    if (!opts.skip2fa && requires2fa(org) && !user.mfa) {
+        throw forbidden(
+            user.mfaEnrolled
+                ? `${org.name} requires two-factor authentication. Sign in again and confirm with your passkey or code.`
+                : `${org.name} requires two-factor authentication. Add a passkey or an authenticator app to continue.`,
+            "org_requires_2fa"
+        );
+    }
     return { org, role: membership.role as OrgRole, membership };
 }
 

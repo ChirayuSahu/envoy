@@ -29,6 +29,8 @@ type Page = { entries: Entry[]; nextCursor: string | null };
 const ACTIONS: Record<string, string> = {
     "org.create": "created the organization",
     "org.update": "updated organization settings",
+    "org.2fa_required": "made two-factor authentication required in",
+    "org.2fa_optional": "made two-factor authentication optional in",
     "org.transfer": "transferred ownership to",
     "member.join": "joined the organization",
     "member.role_change": "changed the role of",

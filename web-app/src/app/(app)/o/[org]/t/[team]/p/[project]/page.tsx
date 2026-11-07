@@ -47,6 +47,8 @@ type EnvData = {
     access: "manage" | "edit" | "view";
     /** When the user's server-side unlock ends; null while values are locked. */
     revealUntil: string | null;
+    /** False when the user has no 2FA: values come unlocked. */
+    revealRequired?: boolean;
 };
 
 function CliDialog({ open, onOpenChange, path }: { open: boolean; onOpenChange: (o: boolean) => void; path: string }) {
@@ -273,6 +275,7 @@ function ProjectView() {
                     version={envData.environment.version}
                     updatedBy={envData.environment.updatedBy}
                     revealUntil={envData.revealUntil}
+                    revealRequired={envData.revealRequired !== false}
                     onReload={reloadEnv}
                     onDirtyChange={onDirtyChange}
                     onSaved={() => {

@@ -7,6 +7,8 @@ import type { AuthedUser } from "@/lib/auth";
 export type AuditAction =
     | "org.create"
     | "org.update"
+    | "org.2fa_required"
+    | "org.2fa_optional"
     | "org.transfer"
     | "member.join"
     | "member.role_change"

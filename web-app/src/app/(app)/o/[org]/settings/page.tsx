@@ -10,6 +10,7 @@ import { api } from "@/lib/api-client";
 import { FormField, Section } from "@/components/common";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Input } from "@/components/ui/input";
+import { OrgSecurity } from "@/components/app/org-security";
 
 export default function GeneralSettingsPage() {
     const { data, slug, mutate, isAdmin, isOwner } = useOrg();
@@ -88,6 +89,13 @@ export default function GeneralSettingsPage() {
                         </div>
                     )}
                 </form>
+            </Section>
+
+            <Section
+                title="Security"
+                description="How members prove it's them. People who already use a passkey or authenticator app always do, whatever this is set to."
+            >
+                <OrgSecurity slug={slug!} isOwner={isOwner} />
             </Section>
 
             {!isOwner && (

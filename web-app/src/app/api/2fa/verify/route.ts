@@ -7,6 +7,7 @@ import { totpCodeSchema } from "@/lib/validation";
 import { decrypt } from "@/utils/encryption";
 import { mfaLimiter } from "@/utils/limiter";
 import User from "@/models/user";
+import { isMfaEnrolled } from "@/lib/passkeys";
 
 const schema = z.union([
     z.object({ code: totpCodeSchema }),
@@ -18,8 +19,11 @@ export const POST = route(async (req: NextRequest) => {
     const { user } = await requirePartialUser(req);
     const body = await parseBody(req, schema);
 
-    const full = await User.findById(user._id).select("+totpSecret +totpLastStep +backupCodes totpEnabled");
-    if (!full.totpEnabled || !full.totpSecret) throw badRequest("Two-factor authentication is not set up.", "not_enrolled");
+    const full = await User.findById(user._id).select("+totpSecret +totpLastStep +backupCodes totpEnabled passkeyCount");
+    if (!isMfaEnrolled(full)) throw badRequest("Two-factor authentication is not set up.", "not_enrolled");
+    if ("code" in body && (!full.totpEnabled || !full.totpSecret)) {
+        throw badRequest("There's no authenticator app on this account. Use your passkey or a backup code.", "no_totp");
+    }
 
     const limiterKey = `verify:${user._id}`;
     try {

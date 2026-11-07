@@ -70,7 +70,8 @@ export const GET = route<{ org: string }>(async (req: NextRequest, { params }) =
             email: m.u.email,
             image: m.u.image ?? null,
             provider: m.u.provider,
-            totpEnabled: !!m.u.totpEnabled,
+            // Has a second factor: an authenticator app or a passkey.
+            totpEnabled: !!m.u.totpEnabled || (m.u.passkeyCount ?? 0) > 0,
             role: m.role,
             joinedAt: m.createdAt,
             teams: teamsByUser.get(String(m.u._id)) ?? [],

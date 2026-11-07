@@ -60,6 +60,12 @@ const userSchema = new Schema(
         totpPendingSecret: { type: String, select: false },
         totpLastStep: { type: Number, select: false },
         backupCodes: { type: [String], select: false, default: [] },
+        // Passkeys (WebAuthn) are the other second factor; the credentials live in the Passkey collection.
+        // passkeyCount mirrors it so "has 2FA set up" needs no extra query on every request.
+        passkeyCount: { type: Number, default: 0 },
+        // The one in-flight WebAuthn challenge (registration or sign-in), single use, a few minutes long.
+        webauthnChallenge: { type: String, select: false },
+        webauthnChallengeExpiry: { type: Date, select: false },
         // One-time ticket minted by /api/2fa/* after a code is verified; the NextAuth
         // jwt callback consumes it to mark the session as MFA-verified.
         mfaTicketHash: { type: String, select: false },

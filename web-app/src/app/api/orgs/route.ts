@@ -40,7 +40,8 @@ export const POST = route(async (req: NextRequest) => {
         slug = await uniqueSlug(name, (s) => Organization.exists({ slug: s }));
     }
 
-    const org = await Organization.create({ name, slug, owner: me.id });
+    // New organizations start without the 2FA requirement; the owner can turn it on in settings.
+    const org = await Organization.create({ name, slug, owner: me.id, require2fa: false });
     await OrgMembership.create({ org: org._id, user: me.id, role: "owner" });
     await audit(org, me, "org.create", { type: "org", id: String(org._id), name });
 

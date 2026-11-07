@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CloudAlert, RotateCcw, SearchX, ShieldAlert, X } from "lucide-react";
+import { CloudAlert, RotateCcw, SearchX, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "./app-shell";
@@ -106,9 +106,38 @@ export function ErrorState({
     );
 }
 
-/** Picks the right state for a failed load: "not found" for 404s, a retryable error for anything else. */
+/** The organization requires two-factor and this person hasn't set it up. */
+export function Requires2faState({ message }: { message?: string }) {
+    const back = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/dashboard";
+    return (
+        <StateBlock
+            icon={ShieldCheck}
+            tone="bg-pastel-lavender text-pastel-lavender-fg"
+            title="Two-factor authentication required"
+            actions={
+                <>
+                    <Button asChild>
+                        <Link href={`/2fa/setup?callbackUrl=${encodeURIComponent(back)}`}>Set up two-factor</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/account">Account settings</Link>
+                    </Button>
+                </>
+            }
+        >
+            {message ?? "This organization requires two-factor authentication."} It takes a minute: a{" "}
+            <strong className="font-semibold text-foreground">passkey</strong> is the quickest.
+        </StateBlock>
+    );
+}
+
+/**
+ * Picks the right state for a failed load: two-factor required, "not found" for 404s, or a retryable
+ * error for anything else.
+ */
 export function LoadError({ error, notFoundTitle, onRetry }: { error: unknown; notFoundTitle: string; onRetry?: () => void }) {
     const status = (error as { status?: number } | null)?.status;
+    if ((error as { code?: string } | null)?.code === "org_requires_2fa") return <Requires2faState message={(error as Error).message} />;
     if (status === 404 || status === 403) return <NotFoundState title={notFoundTitle} />;
     return <ErrorState onRetry={onRetry} />;
 }

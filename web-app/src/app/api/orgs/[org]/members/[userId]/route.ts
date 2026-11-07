@@ -39,8 +39,9 @@ export const PATCH = route<P>(async (req: NextRequest, { params }) => {
 /** Remove a member (admin+) or leave the org (`userId = me`). Cascades team memberships. */
 export const DELETE = route<P>(async (req: NextRequest, { params }) => {
     const me = await requireUser(req);
-    const { org, role } = await loadOrg(params.org, me);
     const leaving = params.userId === "me" || params.userId === me.id;
+    // Leaving never needs the org's 2FA requirement to be met.
+    const { org, role } = await loadOrg(params.org, me, { skip2fa: leaving });
     const targetId = leaving ? me.id : params.userId;
 
     const target = await OrgMembership.findOne({ org: org._id, user: targetId }).populate("user", "name email");

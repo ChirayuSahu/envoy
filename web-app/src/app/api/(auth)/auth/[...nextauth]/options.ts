@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import connectMongo from "@/utils/connectMongo";
 import User from "@/models/user";
+import { isMfaEnrolled } from "@/lib/passkeys";
 import { comparePassword } from "@/utils/bcrypt";
 import { sanitizeFilter } from "mongoose";
 import { loginLimiter, getUserIP } from "@/utils/limiter";
@@ -43,7 +44,7 @@ export const authOptions: NextAuthOptions = {
 
                     if (!user || !user.password) {
                         if (user && user.provider === "google") {
-                            throw new Error("This account uses Google sign-in. Continue with Google instead.");
+                            throw new Error("This account signs in with Google. Continue with Google, or set a password in Account settings first.");
                         }
                         return null;
                     }
@@ -137,13 +138,14 @@ export const authOptions: NextAuthOptions = {
                     picture: dbUser.image ?? null,
                     sv: dbUser.sessionVersion ?? 0,
                     totpEnabled: !!dbUser.totpEnabled,
+                    mfaEnrolled: isMfaEnrolled(dbUser),
                     mfaVerified: false,
                     revoked: false,
                 };
             }
 
             if (user && account?.provider === "credentials") {
-                const dbUser = await User.findById(user.id).select("sessionVersion totpEnabled image");
+                const dbUser = await User.findById(user.id).select("sessionVersion totpEnabled passkeyCount image");
                 return {
                     ...token,
                     id: user.id,
@@ -152,6 +154,7 @@ export const authOptions: NextAuthOptions = {
                     picture: dbUser?.image ?? null,
                     sv: dbUser?.sessionVersion ?? 0,
                     totpEnabled: !!dbUser?.totpEnabled,
+                    mfaEnrolled: isMfaEnrolled(dbUser),
                     mfaVerified: false,
                     revoked: false,
                 };
@@ -161,7 +164,7 @@ export const authOptions: NextAuthOptions = {
 
             // ── Refresh / update: re-check revocation and consume MFA tickets ──
             const dbUser = await User.findById(token.id).select(
-                "name email image sessionVersion totpEnabled +mfaTicketHash +mfaTicketExpiry"
+                "name email image sessionVersion totpEnabled passkeyCount +mfaTicketHash +mfaTicketExpiry"
             );
 
             if (!dbUser || (dbUser.sessionVersion ?? 0) !== (token.sv ?? 0)) {
@@ -171,7 +174,8 @@ export const authOptions: NextAuthOptions = {
             token.name = dbUser.name;
             token.picture = dbUser.image ?? null;
             token.totpEnabled = !!dbUser.totpEnabled;
-            if (!dbUser.totpEnabled) token.mfaVerified = false;
+            token.mfaEnrolled = isMfaEnrolled(dbUser);
+            if (!token.mfaEnrolled) token.mfaVerified = false;
 
             const ticket = trigger === "update" ? (session as any)?.mfaTicket : undefined;
             if (typeof ticket === "string" && dbUser.mfaTicketHash) {
@@ -182,7 +186,7 @@ export const authOptions: NextAuthOptions = {
 
                 await User.updateOne({ _id: dbUser._id }, { $unset: { mfaTicketHash: 1, mfaTicketExpiry: 1 } });
 
-                if (valid && dbUser.totpEnabled) {
+                if (valid && token.mfaEnrolled) {
                     token.mfaVerified = true;
                 }
             }
@@ -198,6 +202,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.image = (token.picture as string | null | undefined) ?? null;
                 session.user.mfaVerified = !!token.mfaVerified;
                 session.user.totpEnabled = !!token.totpEnabled;
+                session.user.mfaEnrolled = !!token.mfaEnrolled;
                 session.user.revoked = !!token.revoked;
             }
             return session;

@@ -7,10 +7,13 @@ import type { AuthedUser } from "@/lib/auth";
 export const REVEAL_TTL_MS = 10 * 60 * 1000;
 
 /**
- * Secret values are only sent to a browser session after the user confirms a fresh TOTP code. The unlock
- * lives on the user record in MongoDB (never in the browser) and expires after REVEAL_TTL_MS.
+ * For a browser session of someone with 2FA set up, secret values are only sent after they confirm a fresh
+ * code or passkey. The unlock lives on the user record in MongoDB (never in the browser) and expires
+ * after REVEAL_TTL_MS. People without 2FA (allowed when their orgs don't require it) see values directly.
  * Personal API tokens are credentials in their own right and aren't subject to it.
  */
+export const revealRequired = (me: AuthedUser) => me.via === "session" && me.mfaEnrolled;
+
 export async function revealUntil(me: AuthedUser): Promise<Date | null> {
     if (me.via === "token") return null;
     const user = await User.findById(me.id).select("+revealUntil").lean<{ revealUntil?: Date }>();
@@ -19,7 +22,7 @@ export async function revealUntil(me: AuthedUser): Promise<Date | null> {
 }
 
 export async function canSeeValues(me: AuthedUser) {
-    return me.via === "token" || !!(await revealUntil(me));
+    return !revealRequired(me) || !!(await revealUntil(me));
 }
 
 export async function assertCanSeeValues(me: AuthedUser) {

@@ -54,23 +54,25 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Signed in but 2FA not enrolled yet → enrollment is the only place to go.
-    if (!token.totpEnabled) {
-        if (isSetup) return NextResponse.next();
-        if (isProtected || isAuthPage || isVerify) return redirect(request, "/2fa/setup");
+    const enrolled = token.mfaEnrolled ?? token.totpEnabled;
+
+    // No second factor: that's allowed (organizations decide whether they require one; the API enforces it).
+    // Setup stays reachable so people can add one; there's nothing to verify.
+    if (!enrolled) {
+        if (isVerify || isAuthPage) return redirect(request, "/dashboard");
         return NextResponse.next();
     }
 
-    // Enrolled but this session hasn't passed the TOTP challenge.
+    // Has a passkey or authenticator, but this session hasn't passed the second step yet.
     if (!token.mfaVerified) {
         if (isVerify) return NextResponse.next();
         if (isProtected || isAuthPage || isSetup) return redirect(request, "/2fa/verify", isProtected);
         return NextResponse.next();
     }
 
-    if (isAuthPage || isSetup || isVerify) {
-        return redirect(request, "/dashboard");
-    }
+    // Already enrolled and verified: more passkeys or an authenticator app are added from Account settings.
+    if (isSetup) return redirect(request, "/account#two-factor");
+    if (isAuthPage || isVerify) return redirect(request, "/dashboard");
 
     return NextResponse.next();
 }

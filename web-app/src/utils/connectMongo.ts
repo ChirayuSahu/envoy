@@ -30,6 +30,7 @@ const connectMongo = async () => {
       import("@/models/invite"),
       import("@/models/apiToken"),
       import("@/models/auditLog"),
+      import("@/models/passkey"),
     ]);
 
   } catch (error) {

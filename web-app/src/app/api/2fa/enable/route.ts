@@ -7,16 +7,20 @@ import { totpCodeSchema } from "@/lib/validation";
 import { decrypt } from "@/utils/encryption";
 import { mfaLimiter } from "@/utils/limiter";
 import User from "@/models/user";
+import { assertCanEnroll, isMfaEnrolled } from "@/lib/passkeys";
 
 const schema = z.object({ code: totpCodeSchema });
 
 /** Confirms enrollment with a first code; returns one-time backup codes and an MFA ticket. */
 export const POST = route(async (req: NextRequest) => {
-    const { user } = await requirePartialUser(req);
+    const { user, jwt } = await requirePartialUser(req);
     const { code } = await parseBody(req, schema);
 
-    const full = await User.findById(user._id).select("+totpPendingSecret totpEnabled");
-    if (full.totpEnabled) throw badRequest("Two-factor authentication is already enabled.");
+    const full = await User.findById(user._id).select("+totpPendingSecret totpEnabled passkeyCount");
+    if (full.totpEnabled) throw badRequest("An authenticator app is already set up.");
+    assertCanEnroll(full, jwt);
+    // Someone adding an app next to their passkeys keeps their current backup codes.
+    const firstFactor = !isMfaEnrolled(full);
     if (!full.totpPendingSecret) throw badRequest("Start setup first.", "no_pending_secret");
 
     try {
@@ -41,7 +45,7 @@ export const POST = route(async (req: NextRequest) => {
                 totpSecret: full.totpPendingSecret,
                 totpEnabled: true,
                 totpLastStep: step,
-                backupCodes: hashes,
+                ...(firstFactor ? { backupCodes: hashes } : {}),
                 mfaTicketHash: ticket.hash,
                 mfaTicketExpiry: ticket.expiry,
             },
@@ -49,5 +53,5 @@ export const POST = route(async (req: NextRequest) => {
         }
     );
 
-    return json({ backupCodes: codes, mfaTicket: ticket.ticket });
+    return json({ backupCodes: firstFactor ? codes : null, mfaTicket: ticket.ticket });
 });

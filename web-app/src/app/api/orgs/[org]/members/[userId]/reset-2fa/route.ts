@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import OrgMembership from "@/models/orgMembership";
 import User from "@/models/user";
+import Passkey from "@/models/passkey";
 import { requireUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { assertOrgOwner, loadOrg } from "@/lib/authz";
@@ -8,7 +9,7 @@ import { badRequest, forbidden, json, notFound, route } from "@/lib/http";
 
 /**
  * Owner-only recovery for a member who lost their authenticator and backup codes.
- * Clears TOTP, revokes all their sessions; they re-enroll after their next password/Google sign-in.
+ * Clears their authenticator app and passkeys, revokes all their sessions; they re-enroll after their next password/Google sign-in.
  */
 export const POST = route<{ org: string; userId: string }>(async (req: NextRequest, { params }) => {
     const me = await requireUser(req);
@@ -27,11 +28,13 @@ export const POST = route<{ org: string; userId: string }>(async (req: NextReque
     await User.updateOne(
         { _id: params.userId },
         {
-            $set: { totpEnabled: false, backupCodes: [] },
+            $set: { totpEnabled: false, backupCodes: [], passkeyCount: 0 },
             $unset: { totpSecret: 1, totpPendingSecret: 1, totpLastStep: 1, mfaTicketHash: 1, mfaTicketExpiry: 1, revealUntil: 1 },
             $inc: { sessionVersion: 1 },
         }
     );
+
+    await Passkey.deleteMany({ user: params.userId });
 
     await audit(org, me, "member.2fa_reset", { type: "user", id: params.userId, name: target.user?.email }, undefined, req);
     return json({ message: `2FA reset for ${target.user?.name}. They'll set it up again at next sign-in.` });

@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { Check, Crown, MoreHorizontal, ShieldCheck, ShieldOff, Trash2, UserPlus, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
-import { api } from "@/lib/api-client";
+import useSWR from "swr";
+import { api, fetcher } from "@/lib/api-client";
 import { usePaginated } from "@/lib/use-paginated";
 import { formatDate, timeAgo } from "@/lib/format";
 import { LoadMore, UserAvatar, SearchInput, ToneBadge } from "@/components/common";
@@ -56,6 +57,8 @@ const ROLE_CARDS: { role: "owner" | "admin" | "member"; icon: React.ElementType;
 
 export default function MembersPage() {
     const { slug, isAdmin, isOwner, mutate: mutateOrg } = useOrg();
+    const { data: security } = useSWR<{ require2fa: boolean }>(slug ? `/api/orgs/${slug}/security` : null, fetcher);
+    const require2fa = !!security?.require2fa;
     const key = `/api/orgs/${slug}/members`;
     const [query, setQuery] = useState("");
     const [debounced, setDebounced] = useState("");
@@ -121,7 +124,16 @@ export default function MembersPage() {
                                 </p>
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
-                                {!m.totpEnabled && <ToneBadge tone="rose">2FA pending</ToneBadge>}
+                                {!m.totpEnabled &&
+                                    (require2fa ? (
+                                        <ToneBadge tone="rose" className="hidden sm:inline-flex">
+                                            Needs 2FA
+                                        </ToneBadge>
+                                    ) : (
+                                        <ToneBadge tone="neutral" className="hidden sm:inline-flex">
+                                            No 2FA
+                                        </ToneBadge>
+                                    ))}
                                 <span className="hidden whitespace-nowrap text-right text-xs text-muted-foreground md:inline" title={formatDate(m.joinedAt)}>
                                     Joined {timeAgo(m.joinedAt)}
                                 </span>

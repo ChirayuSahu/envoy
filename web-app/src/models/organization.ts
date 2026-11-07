@@ -6,6 +6,12 @@ const organizationSchema = new Schema(
         slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
         owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
         migratedFrom: { type: String, index: true, sparse: true },
+        /**
+         * Members must have a passkey or authenticator app (and use it) to open anything in the org.
+         * Deliberately no default: organizations created before this setting existed have no value and
+         * count as requiring it (see requires2fa); new organizations are created with false.
+         */
+        require2fa: { type: Boolean },
     },
     { timestamps: true }
 );

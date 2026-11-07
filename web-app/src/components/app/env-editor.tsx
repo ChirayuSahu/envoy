@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ClipboardPaste, Copy, Download, Eye, EyeOff, LockKeyhole, LockOpen, Plus, RotateCcw, TriangleAlert } from "lucide-react";
+import useSWR from "swr";
+import { ClipboardPaste, Copy, Download, Eye, EyeOff, Fingerprint, LockKeyhole, LockOpen, Plus, RotateCcw, TriangleAlert } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -12,7 +13,8 @@ import { EmptyState, SearchInput, copyText } from "@/components/common";
 import { OtpField } from "@/components/otp-field";
 import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { PasteDialog, VarTable, nextRowId, useRowProblems, type Row } from "@/components/app/var-table";
-import { ApiError, api } from "@/lib/api-client";
+import { ApiError, api, fetcher } from "@/lib/api-client";
+import { confirmWithPasskey, passkeyError, passkeysSupported } from "@/lib/passkey-client";
 import { stringifyDotenv, type EnvVar } from "@/lib/dotenv";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +64,9 @@ function UnlockDialog({
     const [code, setCode] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { data: methods } = useSWR<{ totp: boolean; passkeys: number }>(open ? "/api/2fa/methods" : null, fetcher);
+    const canPasskey = (methods?.passkeys ?? 0) > 0 && passkeysSupported();
+    const hasTotp = !!methods?.totp;
 
     useEffect(() => {
         if (open) {
@@ -70,17 +75,36 @@ function UnlockDialog({
         }
     }, [open]);
 
+    const done = async () => {
+        await onUnlocked();
+        onOpenChange(false);
+    };
+
     const submit = async (value = code) => {
         if (value.length !== 6 || busy) return;
         setBusy(true);
         setError(null);
         try {
             await api("/api/2fa/reveal", { method: "POST", body: { code: value } });
-            await onUnlocked();
-            onOpenChange(false);
+            await done();
         } catch (e) {
             setError(e instanceof ApiError ? e.message : "Couldn't check the code. Try again.");
             setCode("");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const withPasskey = async () => {
+        if (busy) return;
+        setBusy(true);
+        setError(null);
+        try {
+            await confirmWithPasskey("reveal");
+            await done();
+        } catch (e) {
+            const message = passkeyError(e);
+            if (message) setError(message);
         } finally {
             setBusy(false);
         }
@@ -95,18 +119,34 @@ function UnlockDialog({
                     </div>
                     <DialogTitle>Unlock secret values</DialogTitle>
                     <DialogDescription>
-                        Enter the code from your <strong className="font-medium text-foreground">authenticator app</strong>. Values stay unlocked for{" "}
-                        <strong className="font-medium text-foreground">10 minutes</strong>.
+                        {canPasskey ? (
+                            <>
+                                Confirm with your <strong className="font-medium text-foreground">passkey</strong>
+                                {hasTotp ? " or a code from your authenticator app" : ""}.
+                            </>
+                        ) : (
+                            <>
+                                Enter the code from your <strong className="font-medium text-foreground">authenticator app</strong>.
+                            </>
+                        )}{" "}
+                        Values stay unlocked for <strong className="font-medium text-foreground">10 minutes</strong>.
                     </DialogDescription>
                 </DialogHeader>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
-                        submit();
+                        if (hasTotp && code.length === 6) submit();
+                        else if (canPasskey) withPasskey();
                     }}
                     className="flex flex-col gap-3"
                 >
-                    <OtpField value={code} onChange={setCode} onComplete={submit} disabled={busy} invalid={!!error} />
+                    {canPasskey && (
+                        <Button type="button" variant="outline" className="w-full" onClick={withPasskey} loading={busy && !code} autoFocus>
+                            <Fingerprint /> Use passkey
+                        </Button>
+                    )}
+                    {canPasskey && hasTotp && <p className="text-center text-[12px] text-muted-foreground">or enter a code</p>}
+                    {(hasTotp || !methods) && <OtpField value={code} onChange={setCode} onComplete={submit} disabled={busy || !methods} invalid={!!error} />}
                     {error && (
                         <p role="alert" className="text-[13px] text-destructive">
                             {error}
@@ -114,9 +154,13 @@ function UnlockDialog({
                     )}
                     <DialogFooter>
                         <DialogCancel onClick={() => onOpenChange(false)} />
-                        <DialogSubmit loading={busy} disabled={code.length !== 6}>
-                            Unlock
-                        </DialogSubmit>
+                        {hasTotp || !methods ? (
+                            <DialogSubmit loading={busy && !!code} disabled={code.length !== 6}>
+                                Unlock
+                            </DialogSubmit>
+                        ) : (
+                            <DialogSubmit loading={busy}>Use passkey</DialogSubmit>
+                        )}
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -139,11 +183,13 @@ export type EnvEditorProps = {
     /** Refetch this environment (after unlocking or locking, to get or drop values). */
     onReload: () => Promise<unknown>;
     onDirtyChange: (dirty: boolean) => void;
+    /** False for people without 2FA: values come unlocked, with no code, timer or Lock button. */
+    revealRequired?: boolean;
     /** Pre-fills the key filter (e.g. opened from a variable in the command menu). */
     initialFilter?: string;
 };
 
-export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, revealUntil, onSaved, onReload, onDirtyChange, initialFilter }: EnvEditorProps) {
+export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, revealUntil, onSaved, onReload, onDirtyChange, initialFilter, revealRequired = true }: EnvEditorProps) {
     const [rows, setRows] = useState<Row[]>(() => toRows(vars));
     const [baseline, setBaseline] = useState<StoredVar[]>(vars);
     const [baseVersion, setBaseVersion] = useState(version);
@@ -162,7 +208,8 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
     rowsRef.current = rows;
 
     // ── Unlock (server-side, 10 minutes): values arrive only after a fresh authenticator code.
-    const unlocked = !!revealUntil && new Date(revealUntil).getTime() > Date.now();
+    const timedUnlock = revealRequired && !!revealUntil && new Date(revealUntil).getTime() > Date.now();
+    const unlocked = !revealRequired || timedUnlock;
     const pendingAction = useRef<(() => void) | null>(null);
     /** Runs `action` now if values are unlocked; otherwise asks for a code first and runs it afterwards. */
     const withValues = (action: () => void) => {
@@ -404,7 +451,7 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
                         <Download /> Download
                     </Button>
                 </ButtonGroup>
-                {unlocked && (
+                {timedUnlock && (
                     <span className="ml-auto flex items-center gap-1 text-[12.5px] text-muted-foreground">
                         <LockOpen className="size-3.5" /> Values unlocked · {minutesLeft} min left
                         <Button size="sm" variant="ghost" className="h-7 px-2 text-[12.5px]" onClick={lock}>

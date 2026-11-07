@@ -7,7 +7,7 @@ import { assertCanEdit, assertOrgAdmin, loadEnvironment, loadOrg, loadProject, l
 import { badRequest, json, parseBody, route } from "@/lib/http";
 import { decrypt } from "@/utils/encryption";
 import User from "@/models/user";
-import { revealUntil } from "@/lib/reveal";
+import { revealRequired, revealUntil } from "@/lib/reveal";
 
 type P = { org: string; team: string; project: string; env: string };
 
@@ -27,6 +27,8 @@ async function load(req: NextRequest, params: P) {
 export const GET = route<P>(async (req: NextRequest, { params }) => {
     const { me, ctx } = await load(req, params);
     const until = await revealUntil(me);
+    const required = revealRequired(me);
+    const show = !required || !!until;
     const env = ctx.environment;
     const updatedBy = env.updatedBy ? await User.findById(env.updatedBy).select("name") : null;
 
@@ -38,10 +40,12 @@ export const GET = route<P>(async (req: NextRequest, { params }) => {
             version: env.version ?? 0,
             updatedAt: env.updatedAt,
             updatedBy: updatedBy?.name ?? null,
-            vars: (env.vars ?? []).map((v: any) => ({ key: v.key, value: until ? decrypt(v.value) : null })),
+            vars: (env.vars ?? []).map((v: any) => ({ key: v.key, value: show ? decrypt(v.value) : null })),
         },
         access: ctx.access,
         revealUntil: until,
+        /** False for people without 2FA: their values come unlocked, with no timer. */
+        revealRequired: required,
     });
 });
 
