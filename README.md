@@ -17,81 +17,62 @@
 
 The Environment Sharing Platform is a secure web application that enables development teams to safely manage, store, and share environment variables without exposing sensitive credentials through insecure channels like Slack or email. Built with Next.js and MongoDB, it provides an encrypted, centralized vault for all your environment variables.
 
+### How it's organized
+
+```
+Organization          owners, admins and members
+└ Team                each member is an Editor or a Viewer
+  └ Project           one app or service
+    └ Environment     development, staging, production, … (each with its own variables)
+```
+
+| Role | Can do |
+| --- | --- |
+| **Org owner** | Everything, plus delete the org, transfer ownership, reset a member's 2FA |
+| **Org admin** | Create teams, invite people, change roles, edit every project, view the audit log |
+| **Org member** | See only the teams they're on |
+| **Team editor** | Read and change variables, create projects and environments in that team |
+| **Team viewer** | Read variables only |
+
 ## Features
-- [x] **Secure Environment Variable Storage** - Encrypted storage of API keys, database credentials, and other sensitive configuration data
-- [x] **Team Collaboration** - Create workspaces and groups to organize and share environment variables with team members
-- [x] **Role-based Access Control** - Owner and member roles with appropriate permissions for workspace and group management
-- [x] **Authentication System** - Secure user registration and login with NextAuth.js integration
-- [x] **Workspace Management** - Create, edit, and delete workspaces to organize your projects
-- [x] **Group Management** - Organize environment variables into groups within workspaces
-- [x] **Member Management** - Add and remove team members from groups and workspaces
-- [x] **Sharing Tokens** - Generate secure tokens for sharing environment variables
-- [x] **Dark/Light Theme** - Toggle between dark and light themes for better user experience
-- [x] **Responsive Design** - Fully responsive design that works on desktop and mobile devices
+- [x] **Organizations, teams and projects** - Org owners and admins create teams and decide who can edit and who can only read
+- [x] **Multiple environments per project** - development, staging and production out of the box; add your own
+- [x] **Mandatory TOTP two-factor authentication** - Every sign-in (password or Google) is confirmed with an authenticator app, with one-time backup codes
+- [x] **Invitations** - 10-character invite codes (also shareable as a link) that expire and can be limited to a number of uses. Envoy doesn't send email.
+- [x] **Audit log** - Owners and admins see every change to members, teams, projects and variables (key names only, never values)
+- [x] **Personal API tokens** - Fetch variables from the CLI or CI; tokens follow the user's current access
+- [x] **Encrypted at rest** - AES-256-GCM, decrypted only for people with access
+- [x] **Safe concurrent editing** - Saves are versioned, so two editors can't silently overwrite each other
+- [x] **Temporary links** - Share a .env once without an account; links expire within 24 hours and are deleted. Environments are never public.
+- [x] **Monochrome UI** - shadcn/ui, dark and light themes, ⌘K command menu, keyboard shortcuts, responsive down to mobile
 - [x] **Rate Limiting** - Built-in rate limiting to prevent abuse and ensure system stability
-- [ ] **NodeJS and Python SDK** - Fetch enviornment variables directly from the terminal
-- [ ] **Basic Groups** - Create basic groups with limited features
+- [ ] **NodeJS and Python SDK** - Fetch environment variables directly from the terminal
 
 <br>
 
 ## Tech Stack
 
 ### Frontend
-- **Next.js 15** - React framework for production
-- **React 18** - JavaScript library for building user interfaces
-- **TypeScript 5** - Typed superset of JavaScript
-- **Tailwind CSS 4** - Utility-first CSS framework
-- **Lucide React** - Beautiful & consistent icon toolkit
-- **Next Themes** - Perfect dark mode in 2 lines of code
+- **Next.js 15** (App Router) and **TypeScript 5**
+- **shadcn/ui** (Radix primitives) with **Tailwind CSS 4**, monochrome theme tokens in `src/app/globals.css`
+- **Geist Sans / Geist Mono** fonts, **Lucide** icons, **cmdk** command menu, **sonner** toasts
+- **SWR** for client data fetching, **next-themes** for dark/light
 
 ### Backend
-- **Next.js API Routes** - Serverless API endpoints
-- **MongoDB** - NoSQL database for data storage
-- **Mongoose** - MongoDB object modeling for Node.js
-- **NextAuth.js** - Complete open source authentication solution
+- **Next.js route handlers** under `src/app/api`
+- **MongoDB** with **Mongoose**
+- **NextAuth.js** (credentials + Google) with a TOTP second factor
 
-### Security & Utilities
-- **bcryptjs** - Password hashing library
-- **crypto-js** - Cryptographic algorithms for data encryption
-- **rate-limiter-flexible** - Rate limiting middleware
-- **custom-uuid** - UUID generation for unique identifiers
-
-### Development Tools
-- **ESLint** - JavaScript linter
-- **PostCSS** - Tool for transforming CSS with JavaScript
-- **Autoprefixer** - PostCSS plugin to parse CSS and add vendor prefixes
-
-## Dependencies
-
-### Production Dependencies
-- next (^15.3.5)
-- react (18.2.0)
-- react-dom (18.2.0)
-- mongoose (^8.15.1)
-- next-auth (^4.24.11)
-- bcryptjs (^3.0.2)
-- crypto-js (^4.2.0)
-- tailwindcss (^4.0.0)
-- next-themes (^0.4.6)
-- lucide-react (^0.522.0)
-- rate-limiter-flexible (^7.1.1)
-- sonner (^2.0.6)
-- custom-uuid (^3.1.1)
-- clsx (^2.1.1)
-
-### Development Dependencies
-- typescript (^5)
-- @types/node (^20)
-- @types/react (^19)
-- @types/react-dom (^19)
-- @types/crypto-js (^4.2.2)
-- eslint (^8.56.0)
-- eslint-config-next (15.3.2)
+### Security
+- **otpauth** + **qrcode** for TOTP enrollment and verification (replay-protected, rate-limited)
+- **bcryptjs** for password hashing; backup codes and API tokens are stored as SHA-256 hashes
+- **Node `crypto` AES-256-GCM** for values at rest (`crypto-js` only to read legacy values)
+- **zod** request validation, **rate-limiter-flexible** rate limiting
 
 ## Running
 
 ### Prerequisites
-- Node.js (v18 or higher)
+- Node.js 20.12 or newer
 - MongoDB database
 - npm or yarn package manager
 
@@ -122,12 +103,14 @@ NEXTAUTH_SECRET=your_nextauth_secret
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-# Encryption
-NEXT_PUBLIC_ENCRYPTION_SECRET=your_32_character_encryption_key
+# Encryption (server only; use a long random value and keep it backed up)
+ENCRYPTION_SECRET=your_long_random_encryption_key
 
 #Others
 NEXT_PUBLIC_APP_NAME=your_app_name
 ```
+
+`ENCRYPTION_SECRET` is used only by server-side code and must stay stable for as long as encrypted values need to be read. To keep values encrypted with the previous `NEXT_PUBLIC_ENCRYPTION_SECRET` readable, initially set `ENCRYPTION_SECRET` to that same value. Then rotate it only after re-encrypting existing records with a dedicated migration; changing it directly makes stored values unreadable.
 
 ### Development
 
@@ -146,34 +129,90 @@ npm run build
 npm start
 ```
 
-### Linting
+### Linting and type checks
 
-Run ESLint to check for code quality issues:
 ```bash
 npm run lint
+npm run typecheck
 ```
+
+## CLI & API access
+
+1. In the app, open **Account → API tokens** and create a token.
+2. Fetch an environment (every project page has a **Use from CLI** button with the exact URL):
+
+```bash
+export ENVOY_TOKEN=envoy_pat_…
+
+# write a .env file
+curl -fsS -H "Authorization: Bearer $ENVOY_TOKEN" \
+  "https://your-envoy-host/api/v1/<org>/<team>/<project>/<environment>?format=dotenv" > .env
+
+# or get JSON: { "vars": { "KEY": "value" }, "version": 3, … }
+curl -fsS -H "Authorization: Bearer $ENVOY_TOKEN" \
+  "https://your-envoy-host/api/v1/<org>/<team>/<project>/<environment>"
+```
+
+Tokens act with the owner's *current* access: removing someone from a team (or the org) immediately cuts off their tokens too. Revoke a token from the same page.
+
+### Pagination
+
+List endpoints (organizations, members, team projects and members, invite links, API tokens, audit log) return one page at a time:
+
+- `?limit=` sets the page size: default 50, at most 100.
+- Each response includes `nextCursor`. Pass it back as `?cursor=` to get the next page; it is `null` on the last page.
+- Cursors are opaque and stay stable when items are added or removed between requests.
+- Some lists also return `total`. Org members accept `?q=` to search by name or email.
+
+## Upgrading from workspaces and groups
+
+This release replaces Workspaces → Groups with Organizations → Teams → Projects → Environments, and makes two-factor authentication mandatory.
+
+1. Back up the database.
+2. Set `ENCRYPTION_SECRET` to the value of the old `NEXT_PUBLIC_ENCRYPTION_SECRET` (then remove the `NEXT_PUBLIC_` variable).
+3. Preview, then run, the migration:
+
+```bash
+npm run migrate:orgs -- --dry-run
+```
+
+```bash
+npm run migrate:orgs
+```
+
+What it does:
+- Each user who owned workspaces gets an organization (they're the owner).
+- Each workspace becomes a team; groups without extra members become projects in it.
+- Each group **with** members becomes its own team holding one project, with those members as **viewers**. This keeps access exactly as it was, since team roles apply to every project in a team.
+- Group variables move to the project's `development` environment, re-encrypted with AES-256-GCM.
+- The script is idempotent; old Workspace/Group documents are left in place.
+
+**Breaking changes**
+- Group tokens no longer work. `GET /api/env/get` returns `410 Gone`; switch to personal API tokens and `/api/v1/…`.
+- Public groups are now private, and nothing can be made public. The migration prints the affected groups; use invite links, or temporary links (max 24 hours) for one-off sharing.
+- Temporary share links now last at most 24 hours. Older links past that age stop working, and the migration deletes them.
+- Everyone sets up an authenticator app at their next sign-in.
+- Invitations are codes only: each invite has a 10-character code (`XXXXX-XXXXX`), also usable as an `/invite/<code>` link. In-app email invites and the personal invitations inbox were removed; email invites created earlier can no longer be accepted.
 
 ## Project Structure
 
 ```
 web-app/
+├── scripts/migrate-to-orgs.ts      # one-time data migration
 ├── src/
-│   ├── app/                    # App router pages and API routes
-│   │   ├── api/                # API endpoints
-│   │   │   ├── (auth)/         # Authentication routes
-│   │   │   └── (user)/         # User-related routes
-│   │   ├── dashboard/          # Dashboard pages
-│   │   ├── login/              # Login page
-│   │   └── signup/             # Signup page
-│   ├── components/             # Reusable React components
-│   │   ├── dashboard/          # Dashboard-specific components
-│   │   └── misc/               # Miscellaneous components
-│   ├── models/                 # MongoDB schemas
-│   ├── providers/              # React context providers
-│   ├── types/                  # TypeScript type definitions
-│   └── utils/                  # Utility functions
-├── public/                     # Static assets
-└── package.json               # Project dependencies and scripts
+│   ├── app/
+│   │   ├── (auth)/                 # login, signup, 2FA setup/verify, onboarding, invite links
+│   │   ├── (app)/                  # signed-in app: /o/[org]/…, /account
+│   │   ├── share/                  # temporary links (expire within 24h)
+│   │   └── api/                    # route handlers (orgs, teams, projects, envs, invites, tokens, 2fa, v1)
+│   ├── components/
+│   │   ├── ui/                     # shadcn/ui components
+│   │   ├── app/                    # app shell, env editor, command menu
+│   │   └── landing/                # marketing page
+│   ├── lib/                        # auth, authorization, audit, totp, validation, dotenv
+│   ├── models/                     # Mongoose schemas
+│   └── utils/                      # encryption, rate limiting, db connection
+└── public/
 ```
 
 ## Contributors

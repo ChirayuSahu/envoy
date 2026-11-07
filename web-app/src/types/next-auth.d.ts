@@ -6,8 +6,9 @@ declare module "next-auth" {
       id: string;
       name?: string | null;
       email?: string | null;
-      accessToken?: string;
-      isVerified?:boolean;
+      mfaVerified: boolean;
+      totpEnabled: boolean;
+      revoked: boolean;
     } & DefaultSession["user"];
   }
 
@@ -15,14 +16,16 @@ declare module "next-auth" {
     id: string;
     name?: string;
     email?: string;
-    accessToken?: string;
-    isVerified?:boolean;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    accessToken?: string
-    isVerified?:boolean;
+    id?: string;
+    /** user.sessionVersion at sign-in; a mismatch means the session was revoked. */
+    sv?: number;
+    totpEnabled?: boolean;
+    mfaVerified?: boolean;
+    revoked?: boolean;
   }
 }

@@ -53,6 +53,20 @@ const userSchema = new Schema(
                 ref: "Group",
             },
         ],
+        emailVerified: { type: Boolean, default: false },
+        // TOTP two-factor auth. Secrets are stored encrypted with utils/encryption.
+        totpEnabled: { type: Boolean, default: false },
+        totpSecret: { type: String, select: false },
+        totpPendingSecret: { type: String, select: false },
+        totpLastStep: { type: Number, select: false },
+        backupCodes: { type: [String], select: false, default: [] },
+        // One-time ticket minted by /api/2fa/* after a code is verified; the NextAuth
+        // jwt callback consumes it to mark the session as MFA-verified.
+        mfaTicketHash: { type: String, select: false },
+        mfaTicketExpiry: { type: Date, select: false },
+        // Bumped to invalidate every outstanding session (2FA reset, password change, sign out everywhere).
+        sessionVersion: { type: Number, default: 0 },
+        lastOrgSlug: { type: String },
         passwordResetToken: String,
         tokenExpiry: Date,
     },

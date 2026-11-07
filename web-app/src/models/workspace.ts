@@ -1,3 +1,4 @@
+/** @deprecated Legacy model, kept only for scripts/migrate-to-orgs.ts. */
 import mongoose, { Schema } from "mongoose";
 
 const workspaceSchema = new Schema({

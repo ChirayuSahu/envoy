@@ -1,0 +1,18 @@
+import mongoose, { Schema } from "mongoose";
+
+const projectSchema = new Schema(
+    {
+        org: { type: Schema.Types.ObjectId, ref: "Organization", required: true, index: true },
+        team: { type: Schema.Types.ObjectId, ref: "Team", required: true, index: true },
+        name: { type: String, required: true, trim: true, maxlength: 64 },
+        slug: { type: String, required: true, lowercase: true, trim: true },
+        description: { type: String, trim: true, maxlength: 280 },
+        migratedFrom: { type: String, index: true, sparse: true },
+    },
+    { timestamps: true }
+);
+
+projectSchema.index({ team: 1, slug: 1 }, { unique: true });
+
+const Project = mongoose.models.Project || mongoose.model("Project", projectSchema);
+export default Project;
