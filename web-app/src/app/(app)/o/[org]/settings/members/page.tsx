@@ -204,6 +204,7 @@ export default function MembersPage() {
                 onOpenChange={(o) => !o && setPending(null)}
                 title={`Remove ${pending?.member.name}?`}
                 description="They'll lose access to every team and project in this organization right away, including through their API tokens."
+                confirmText={pending?.member.email}
                 actionLabel="Remove member"
                 onConfirm={async () => {
                     try {

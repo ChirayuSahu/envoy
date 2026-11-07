@@ -119,6 +119,7 @@ export default function GeneralSettingsPage() {
                 onOpenChange={setLeaveOpen}
                 title={`Leave ${data.org.name}?`}
                 description="To come back, you'll need a new invitation."
+                confirmText={data.org.slug}
                 actionLabel="Leave organization"
                 onConfirm={async () => {
                     try {

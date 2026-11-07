@@ -428,6 +428,7 @@ function TeamView() {
                 onOpenChange={(o) => !o && setRemoving(null)}
                 title={`Remove ${removing?.name} from ${team.name}?`}
                 description="They'll lose access to this team's projects right away, including through their API tokens. They stay in the organization."
+                confirmText={removing?.email}
                 actionLabel="Remove from team"
                 onConfirm={async () => {
                     try {
@@ -446,9 +447,9 @@ function TeamView() {
                 description={
                     projectCount
                         ? `This permanently deletes ${projectCount} project${projectCount === 1 ? "" : "s"} and all of their variables. This can't be undone.`
-                        : "This team has no projects. Members will be removed from it."
+                        : "This team has no projects. Its members lose access to it."
                 }
-                confirmText={projectCount ? team.slug : undefined}
+                confirmText={team.slug}
                 actionLabel="Delete team"
                 onConfirm={async (typed) => {
                     try {

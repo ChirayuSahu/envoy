@@ -178,6 +178,7 @@ export default function TokensPage() {
                 onOpenChange={(o) => !o && setRevoking(null)}
                 title={`Revoke ${revoking?.name}?`}
                 description="Anything using this token stops working immediately."
+                confirmText={revoking?.name}
                 actionLabel="Revoke token"
                 onConfirm={async () => {
                     try {

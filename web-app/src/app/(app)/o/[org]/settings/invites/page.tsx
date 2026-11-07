@@ -14,6 +14,7 @@ import { copyText, EmptyState, FormField, LoadMore } from "@/components/common";
 import { formatInviteCode } from "@/lib/invite-code";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
 import { NotFoundState } from "@/components/app/states";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { api } from "@/lib/api-client";
 import { usePaginated } from "@/lib/use-paginated";
 import { formatDate, timeAgo } from "@/lib/format";
@@ -59,6 +60,7 @@ export default function InvitesPage() {
     const [error, setError] = useState<string | null>(null);
     const [createdCode, setCreatedCode] = useState<string | null>(null);
     const [showAll, setShowAll] = useState(false);
+    const [revoking, setRevoking] = useState<Invite | null>(null);
 
     if (!isAdmin) return <NotFoundState title="Only owners and admins can manage invitations" />;
 
@@ -233,19 +235,7 @@ export default function InvitesPage() {
                                     </p>
                                 </div>
                                 {inv.status === "active" ? (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={async () => {
-                                            try {
-                                                await api(`${key}/${inv.id}`, { method: "DELETE" });
-                                                toast.success("Invite revoked");
-                                                mutate();
-                                            } catch (e: any) {
-                                                toast.error(e.message);
-                                            }
-                                        }}
-                                    >
+                                    <Button variant="ghost" size="sm" onClick={() => setRevoking(inv)}>
                                         <X /> Revoke
                                     </Button>
                                 ) : (
@@ -257,6 +247,23 @@ export default function InvitesPage() {
                 )}
                 <LoadMore hasMore={list.hasMore} loading={list.loadingMore} onClick={list.loadMore} />
             </section>
+            <ConfirmDialog
+                open={!!revoking}
+                onOpenChange={(o) => !o && setRevoking(null)}
+                title="Revoke this invite?"
+                description="Its code and link stop working right away. People who already joined keep their access."
+                confirmText="revoke"
+                actionLabel="Revoke invite"
+                onConfirm={async () => {
+                    try {
+                        await api(`${key}/${revoking!.id}`, { method: "DELETE" });
+                        toast.success("Invite revoked");
+                        mutate();
+                    } catch (e: any) {
+                        toast.error(e.message);
+                    }
+                }}
+            />
         </div>
     );
 }
