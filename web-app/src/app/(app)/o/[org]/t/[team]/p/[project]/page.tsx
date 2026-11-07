@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { MoreHorizontal, Pencil, Plus, Terminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageContainer } from "@/components/app/app-shell";
 import { QuickCreateDialog } from "@/components/quick-create-dialog";
@@ -176,7 +177,7 @@ function ProjectView() {
                 }
                 description={data.project.description || undefined}
                 actions={
-                    <>
+                    <ButtonGroup>
                         <Button variant="outline" size="sm" onClick={() => setCliOpen(true)}>
                             <Terminal /> Use from CLI
                         </Button>
@@ -214,7 +215,7 @@ function ProjectView() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
-                    </>
+                    </ButtonGroup>
                 }
             />
 
@@ -264,6 +265,7 @@ function ProjectView() {
             ) : (
                 <EnvEditor
                     apiBase={envKey!}
+                    initialFilter={search.get("key") ?? undefined}
                     envName={envData.environment.name}
                     envSlug={envData.environment.slug}
                     canEdit={canEdit}
