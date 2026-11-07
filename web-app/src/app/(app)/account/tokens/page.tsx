@@ -7,19 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageContainer } from "@/components/app/app-shell";
 import { api } from "@/lib/api-client";
+import { ExpiryField, customExpiryISO, type Expiry } from "@/components/expiry-field";
 import { usePaginated } from "@/lib/use-paginated";
 import { formatDate, timeAgo } from "@/lib/format";
 import { FormField, CopyButton, EmptyState, LoadMore, PageHeader } from "@/components/common";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Token = { id: string; name: string; prefix: string; createdAt: string; lastUsedAt: string | null; expiresAt: string | null };
 
 function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; onCreated: () => void }) {
     const [name, setName] = useState("");
-    const [days, setDays] = useState("90");
+    const [expiry, setExpiry] = useState<Expiry>({ preset: "90", date: "" });
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [token, setToken] = useState<string | null>(null);
@@ -69,7 +69,10 @@ function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; o
                             setError(null);
                             try {
                                 const res = await api<{ token: string }>("/api/tokens", {
-                                    body: { name, expiresInDays: days === "never" ? null : Number(days) },
+                                    body:
+                                        expiry.preset === "custom"
+                                            ? { name, expiresAt: customExpiryISO(expiry.date) }
+                                            : { name, expiresInDays: expiry.preset === "never" ? null : Number(expiry.preset) },
                                 });
                                 setToken(res.token);
                                 onCreated();
@@ -83,20 +86,19 @@ function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; o
                         <FormField label="Name" htmlFor="token-name" hint="Where it's used, so you know what breaks if you revoke it." error={error}>
                             <Input id="token-name" autoFocus required maxLength={64} placeholder="GitHub Actions deploy" value={name} onChange={(e) => setName(e.target.value)} />
                         </FormField>
-                        <FormField label="Expires" htmlFor="token-exp">
-                            <Select value={days} onValueChange={setDays}>
-                                <SelectTrigger id="token-exp" className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="7">In 7 days</SelectItem>
-                                    <SelectItem value="30">In 30 days</SelectItem>
-                                    <SelectItem value="90">In 90 days</SelectItem>
-                                    <SelectItem value="365">In 1 year</SelectItem>
-                                    <SelectItem value="never">Never</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </FormField>
+                        <ExpiryField
+                            id="token-exp"
+                            value={expiry}
+                            onChange={setExpiry}
+                            maxDays={365}
+                            presets={[
+                                { value: "7", label: "In 7 days" },
+                                { value: "30", label: "In 30 days" },
+                                { value: "90", label: "In 90 days" },
+                                { value: "365", label: "In 1 year" },
+                                { value: "never", label: "Never" },
+                            ]}
+                        />
                         <DialogFooter>
                             <Button type="button" variant="ghost" onClick={() => close(false)}>
                                 Cancel

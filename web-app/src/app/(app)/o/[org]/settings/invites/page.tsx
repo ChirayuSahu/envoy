@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { copyText, EmptyState, FormField, LoadMore } from "@/components/common";
 import { formatInviteCode } from "@/lib/invite-code";
+import { ExpiryField, customExpiryISO, type Expiry } from "@/components/expiry-field";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
 import { NotFoundState } from "@/components/app/states";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -54,7 +55,7 @@ export default function InvitesPage() {
     const [orgRole, setOrgRole] = useState<"member" | "admin">("member");
     const [teamSlug, setTeamSlug] = useState(NO_TEAM);
     const [teamRole, setTeamRole] = useState<"viewer" | "editor">("viewer");
-    const [days, setDays] = useState("7");
+    const [expiry, setExpiry] = useState<Expiry>({ preset: "7", date: "" });
     const [maxUses, setMaxUses] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export default function InvitesPage() {
                     orgRole,
                     teamSlug: hasTeam ? teamSlug : undefined,
                     teamRole: hasTeam ? teamRole : undefined,
-                    expiresInDays: Number(days),
+                    ...(expiry.preset === "custom" ? { expiresAt: customExpiryISO(expiry.date) } : { expiresInDays: Number(expiry.preset) }),
                     maxUses: maxUses ? Number(maxUses) : undefined,
                 },
             });
@@ -143,20 +144,14 @@ export default function InvitesPage() {
                         </FormField>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <FormField label="Expires after" htmlFor="invite-days">
-                            <Select value={days} onValueChange={setDays}>
-                                <SelectTrigger id="invite-days" className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {[1, 3, 7, 14, 30].map((d) => (
-                                        <SelectItem key={d} value={String(d)}>
-                                            {d} day{d === 1 ? "" : "s"}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </FormField>
+                        <ExpiryField
+                            id="invite-days"
+                            label="Expires after"
+                            value={expiry}
+                            onChange={setExpiry}
+                            maxDays={30}
+                            presets={[1, 3, 7, 14, 30].map((d) => ({ value: String(d), label: `${d} day${d === 1 ? "" : "s"}` }))}
+                        />
                         <FormField label="Max uses" htmlFor="invite-uses">
                             <Input
                                 id="invite-uses"

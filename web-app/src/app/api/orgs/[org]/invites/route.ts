@@ -73,9 +73,15 @@ const schema = z
         teamSlug: z.string().optional(),
         teamRole: teamRoleSchema.optional(),
         expiresInDays: z.number().int().min(1).max(30).default(7),
+        /** A custom expiry instead of a preset: within the next 30 days. */
+        expiresAt: z.iso.datetime({ offset: true }).optional(),
         maxUses: z.number().int().min(1).max(1000).optional(),
     })
-    .refine((v) => !v.teamSlug || !!v.teamRole, { message: "Pick a team role.", path: ["teamRole"] });
+    .refine((v) => !v.teamSlug || !!v.teamRole, { message: "Pick a team role.", path: ["teamRole"] })
+    .refine((v) => !v.expiresAt || (Date.parse(v.expiresAt) > Date.now() && Date.parse(v.expiresAt) <= Date.now() + 31 * 24 * 60 * 60 * 1000), {
+        message: "Pick an expiry date between tomorrow and 30 days from now.",
+        path: ["expiresAt"],
+    });
 
 /** Creates an invite. Its 10-character code (also used in the /invite/<code> link) is returned once, in the response. */
 export const POST = route<P>(async (req: NextRequest, { params }) => {
@@ -100,7 +106,7 @@ export const POST = route<P>(async (req: NextRequest, { params }) => {
         orgRole: body.orgRole,
         team: team?._id,
         teamRole: team ? body.teamRole : undefined,
-        expiresAt: new Date(Date.now() + body.expiresInDays * 24 * 60 * 60 * 1000),
+        expiresAt: body.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + body.expiresInDays * 24 * 60 * 60 * 1000),
         maxUses: body.maxUses,
         createdBy: me.id,
     });
@@ -110,7 +116,7 @@ export const POST = route<P>(async (req: NextRequest, { params }) => {
         me,
         "invite.create",
         { type: "invite", id: String(invite._id), name: "invite link" },
-        { orgRole: body.orgRole, team: team?.name, teamRole: body.teamRole, expiresInDays: body.expiresInDays, maxUses: body.maxUses },
+        { orgRole: body.orgRole, team: team?.name, teamRole: body.teamRole, expiresInDays: body.expiresAt ? undefined : body.expiresInDays, expiresAt: body.expiresAt, maxUses: body.maxUses },
         req
     );
 

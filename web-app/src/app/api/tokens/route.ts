@@ -29,13 +29,25 @@ export const GET = route(async (req: NextRequest) => {
     });
 });
 
-const schema = z.object({ name: nameSchema, expiresInDays: z.number().int().min(1).max(365).nullable().default(90) });
+const DAY = 24 * 60 * 60 * 1000;
+
+/** Expiry: a preset number of days, a custom date (`expiresAt`, up to a year ahead), or never (`expiresInDays: null`). */
+const schema = z
+    .object({
+        name: nameSchema,
+        expiresInDays: z.number().int().min(1).max(365).nullable().default(90),
+        expiresAt: z.iso.datetime({ offset: true }).optional(),
+    })
+    .refine((v) => !v.expiresAt || (Date.parse(v.expiresAt) > Date.now() && Date.parse(v.expiresAt) <= Date.now() + 366 * DAY), {
+        message: "Pick an expiry date between tomorrow and one year from now.",
+        path: ["expiresAt"],
+    });
 
 /** Creates a personal access token. The plaintext is returned exactly once. */
 export const POST = route(async (req: NextRequest) => {
     const me = await requireUser(req);
     if (me.via === "token") throw badRequest("API tokens can't create other tokens.");
-    const { name, expiresInDays } = await parseBody(req, schema);
+    const { name, expiresInDays, expiresAt } = await parseBody(req, schema);
 
     if ((await ApiToken.countDocuments({ user: me.id, revokedAt: null })) >= 25) {
         throw badRequest("You can have at most 25 active tokens. Revoke one first.");
@@ -47,7 +59,7 @@ export const POST = route(async (req: NextRequest) => {
         name,
         prefix,
         tokenHash: hash,
-        expiresAt: expiresInDays ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000) : undefined,
+        expiresAt: expiresAt ? new Date(expiresAt) : expiresInDays ? new Date(Date.now() + expiresInDays * DAY) : undefined,
     });
 
     return json({ token, id: doc._id, prefix, expiresAt: doc.expiresAt ?? null }, 201);
