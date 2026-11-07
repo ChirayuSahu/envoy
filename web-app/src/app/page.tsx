@@ -1,5 +1,6 @@
 import { Hero, Outcomes, Statement, ToolGrid, UseCases } from "@/components/landing/sections";
-import { SiteFooter, SiteHeader } from "@/components/landing/site-header";
+import { SiteHeader } from "@/components/landing/site-header";
+import { SiteFooter } from "@/components/landing/site-footer";
 
 export default function Home() {
     return (

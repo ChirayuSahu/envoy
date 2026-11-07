@@ -48,7 +48,7 @@ export function SiteHeader() {
                 </nav>
                 <div className="flex items-center gap-1">
                     <Button asChild variant="ghost" size="icon-sm" aria-label="Envoy on GitHub" className="hidden text-muted-foreground sm:inline-flex">
-                        <a href="https://github.com/ChirayuSahu/envoy" target="_blank" rel="noopener noreferrer">
+                        <a href="https://github.com/GDGVIT/envoy" target="_blank" rel="noopener noreferrer">
                             <Github />
                         </a>
                     </Button>
@@ -71,22 +71,5 @@ export function SiteHeader() {
                 </div>
             </div>
         </header>
-    );
-}
-
-export function SiteFooter() {
-    return (
-        <footer className="border-t">
-            <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <Logo className="text-sm" />
-                <p>
-                    Open source, built by{" "}
-                    <a href="https://www.dscvit.com/" target="_blank" rel="noopener noreferrer" className="text-foreground underline-offset-4 hover:underline">
-                        GDSC VIT
-                    </a>
-                    .
-                </p>
-            </div>
-        </footer>
     );
 }
