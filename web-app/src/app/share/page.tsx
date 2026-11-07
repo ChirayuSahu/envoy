@@ -1,31 +1,54 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Link2 } from "lucide-react";
+import { ClipboardPaste, Eye, EyeOff, Link2, Plus } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { CopyButton, FormField, PageHeader } from "@/components/common";
+import { CopyButton, EmptyState, FormField, PageHeader, copyText } from "@/components/common";
+import { PasteDialog, VarTable, nextRowId, useRowProblems, type Row } from "@/components/app/var-table";
 import { api } from "@/lib/api-client";
-import { parseDotenv } from "@/lib/dotenv";
 import { SHARE_TTL_OPTIONS } from "@/lib/share";
 
 const EXPIRY = SHARE_TTL_OPTIONS.map((o) => ({ value: String(o.seconds), label: o.label }));
+const newRow = (key = "", value = ""): Row => ({ id: nextRowId(), key, value, origKey: null });
 
 export default function TemporaryLinkPage() {
-    const [text, setText] = useState("");
+    const [rows, setRows] = useState<Row[]>([]);
+    const [revealAll, setRevealAll] = useState(false);
+    const [revealed, setRevealed] = useState<Set<string>>(new Set());
+    const [pasteOpen, setPasteOpen] = useState(false);
     const [ttl, setTtl] = useState("3600");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [link, setLink] = useState<string | null>(null);
-    const vars = useMemo(() => parseDotenv(text), [text]);
+    const focusRowId = useRef<string | null>(null);
+
+    const { keyCounts, problems } = useRowProblems(rows);
+    const vars = rows.filter((r) => r.key.trim()).map((r) => ({ key: r.key.trim(), value: r.value ?? "" }));
+
+    const addRow = () => {
+        const row = newRow();
+        focusRowId.current = row.id;
+        setRows((rs) => [...rs, row]);
+    };
+    useEffect(() => {
+        if (focusRowId.current) {
+            document.getElementById(`key-${focusRowId.current}`)?.focus();
+            focusRowId.current = null;
+        }
+    }, [rows.length]);
 
     async function create(e: React.FormEvent) {
         e.preventDefault();
         if (!vars.length) {
-            setError("Paste at least one KEY=value line.");
+            setError("Add at least one variable.");
+            return;
+        }
+        if (problems) {
+            setError("Fix the highlighted keys first: keys must be unique and use letters, digits, _ . -");
             return;
         }
         setBusy(true);
@@ -33,7 +56,9 @@ export default function TemporaryLinkPage() {
         try {
             const res = await api<{ token: string }>("/api/share", { body: { vars, expiresInSeconds: Number(ttl) } });
             setLink(`${window.location.origin}/share/${res.token}`);
-            setText("");
+            setRows([]);
+            setRevealAll(false);
+            setRevealed(new Set());
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -45,7 +70,12 @@ export default function TemporaryLinkPage() {
         <>
             <PageHeader
                 title="Create a temporary link"
-                description="Share a .env with someone once. The link expires after at most 24 hours and is then deleted. Nothing is ever public: for ongoing access, use an organization so you control who can see each environment."
+                description={
+                    <>
+                        Share a .env with someone once. The link <strong className="font-semibold text-foreground">expires after at most 24 hours</strong> and
+                        is then deleted. For ongoing access, use an organization so you control who can see each environment.
+                    </>
+                }
             />
 
             {link ? (
@@ -65,22 +95,54 @@ export default function TemporaryLinkPage() {
                 </Alert>
             ) : (
                 <form onSubmit={create} className="flex flex-col gap-5">
-                    <FormField
-                        label="Variables"
-                        htmlFor="share-text"
-                        error={error}
-                        hint={vars.length ? `${vars.length} variable${vars.length === 1 ? "" : "s"} detected.` : "Paste the contents of a .env file."}
-                    >
-                        <Textarea
-                            id="share-text"
-                            rows={12}
-                            spellCheck={false}
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            placeholder={"API_URL=https://staging.example.com\nAPI_KEY=…"}
-                            className="font-mono text-[12.5px]"
-                        />
-                    </FormField>
+                    {/* Same toolbar and table as editing an environment in the app. */}
+                    <div>
+                        {/* Actions sit above the table, like the toolbar of an environment in the app. */}
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                            <ButtonGroup>
+                                <Button type="button" size="sm" variant="outline" onClick={addRow}>
+                                    <Plus /> Add variable
+                                </Button>
+                                <Button type="button" size="sm" variant="outline" onClick={() => setPasteOpen(true)}>
+                                    <ClipboardPaste /> Import .env
+                                </Button>
+                            </ButtonGroup>
+                            {rows.length > 0 && (
+                                <Button type="button" size="sm" variant="ghost" onClick={() => setRevealAll((r) => !r)} aria-pressed={revealAll}>
+                                    {revealAll ? <EyeOff /> : <Eye />} {revealAll ? "Hide values" : "Reveal values"}
+                                </Button>
+                            )}
+                        </div>
+                        {rows.length === 0 ? (
+                            <EmptyState title="Add the variables to share">Add them one by one, or paste an existing .env file.</EmptyState>
+                        ) : (
+                            <VarTable
+                                rows={rows}
+                                canEdit
+                                keyCounts={keyCounts}
+                                revealAll={revealAll}
+                                revealed={revealed}
+                                onUpdate={(id, patch) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)))}
+                                onRemove={(id) => setRows((rs) => rs.filter((r) => r.id !== id))}
+                                onAdd={addRow}
+                                onToggleReveal={(row, reveal) =>
+                                    setRevealed((s) => {
+                                        const n = new Set(s);
+                                        if (reveal) n.add(row.id);
+                                        else n.delete(row.id);
+                                        return n;
+                                    })
+                                }
+                                onCopy={(row) => row.value && copyText(row.value, `Copied ${row.key || "value"}`)}
+                            />
+                        )}
+                        {error && (
+                            <p role="alert" className="mt-2 text-[13px] text-destructive">
+                                {error}
+                            </p>
+                        )}
+                    </div>
+
                     <div className="flex flex-wrap items-end gap-3">
                         <FormField label="Expires after" htmlFor="share-ttl" className="w-48 gap-2">
                             <Select value={ttl} onValueChange={setTtl}>
@@ -96,8 +158,8 @@ export default function TemporaryLinkPage() {
                                 </SelectContent>
                             </Select>
                         </FormField>
-                        <Button type="submit" loading={busy}>
-                            Create link
+                        <Button type="submit" loading={busy} disabled={!vars.length || problems > 0}>
+                            <Link2 /> Create link
                         </Button>
                     </div>
                     <p className="text-[13px] text-muted-foreground">
@@ -109,6 +171,22 @@ export default function TemporaryLinkPage() {
                     </p>
                 </form>
             )}
+
+            <PasteDialog
+                open={pasteOpen}
+                onOpenChange={setPasteOpen}
+                description="Paste the contents of a .env file. Keys already in the list are overwritten."
+                existingKeys={new Set(rows.map((r) => r.key.trim()))}
+                onApply={(incoming) =>
+                    setRows((rs) => {
+                        const byKey = new Map(incoming.map((v) => [v.key, v.value]));
+                        const merged = rs.map((r) => (byKey.has(r.key.trim()) ? { ...r, value: byKey.get(r.key.trim())! } : r));
+                        const existing = new Set(rs.map((r) => r.key.trim()));
+                        const added = incoming.filter((v) => !existing.has(v.key)).map((v) => newRow(v.key, v.value));
+                        return [...merged.filter((r) => r.key || r.value), ...added];
+                    })
+                }
+            />
         </>
     );
 }

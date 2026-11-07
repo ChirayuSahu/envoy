@@ -1,39 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import { Copy, Download, Eye, EyeOff, Timer } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CloudAlert, Copy, Download, Eye, EyeOff, RotateCcw, SearchX, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CopyButton, EmptyState, PageHeader, copyText } from "@/components/common";
-import { fetcher } from "@/lib/api-client";
+import { PageHeader, copyText } from "@/components/common";
+import { StateBlock } from "@/components/app/states";
+import { VarTable, nextRowId, useRowProblems, type Row } from "@/components/app/var-table";
+import { ApiError, fetcher } from "@/lib/api-client";
 import { stringifyDotenv } from "@/lib/dotenv";
 import { formatDate, timeAgo } from "@/lib/format";
 
 type Share = { expiresAt: string; vars: { key: string; value: string }[] };
 
+const newLink = (
+    <Button asChild variant="outline">
+        <Link href="/share">Create a new link</Link>
+    </Button>
+);
+
 export default function SharedVariablesPage() {
     const { token } = useParams<{ token: string }>();
-    const { data, error } = useSWR<Share>(`/api/share/${token}`, fetcher, { revalidateOnFocus: false });
-    const [reveal, setReveal] = useState(false);
+    const { data, error, mutate, isValidating } = useSWR<Share>(`/api/share/${token}`, fetcher, { revalidateOnFocus: false });
+    const [revealAll, setRevealAll] = useState(false);
+    const [revealed, setRevealed] = useState<Set<string>>(new Set());
+
+    const rows: Row[] = useMemo(() => (data?.vars ?? []).map((v) => ({ id: nextRowId(), key: v.key, value: v.value, origKey: v.key })), [data]);
+    const { keyCounts } = useRowProblems(rows);
+
+    // When the link runs out while the page is open, ask again: the server deletes it and answers "expired".
+    useEffect(() => {
+        if (!data) return;
+        const ms = new Date(data.expiresAt).getTime() - Date.now();
+        const t = setTimeout(() => mutate(), Math.max(0, ms) + 500);
+        return () => clearTimeout(t);
+    }, [data, mutate]);
 
     if (error) {
+        const status = error instanceof ApiError ? error.status : 0;
+        if (status === 410) {
+            const expiredAt = (error as ApiError).data?.expiredAt as string | undefined;
+            return (
+                <StateBlock contained={false} icon={Timer} tone="bg-pastel-lemon text-pastel-lemon-fg" title="This link has expired" actions={newLink}>
+                    {expiredAt ? (
+                        <>
+                            It expired <span title={formatDate(expiredAt)}>{timeAgo(expiredAt)}</span>, and the variables in it were{" "}
+                            <strong className="font-semibold text-foreground">permanently deleted</strong>.
+                        </>
+                    ) : (
+                        <>
+                            Its time ran out, and the variables in it were <strong className="font-semibold text-foreground">permanently deleted</strong>.
+                        </>
+                    )}{" "}
+                    Ask the sender for a new link.
+                </StateBlock>
+            );
+        }
+        if (status === 404) {
+            return (
+                <StateBlock contained={false} icon={SearchX} tone="bg-pastel-sky text-pastel-sky-fg" title="Link not found" actions={newLink}>
+                    There&apos;s no shared link at this address. Check that it was <strong className="font-semibold text-foreground">copied in full</strong>.
+                </StateBlock>
+            );
+        }
         return (
-            <EmptyState
-                icon={<Timer />}
-                title="This link has expired"
-                action={
-                    <Button asChild variant="outline" size="sm">
-                        <Link href="/share">Create a new link</Link>
+            <StateBlock
+                contained={false}
+                icon={CloudAlert}
+                tone="bg-pastel-rose text-pastel-rose-fg"
+                title="Couldn't open this link"
+                actions={
+                    <Button onClick={() => mutate()} loading={isValidating}>
+                        <RotateCcw /> Try again
                     </Button>
                 }
             >
-                Shared links delete themselves after their time is up. Ask the sender for a new one.
-            </EmptyState>
+                Something went wrong on our side or with your connection. The link itself may still work.
+            </StateBlock>
         );
     }
 
@@ -49,6 +96,13 @@ export default function SharedVariablesPage() {
     }
 
     const dotenv = stringifyDotenv(data.vars);
+    const download = () => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([dotenv], { type: "text/plain" }));
+        a.download = ".env";
+        a.click();
+        URL.revokeObjectURL(a.href);
+    };
 
     return (
         <>
@@ -56,52 +110,46 @@ export default function SharedVariablesPage() {
                 title="Shared variables"
                 description={
                     <>
-                        Someone shared {data.vars.length} variable{data.vars.length === 1 ? "" : "s"} with you.{" "}
-                        <span title={formatDate(data.expiresAt)}>This link expires {timeAgo(data.expiresAt)}.</span>
+                        Someone shared <strong className="font-semibold text-foreground">{data.vars.length} variable{data.vars.length === 1 ? "" : "s"}</strong> with you.{" "}
+                        <span title={formatDate(data.expiresAt)}>This link expires {timeAgo(data.expiresAt)}</span>, then it&apos;s deleted.
                     </>
                 }
-                actions={
-                    <ButtonGroup>
-                        <Button variant="outline" size="sm" onClick={() => setReveal((r) => !r)}>
-                            {reveal ? <EyeOff /> : <Eye />} {reveal ? "Hide" : "Reveal"}
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => copyText(dotenv, "Copied as .env")}>
-                            <Copy /> Copy
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                const a = document.createElement("a");
-                                a.href = URL.createObjectURL(new Blob([dotenv], { type: "text/plain" }));
-                                a.download = ".env";
-                                a.click();
-                                URL.revokeObjectURL(a.href);
-                            }}
-                        >
-                            <Download /> Download
-                        </Button>
-                    </ButtonGroup>
-                }
             />
-            <ol className="divide-y overflow-hidden rounded-lg border font-mono text-[13px]">
-                {data.vars.map((v, i) => (
-                    <li key={v.key} className="group flex items-center">
-                        <span aria-hidden className="w-10 shrink-0 select-none border-r bg-muted/40 pr-2.5 text-right text-[11.5px] leading-9 text-muted-foreground/70">
-                            {i + 1}
-                        </span>
-                        <span className="w-[38%] shrink-0 truncate px-3 font-medium leading-9">{v.key}</span>
-                        <span className={reveal ? "min-w-0 flex-1 truncate leading-9" : "min-w-0 flex-1 select-none leading-9 text-muted-foreground"}>
-                            {reveal ? v.value : "••••••••••••"}
-                        </span>
-                        <CopyButton value={v.value} label={v.key} className="mr-1" />
-                    </li>
-                ))}
-            </ol>
-            <p className="mt-4 flex items-center gap-2 text-[13px] text-muted-foreground">
-                <Badge variant="outline">Tip</Badge>
-                Copy these into your own .env file. The link stops working when it expires.
-            </p>
+
+            {/* Same toolbar and table as an environment in the app, read-only. */}
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Button size="sm" variant="ghost" onClick={() => setRevealAll((r) => !r)} aria-pressed={revealAll}>
+                    {revealAll ? <EyeOff /> : <Eye />} {revealAll ? "Hide values" : "Reveal values"}
+                </Button>
+                <ButtonGroup>
+                    <Button size="sm" variant="outline" onClick={() => copyText(dotenv, `Copied ${data.vars.length} variables`)}>
+                        <Copy /> Copy
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={download}>
+                        <Download /> Download
+                    </Button>
+                </ButtonGroup>
+            </div>
+            <VarTable
+                rows={rows}
+                canEdit={false}
+                keyCounts={keyCounts}
+                revealAll={revealAll}
+                revealed={revealed}
+                onUpdate={() => {}}
+                onRemove={() => {}}
+                onAdd={() => {}}
+                onToggleReveal={(row, reveal) =>
+                    setRevealed((s) => {
+                        const n = new Set(s);
+                        if (reveal) n.add(row.id);
+                        else n.delete(row.id);
+                        return n;
+                    })
+                }
+                onCopy={(row) => row.value !== null && copyText(row.value, `Copied ${row.key}`)}
+            />
+            <p className="mt-4 text-[13px] text-muted-foreground">Copy these into your own .env file. The link stops working when it expires.</p>
         </>
     );
 }

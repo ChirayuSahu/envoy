@@ -8,34 +8,36 @@ import { Button } from "@/components/ui/button";
 import { PageContainer } from "./app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function StateBlock({
+/** Centred icon, title, explanation and actions: every not-found, expired and error state uses this. */
+export function StateBlock({
     icon: Icon,
     tone,
     title,
     children,
     actions,
+    contained = true,
 }: {
     icon: React.ElementType;
     tone: string;
     title: string;
     children: React.ReactNode;
     actions: React.ReactNode;
+    /** Wrap in the app's page container (off for pages outside the app shell). */
+    contained?: boolean;
 }) {
-    return (
-        <PageContainer>
-            {/* Centred in the content area, for every not-found and error state. */}
-            <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 text-center">
-                <span className={`flex size-11 items-center justify-center rounded-lg ${tone}`}>
-                    <Icon className="size-5" />
-                </span>
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-[-0.02em] text-foreground">{title}</h1>
-                    <div className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</div>
-                </div>
-                <div className="mt-2 flex flex-wrap justify-center gap-2">{actions}</div>
+    const block = (
+        <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 text-center">
+            <span className={`flex size-11 items-center justify-center rounded-lg ${tone}`}>
+                <Icon className="size-5" />
+            </span>
+            <div>
+                <h1 className="text-2xl font-semibold tracking-[-0.02em] text-foreground">{title}</h1>
+                <div className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</div>
             </div>
-        </PageContainer>
+            <div className="mt-2 flex flex-wrap justify-center gap-2">{actions}</div>
+        </div>
     );
+    return contained ? <PageContainer>{block}</PageContainer> : block;
 }
 
 /** Something that doesn't exist, or that you can't see (the API returns 404 for both). */

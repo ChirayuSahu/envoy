@@ -5,7 +5,7 @@ import BasicGroup from "@/models/basicGroup";
 import { json, parseBody, rateLimit, route } from "@/lib/http";
 import { envVarsSchema } from "@/lib/validation";
 import { encrypt } from "@/utils/encryption";
-import { SHARE_TTL_OPTIONS } from "@/lib/share";
+import { SHARE_TTL_OPTIONS, withExpiry } from "@/lib/share";
 
 const ALLOWED_TTLS = SHARE_TTL_OPTIONS.map((o) => o.seconds) as number[];
 
@@ -22,11 +22,12 @@ export const POST = route(async (req: NextRequest) => {
     await rateLimit(req);
     const { vars, expiresInSeconds } = await parseBody(req, schema);
 
-    const token = randomBytes(18).toString("base64url");
+    const expireAt = new Date(Date.now() + expiresInSeconds * 1000);
+    const token = withExpiry(randomBytes(18).toString("base64url"), expireAt);
     const share = await BasicGroup.create({
         token,
         envs: vars.map(({ key, value }) => ({ key, value: encrypt(value) })),
-        expireAt: new Date(Date.now() + expiresInSeconds * 1000),
+        expireAt,
     });
 
     return json({ token: share.token, expiresAt: share.expireAt }, 201);

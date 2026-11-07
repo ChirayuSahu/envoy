@@ -2,42 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ClipboardPaste, Copy, Download, Eye, EyeOff, LockKeyhole, LockOpen, Plus, RotateCcw, Trash2, TriangleAlert } from "lucide-react";
+import { ClipboardPaste, Copy, Download, Eye, EyeOff, LockKeyhole, LockOpen, Plus, RotateCcw, TriangleAlert } from "lucide-react";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
-import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { EmptyState, SearchInput, copyText } from "@/components/common";
 import { OtpField } from "@/components/otp-field";
+import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
+import { PasteDialog, VarTable, nextRowId, useRowProblems, type Row } from "@/components/app/var-table";
 import { ApiError, api } from "@/lib/api-client";
-import { parseDotenv, stringifyDotenv, type EnvVar } from "@/lib/dotenv";
+import { stringifyDotenv, type EnvVar } from "@/lib/dotenv";
 import { cn } from "@/lib/utils";
 
-const KEY_RE = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
-const MASK = "••••••••••••";
 const FILTER_ID = "env-filter";
-
-/** Borderless cell inputs: the row reads like a line in a .env file until you hover or focus it. */
-/** Spreadsheet-style cell: no border, fill or ring. The row highlights while a cell in it has focus. */
-const cellInput =
-    "h-10 rounded-none border-0 bg-transparent px-3 font-mono text-[13px] hover:bg-transparent focus-visible:border-0 focus-visible:bg-transparent focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent dark:focus-visible:bg-transparent";
-
-/** Width of the per-row actions (three icon buttons), shared by the header so columns line up. */
-const ACTIONS_W = "w-[6.75rem]";
-/** Key column width, shared by the header and the rows. */
-const KEY_COL = "sm:w-[34%] sm:max-w-[360px] sm:shrink-0";
 
 /** A stored value the server hasn't sent (values are locked): `null`. */
 type StoredVar = { key: string; value: string | null };
-/** `origKey` is the key the row was loaded with, so a hidden value can be kept through a rename. */
-type Row = { id: string; key: string; value: string | null; origKey: string | null };
-
-let rowSeq = 0;
-const toRows = (vars: StoredVar[]): Row[] => vars.map((v) => ({ id: `r${++rowSeq}`, key: v.key, value: v.value, origKey: v.key }));
+const toRows = (vars: StoredVar[]): Row[] => vars.map((v) => ({ id: nextRowId(), key: v.key, value: v.value, origKey: v.key }));
 /** Only rows whose values are known (for copy, download and the conflict fallback). */
 const knownVars = (rows: Row[]): EnvVar[] =>
     rows.filter((r) => r.key.trim() && r.value !== null).map((r) => ({ key: r.key.trim(), value: r.value as string }));
@@ -61,36 +44,6 @@ function diffCount(baseline: StoredVar[], rows: Row[]) {
     }
     for (const k of before.keys()) if (!kept.has(k)) n++; // removed
     return n;
-}
-
-function IconAction({
-    label,
-    onClick,
-    children,
-    danger,
-}: {
-    label: string;
-    onClick: () => void;
-    children: React.ReactNode;
-    danger?: boolean;
-}) {
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={label}
-                    onClick={onClick}
-                    className={cn("text-muted-foreground", danger && "hover:bg-destructive/10 hover:text-destructive")}
-                >
-                    {children}
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent>{label}</TooltipContent>
-        </Tooltip>
-    );
 }
 
 /**
@@ -160,158 +113,14 @@ function UnlockDialog({
                         </p>
                     )}
                     <DialogFooter>
-                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" loading={busy} disabled={code.length !== 6}>
+                        <DialogCancel onClick={() => onOpenChange(false)} />
+                        <DialogSubmit loading={busy} disabled={code.length !== 6}>
                             Unlock
-                        </Button>
+                        </DialogSubmit>
                     </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
-    );
-}
-
-function PasteDialog({
-    open,
-    onOpenChange,
-    existingKeys,
-    onApply,
-}: {
-    open: boolean;
-    onOpenChange: (o: boolean) => void;
-    existingKeys: Set<string>;
-    onApply: (vars: EnvVar[]) => void;
-}) {
-    const [text, setText] = useState("");
-    useEffect(() => {
-        if (!open) return;
-        setText("");
-        navigator.clipboard
-            ?.readText()
-            .then((t) => {
-                if (t && /^\s*(export\s+)?[A-Za-z_][A-Za-z0-9_.-]*\s*=/m.test(t)) setText(t);
-            })
-            .catch(() => {});
-    }, [open]);
-
-    const parsed = useMemo(() => parseDotenv(text), [text]);
-    const updates = parsed.filter((v) => existingKeys.has(v.key)).length;
-    const invalid = parsed.filter((v) => !KEY_RE.test(v.key)).length;
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
-                    <DialogTitle>Import from .env</DialogTitle>
-                    <DialogDescription>
-                        Paste the contents of a .env file. Existing keys are overwritten. Nothing is saved until you click Save.
-                    </DialogDescription>
-                </DialogHeader>
-                <Textarea
-                    autoFocus
-                    rows={10}
-                    spellCheck={false}
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder={"DATABASE_URL=postgres://…\nREDIS_URL=redis://…"}
-                    className="max-h-80 font-mono text-[12.5px]"
-                />
-                <p className="text-[13px] text-muted-foreground" aria-live="polite">
-                    {parsed.length
-                        ? `${parsed.length - updates} new, ${updates} updated${invalid ? `, ${invalid} with invalid names` : ""}.`
-                        : "No variables detected yet."}
-                </p>
-                <DialogFooter>
-                    <Button variant="ghost" onClick={() => onOpenChange(false)}>
-                        Cancel
-                    </Button>
-                    <Button
-                        disabled={!parsed.length}
-                        onClick={() => {
-                            onApply(parsed);
-                            onOpenChange(false);
-                        }}
-                    >
-                        Import {parsed.length || ""} variable{parsed.length === 1 ? "" : "s"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function ValueCell({
-    row,
-    editable,
-    revealed,
-    onChange,
-    onUnlock,
-    invalid,
-}: {
-    row: Row;
-    editable: boolean;
-    revealed: boolean;
-    onChange: (value: string) => void;
-    onUnlock: () => void;
-    invalid?: boolean;
-}) {
-    const [focused, setFocused] = useState(false);
-
-    // The server hasn't sent this value: it's locked until the user confirms an authenticator code.
-    if (row.value === null) {
-        return (
-            <button
-                type="button"
-                onClick={onUnlock}
-                title="Confirm your authenticator code to see or edit this value"
-                aria-label={`Unlock to see ${row.key || "this value"}`}
-                className="min-w-0 flex-1 truncate px-3 text-left font-mono text-[13px] leading-10 text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground"
-            >
-                {MASK}
-            </button>
-        );
-    }
-
-    const value = row.value;
-    const show = revealed || focused;
-    const multiline = value.includes("\n");
-
-    if (!editable) {
-        return (
-            <div
-                className={cn(
-                    "min-w-0 flex-1 truncate px-3 font-mono text-[13px] leading-10",
-                    show ? "text-foreground" : "select-none text-muted-foreground"
-                )}
-            >
-                {show ? value || <span className="italic text-muted-foreground">empty</span> : MASK}
-            </div>
-        );
-    }
-
-    const shared = {
-        value: show ? value : value ? MASK : "",
-        readOnly: !show,
-        spellCheck: false,
-        autoComplete: "off",
-        placeholder: "value",
-        "aria-label": `Value for ${row.key || "new variable"}`,
-        "aria-invalid": invalid || undefined,
-        onFocus: () => setFocused(true),
-        onBlur: () => setFocused(false),
-        onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => show && onChange(e.target.value),
-    };
-
-    return multiline && show ? (
-        <Textarea
-            {...shared}
-            rows={Math.min(8, value.split("\n").length)}
-            className={cn(cellInput, "h-auto min-h-0 flex-1 py-2 leading-5")}
-        />
-    ) : (
-        <Input {...shared} className={cn(cellInput, "min-w-0 flex-1", !show && "text-muted-foreground")} />
     );
 }
 
@@ -330,13 +139,18 @@ export type EnvEditorProps = {
     /** Refetch this environment (after unlocking or locking, to get or drop values). */
     onReload: () => Promise<unknown>;
     onDirtyChange: (dirty: boolean) => void;
+    /** Pre-fills the key filter (e.g. opened from a variable in the command menu). */
+    initialFilter?: string;
 };
 
-export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, revealUntil, onSaved, onReload, onDirtyChange }: EnvEditorProps) {
+export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, revealUntil, onSaved, onReload, onDirtyChange, initialFilter }: EnvEditorProps) {
     const [rows, setRows] = useState<Row[]>(() => toRows(vars));
     const [baseline, setBaseline] = useState<StoredVar[]>(vars);
     const [baseVersion, setBaseVersion] = useState(version);
-    const [filter, setFilter] = useState("");
+    const [filter, setFilter] = useState(initialFilter ?? "");
+    useEffect(() => {
+        if (initialFilter) setFilter(initialFilter);
+    }, [initialFilter]);
     const [revealAll, setRevealAll] = useState(false);
     const [revealed, setRevealed] = useState<Set<string>>(new Set());
     const [saving, setSaving] = useState(false);
@@ -420,22 +234,14 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
     const dirty = changes > 0;
     useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
 
-    const keyCounts = useMemo(() => {
-        const m = new Map<string, number>();
-        rows.forEach((r) => r.key.trim() && m.set(r.key.trim(), (m.get(r.key.trim()) ?? 0) + 1));
-        return m;
-    }, [rows]);
-    const problems = rows.filter((r) => {
-        const k = r.key.trim();
-        return (k && (!KEY_RE.test(k) || (keyCounts.get(k) ?? 0) > 1)) || (!k && r.value);
-    }).length;
+    const { keyCounts, problems } = useRowProblems(rows);
 
     const visible = rows.filter((r) => !filter || r.key.toLowerCase().includes(filter.toLowerCase()));
 
     const update = (id: string, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
     const addRow = () => {
-        const id = `r${++rowSeq}`;
+        const id = nextRowId();
         focusRowId.current = id;
         setFilter("");
         setRows((rs) => [...rs, { id, key: "", value: "", origKey: null }]);
@@ -517,6 +323,27 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
         }
     };
 
+    // Where the editor sits horizontally, so the fixed save bar can centre on it (sidebar open or not).
+    const rootRef = useRef<HTMLDivElement>(null);
+    const [barBox, setBarBox] = useState<{ left: number; width: number } | null>(null);
+    const showBar = canEdit && dirty;
+    useEffect(() => {
+        const el = rootRef.current;
+        if (!showBar || !el) return;
+        const measure = () => {
+            const r = el.getBoundingClientRect();
+            setBarBox((b) => (b && b.left === r.left && b.width === r.width ? b : { left: r.left, width: r.width }));
+        };
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(el);
+        window.addEventListener("resize", measure);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener("resize", measure);
+        };
+    }, [showBar]);
+
     const download = () => {
         const blob = new Blob([stringifyDotenv(knownVars(rowsRef.current))], { type: "text/plain" });
         const a = document.createElement("a");
@@ -527,7 +354,7 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
     };
 
     return (
-        <div>
+        <div ref={rootRef} className={cn(canEdit && dirty && "pb-20")}>
             {conflict && (
                 <Alert className="mb-4">
                     <TriangleAlert />
@@ -592,14 +419,14 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
                     title={`No variables in ${envName}`}
                     action={
                         canEdit && (
-                            <div className="flex gap-2">
-                                <Button size="sm" onClick={addRow}>
+                            <ButtonGroup>
+                                <Button size="sm" variant="outline" onClick={addRow}>
                                     <Plus /> Add variable
                                 </Button>
                                 <Button size="sm" variant="outline" onClick={() => setPasteOpen(true)}>
                                     <ClipboardPaste /> Import .env
                                 </Button>
-                            </div>
+                            </ButtonGroup>
                         )
                     }
                 >
@@ -608,124 +435,49 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
                         : "An editor on this team hasn't added any variables to this environment yet."}
                 </EmptyState>
             ) : (
-                <div className="overflow-hidden rounded-lg border">
-                    <div aria-hidden className="hidden border-b bg-muted/40 text-[12px] font-medium text-muted-foreground sm:flex">
-                        <span className="w-10 shrink-0 border-r" />
-                        <div className="flex min-w-0 flex-1">
-                            <span className={cn(KEY_COL, "px-3 py-2")}>Key</span>
-                            <span className="border-l px-3 py-2">Value</span>
-                        </div>
-                        <span className={cn(ACTIONS_W, "shrink-0")} />
-                    </div>
-                    <ol className="divide-y">
-                        {visible.map((row) => {
-                            const lineNo = rows.indexOf(row) + 1;
-                            const k = row.key.trim();
-                            const keyInvalid = !!k && !KEY_RE.test(k);
-                            const dup = !!k && (keyCounts.get(k) ?? 0) > 1;
-                            const isRevealed = revealAll || revealed.has(row.id);
-                            const original = row.origKey !== null ? baseline.find((v) => v.key === row.origKey) : undefined;
-                            const changed =
-                                canEdit && (!!k || !!row.value) && (!original || k !== row.origKey || (row.value !== null && row.value !== original.value));
-                            return (
-                                <li key={row.id} className="group flex items-start bg-background transition-colors focus-within:bg-muted/50 hover:bg-muted/25">
-                                    <span
-                                        aria-hidden
-                                        className={cn(
-                                            "w-10 shrink-0 select-none self-stretch border-r pr-2.5 text-right font-mono text-[11.5px] leading-10 tabular-nums",
-                                            changed ? "border-r-2 border-r-primary text-foreground" : "text-muted-foreground/70"
-                                        )}
-                                    >
-                                        {lineNo}
-                                    </span>
-                                    <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-start">
-                                        <div className={KEY_COL}>
-                                            {canEdit ? (
-                                                <Input
-                                                    id={`key-${row.id}`}
-                                                    value={row.key}
-                                                    onChange={(e) => update(row.id, { key: e.target.value.replace(/\s/g, "_") })}
-                                                    placeholder="KEY"
-                                                    spellCheck={false}
-                                                    autoComplete="off"
-                                                    aria-label="Variable name"
-                                                    aria-invalid={keyInvalid || dup || undefined}
-                                                    title={dup ? "Duplicate key" : keyInvalid ? "Use letters, digits, _ . - and don't start with a digit" : undefined}
-                                                    className={cn(cellInput, "font-medium", (keyInvalid || dup) && "text-destructive")}
-                                                />
-                                            ) : (
-                                                <div className="truncate px-3 font-mono text-[13px] font-medium leading-10">{row.key}</div>
-                                            )}
-                                        </div>
-                                        {/* Column divider between key and value (stacked, without one, on small screens). */}
-                                        <span aria-hidden className="hidden w-px self-stretch bg-border sm:block" />
-                                        <ValueCell
-                                            row={row}
-                                            editable={canEdit}
-                                            revealed={isRevealed}
-                                            invalid={!k && !!row.value}
-                                            onChange={(value) => update(row.id, { value })}
-                                            onUnlock={() => withValues(() => {})}
-                                        />
-                                    </div>
-                                    <div className={cn(ACTIONS_W, "flex shrink-0 items-center justify-end gap-0.5 px-1 py-1 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100")}>
-                                        {!revealAll && (
-                                            <IconAction
-                                                label={isRevealed ? "Hide value" : "Reveal value"}
-                                                onClick={() =>
-                                                    isRevealed
-                                                        ? setRevealed((s) => {
-                                                              const n = new Set(s);
-                                                              n.delete(row.id);
-                                                              return n;
-                                                          })
-                                                        : withValues(() => setRevealed((s) => new Set(s).add(row.id)))
-                                                }
-                                            >
-                                                {isRevealed ? <EyeOff /> : <Eye />}
-                                            </IconAction>
-                                        )}
-                                        <IconAction
-                                            label="Copy value"
-                                            onClick={() =>
-                                                withValues(() => {
-                                                    const v = rowsRef.current.find((r) => r.id === row.id)?.value;
-                                                    if (v != null) copyText(v, `Copied ${row.key || "value"}`);
-                                                })
-                                            }
-                                        >
-                                            <Copy />
-                                        </IconAction>
-                                        {canEdit && (
-                                            <IconAction label="Delete variable" danger onClick={() => setRows((rs) => rs.filter((r) => r.id !== row.id))}>
-                                                <Trash2 />
-                                            </IconAction>
-                                        )}
-                                    </div>
-                                </li>
-                            );
-                        })}
-                        {visible.length === 0 && (
-                            <li className="px-4 py-6 text-center text-[13px] text-muted-foreground">No keys match &ldquo;{filter}&rdquo;.</li>
-                        )}
-                    </ol>
-                    {canEdit && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={addRow}
-                            className="h-10 w-full justify-start rounded-none border-t px-3 text-[13px] font-normal text-muted-foreground"
-                        >
-                            <Plus /> Add variable
-                        </Button>
-                    )}
-                </div>
+                <VarTable
+                    rows={rows}
+                    visible={visible}
+                    filter={filter}
+                    canEdit={canEdit}
+                    keyCounts={keyCounts}
+                    revealAll={revealAll}
+                    revealed={revealed}
+                    isChanged={(row) => {
+                        const k = row.key.trim();
+                        const original = row.origKey !== null ? baseline.find((v) => v.key === row.origKey) : undefined;
+                        return (!!k || !!row.value) && (!original || k !== row.origKey || (row.value !== null && row.value !== original.value));
+                    }}
+                    onUpdate={update}
+                    onRemove={(id) => setRows((rs) => rs.filter((r) => r.id !== id))}
+                    onAdd={addRow}
+                    onToggleReveal={(row, reveal) =>
+                        reveal
+                            ? withValues(() => setRevealed((s) => new Set(s).add(row.id)))
+                            : setRevealed((s) => {
+                                  const n = new Set(s);
+                                  n.delete(row.id);
+                                  return n;
+                              })
+                    }
+                    onCopy={(row) =>
+                        withValues(() => {
+                            const v = rowsRef.current.find((r) => r.id === row.id)?.value;
+                            if (v != null) copyText(v, `Copied ${row.key || "value"}`);
+                        })
+                    }
+                    onUnlock={() => withValues(() => {})}
+                />
             )}
 
             {canEdit && dirty && (
-                <div className="sticky bottom-4 z-20 mt-4 flex justify-center">
-                    <div className="flex items-center gap-2 rounded-full border bg-popover py-1.5 pl-4 pr-1.5  animate-in fade-in-0 slide-in-from-bottom-2">
-                        <span className="text-[13px]">
+                // Pinned to the bottom of the window, centred on the editor, however long the list is.
+                <div
+                    className="pointer-events-none fixed bottom-5 z-30 flex justify-center px-4"
+                    style={barBox ? { left: barBox.left, width: barBox.width } : { left: 0, right: 0 }}
+                >
+                    <div className="pointer-events-auto flex items-center gap-1 rounded-full border bg-popover py-1.5 pl-4 pr-1.5 shadow-lg shadow-black/10 animate-in fade-in-0 slide-in-from-bottom-2">
+                        <span className="mr-1 text-[13px]">
                             {changes} unsaved change{changes === 1 ? "" : "s"}
                             {problems > 0 && <span className="text-destructive">, {problems} to fix</span>}
                         </span>
@@ -741,7 +493,8 @@ export function EnvEditor({ apiBase, envName, envSlug, canEdit, vars, version, r
                             <RotateCcw /> Discard
                         </Button>
                         <Button size="sm" className="rounded-full" onClick={save} loading={saving} disabled={problems > 0}>
-                            Save <Kbd className="bg-primary-foreground/15 text-primary-foreground/80">⌘S</Kbd>
+                            {/* Pill inside a pill: the key hint is rounded too, so the curves stay concentric. */}
+                            Save <Kbd className="rounded-full bg-primary-foreground/15 px-1.5 text-primary-foreground/80 group-disabled/button:bg-foreground/10 group-disabled/button:text-muted-foreground">⌘S</Kbd>
                         </Button>
                     </div>
                 </div>
