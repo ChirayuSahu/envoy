@@ -17,6 +17,18 @@
  *
  * Idempotent: every created document records `migratedFrom`, and existing ones are reused.
  * Old Workspace/Group documents are left untouched.
+ *
+ * Secrets:
+ *   ENCRYPTION_SECRET          encrypts the migrated values; must equal ENCRYPTION_SECRET on the server.
+ *   LEGACY_ENCRYPTION_SECRETS  optional, comma-separated: the old NEXT_PUBLIC_ENCRYPTION_SECRET value(s)
+ *                              the groups were encrypted with (e.g. production's, if it differs from yours).
+ *   Old values are tried against ENCRYPTION_SECRET, then each legacy secret, then the old app's built-in
+ *   default ("fallback-secret", used when the variable wasn't set).
+ *
+ * Re-running refills migrated "development" environments that nobody has saved since (version 0) from
+ * their source group, so a run that couldn't decrypt values can be repaired by running again with the
+ * right secret. Environments someone has edited are never overwritten; they're listed instead.
+ * A dry run decrypts every value too, so it shows exactly what would fail.
  */
 import mongoose from "mongoose";
 import User from "../src/models/user";
@@ -29,6 +41,7 @@ import TeamMembership from "../src/models/teamMembership";
 import Project from "../src/models/project";
 import Environment, { DEFAULT_ENVIRONMENTS } from "../src/models/environment";
 import BasicGroup from "../src/models/basicGroup";
+import CryptoJS from "crypto-js";
 import { decrypt, encrypt } from "../src/utils/encryption";
 import { slugify } from "../src/lib/slug";
 
@@ -40,7 +53,41 @@ try {
     /* rely on the real environment */
 }
 
-const stats = { orgs: 0, teams: 0, projects: 0, members: 0, vars: 0, skippedPublic: [] as string[], failedValues: 0 };
+const stats = {
+    orgs: 0,
+    teams: 0,
+    projects: 0,
+    members: 0,
+    vars: 0,
+    refilled: 0,
+    skippedEdited: [] as string[],
+    skippedPublic: [] as string[],
+    failedValues: 0,
+};
+
+/** Secrets the old app may have encrypted with, in the order they're tried. */
+function legacySecrets() {
+    const list = [process.env.ENCRYPTION_SECRET, ...(process.env.LEGACY_ENCRYPTION_SECRETS ?? "").split(","), "fallback-secret"];
+    return [...new Set(list.map((v) => v?.trim()).filter((v): v is string => !!v))];
+}
+
+/** A wrong key can occasionally "decrypt" to junk; real env values are printable text. */
+const looksLikeText = (v: string) => !/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFD]/.test(v);
+
+/** Decrypts any stored format: current AES-GCM, old CryptoJS (trying each known secret), or plain text. */
+function decryptAny(value: string): string {
+    if (value.startsWith("enc:v1:")) return decrypt(value);
+    if (!value.startsWith("U2Fsd")) return value; // stored before values were encrypted
+    for (const secret of legacySecrets()) {
+        try {
+            const plain = CryptoJS.AES.decrypt(value, secret).toString(CryptoJS.enc.Utf8);
+            if (plain && looksLikeText(plain)) return plain;
+        } catch {
+            /* wrong key: try the next one */
+        }
+    }
+    throw new Error("no known secret decrypts this value");
+}
 
 async function uniqueSlug(base: string, taken: (s: string) => Promise<unknown>) {
     const root = slugify(base);
@@ -76,10 +123,10 @@ function reencrypt(envs: { key: string; value: string }[], groupName: string) {
         if (!e?.key || seen.has(e.key)) continue;
         seen.add(e.key);
         try {
-            out.push({ key: e.key, value: encrypt(decrypt(e.value)) });
+            out.push({ key: e.key, value: encrypt(decryptAny(String(e.value ?? ""))) });
         } catch {
             stats.failedValues++;
-            console.warn(`  ! could not decrypt ${groupName}/${e.key}; is ENCRYPTION_SECRET the old NEXT_PUBLIC_ENCRYPTION_SECRET value?`);
+            console.warn(`  ! could not decrypt ${groupName}/${e.key}: add the secret it was encrypted with to LEGACY_ENCRYPTION_SECRETS`);
         }
     }
     return out;
@@ -101,9 +148,12 @@ async function migrateGroup(group: any, team: any, org: any, workspaceName: stri
 
     if (group.isPublic) stats.skippedPublic.push(`${workspaceName} / ${group.name}`);
 
-    if (!DRY && !(await Environment.exists({ project: project._id }))) {
-        const vars = reencrypt(group.envs, group.name);
-        stats.vars += vars.length;
+    // Decrypt in dry runs too, so a dry run proves every value can be read.
+    const vars = reencrypt(group.envs, group.name);
+    stats.vars += vars.length;
+    if (DRY) return;
+
+    if (!(await Environment.exists({ project: project._id }))) {
         await Environment.insertMany(
             DEFAULT_ENVIRONMENTS.map((e, i) => ({
                 ...e,
@@ -113,15 +163,24 @@ async function migrateGroup(group: any, team: any, org: any, workspaceName: stri
                 vars: e.slug === "development" ? vars : [],
             }))
         );
-    } else if (DRY) {
-        stats.vars += group.envs?.length ?? 0;
+        return;
     }
+
+    // Already migrated: refill development from the source group, unless someone has saved it since.
+    const dev: any = await Environment.findOne({ project: project._id, slug: "development" });
+    if (!dev) return;
+    if ((dev.version ?? 0) > 0) {
+        stats.skippedEdited.push(`${workspaceName} / ${group.name}`);
+        return;
+    }
+    await Environment.updateOne({ _id: dev._id, version: 0 }, { $set: { vars } });
+    stats.refilled++;
 }
 
 async function main() {
     const uri = process.env.NEXT_MONGO_URI;
     if (!uri) throw new Error("NEXT_MONGO_URI is not set");
-    if (!process.env.ENCRYPTION_SECRET) throw new Error("ENCRYPTION_SECRET is not set (use the old NEXT_PUBLIC_ENCRYPTION_SECRET value)");
+    if (!process.env.ENCRYPTION_SECRET) throw new Error("ENCRYPTION_SECRET is not set (use the same value as on the server)");
 
     // A dry run must not even create collections or indexes, so automatic index building is off for it.
     await mongoose.connect(uri, DRY ? { autoIndex: false, autoCreate: false } : {});
@@ -198,10 +257,15 @@ async function main() {
     console.log(`  organizations: ${stats.orgs}`);
     console.log(`  teams:         ${stats.teams}`);
     console.log(`  projects:      ${stats.projects}`);
-    console.log(`  variables:     ${stats.vars}`);
+    console.log(`  variables:     ${stats.vars}${DRY ? " (decrypted successfully)" : ""}`);
+    if (!DRY) console.log(`  development environments refilled: ${stats.refilled}`);
     console.log(`  expired share links ${DRY ? "to delete" : "deleted"}: ${staleShares}`);
     console.log(`  new members:   ${DRY ? "(not counted in dry run)" : stats.members}`);
-    if (stats.failedValues) console.log(`  values that failed to decrypt: ${stats.failedValues}`);
+    console.log(`  values that failed to decrypt: ${stats.failedValues}`);
+    if (stats.skippedEdited.length) {
+        console.log("\nThese projects were edited after migrating, so their development values were left as they are:");
+        stats.skippedEdited.forEach((g) => console.log(`  - ${g}`));
+    }
     if (stats.skippedPublic.length) {
         console.log("\nThese groups were public. They are now private; share them with invite links or a temporary link (max 24 hours):");
         stats.skippedPublic.forEach((g) => console.log(`  - ${g}`));
