@@ -8,7 +8,7 @@ import { nameSchema } from "@/lib/validation";
 
 export const GET = route(async (req: NextRequest) => {
     const me = await requireUser(req);
-    const user = await User.findById(me.id).select("name email username image provider emailVerified totpEnabled lastOrgSlug createdAt +backupCodes");
+    const user = await User.findById(me.id).select("name email username image provider emailVerified totpEnabled lastOrgSlug createdAt +backupCodes +password");
     return json({
         user: {
             id: me.id,
@@ -19,6 +19,8 @@ export const GET = route(async (req: NextRequest) => {
             provider: user.provider,
             emailVerified: !!user.emailVerified,
             totpEnabled: !!user.totpEnabled,
+            // Only whether one is set; the hash never leaves the server.
+            hasPassword: !!user.password,
             backupCodesRemaining: user.backupCodes?.length ?? 0,
             lastOrgSlug: user.lastOrgSlug ?? null,
             createdAt: user.createdAt,

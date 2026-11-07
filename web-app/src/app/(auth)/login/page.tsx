@@ -36,7 +36,7 @@ function LoginForm() {
 
     return (
         <>
-            <AuthHeading title="Sign in to Envoy">You&apos;ll confirm with your authenticator app after this step.</AuthHeading>
+            <AuthHeading title="Sign in to Envoy">If you&apos;ve set up a passkey or authenticator app, you&apos;ll confirm with it next.</AuthHeading>
 
             <FormError message={error} />
 
@@ -44,8 +44,8 @@ function LoginForm() {
             <OrDivider />
 
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
-                <FormField label="Email or username" htmlFor="username">
-                    <Input id="username" name="username" autoComplete="username" required autoFocus />
+                <FormField label="Email" htmlFor="username">
+                    <Input id="username" name="username" type="email" autoComplete="username" required />
                 </FormField>
                 <FormField label="Password" htmlFor="password">
                     <Input id="password" name="password" type="password" autoComplete="current-password" required />
@@ -54,6 +54,10 @@ function LoginForm() {
                     Sign in
                 </Button>
             </form>
+            <p className="mt-3 text-[13px] text-muted-foreground">
+                Signed up with Google? Set a password in <strong className="font-medium text-foreground">Account settings</strong> to sign in with
+                email too.
+            </p>
 
             <p className="mt-8 text-sm text-muted-foreground">
                 New to Envoy?{" "}

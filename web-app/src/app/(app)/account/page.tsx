@@ -5,17 +5,14 @@ import Link from "next/link";
 import useSWR from "swr";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
-import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageContainer } from "@/components/app/app-shell";
+import { TwoFactorSettings } from "@/components/app/two-factor-settings";
 import { LoadingPage } from "@/components/app/states";
 import { api, fetcher } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
-import { FormField, copyText, PageHeader, Section, ToneBadge, UserAvatar } from "@/components/common";
+import { FormField, PageHeader, Section, ToneBadge, UserAvatar } from "@/components/common";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
-import { OtpField } from "@/components/otp-field";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
@@ -29,102 +26,17 @@ type Me = {
         provider: "credentials" | "google";
         emailVerified: boolean;
         totpEnabled: boolean;
+        hasPassword: boolean;
         backupCodesRemaining: number;
         createdAt: string;
         apiTokens: number;
     };
 };
 
-function RegenerateCodesDialog({ open, onOpenChange, onDone }: { open: boolean; onOpenChange: (o: boolean) => void; onDone: () => void }) {
-    const [code, setCode] = useState("");
-    const [codes, setCodes] = useState<string[] | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [busy, setBusy] = useState(false);
-
-    useEffect(() => {
-        if (!open) {
-            setCode("");
-            setCodes(null);
-            setError(null);
-        }
-    }, [open]);
-
-    async function submit(value: string) {
-        setBusy(true);
-        setError(null);
-        try {
-            const res = await api<{ backupCodes: string[] }>("/api/2fa/backup-codes", { body: { code: value } });
-            setCodes(res.backupCodes);
-            onDone();
-        } catch (e: any) {
-            setError(e.message);
-            setCode("");
-        } finally {
-            setBusy(false);
-        }
-    }
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{codes ? "Your new backup codes" : "Generate new backup codes"}</DialogTitle>
-                    <DialogDescription>{
-                    codes
-                        ? "Your old codes no longer work. Save these somewhere safe; they won't be shown again."
-                        : "Enter a code from your authenticator app to confirm. Your current backup codes will stop working."
-                }</DialogDescription>
-                </DialogHeader>
-                {codes ? (
-                    <form
-                        className="contents"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            onOpenChange(false);
-                        }}
-                    >
-                        <ol className="grid grid-cols-2 gap-x-6 gap-y-1.5 rounded-lg border border-border p-4 font-mono text-[13px] text-foreground">
-                            {codes.map((c) => (
-                                <li key={c}>{c}</li>
-                            ))}
-                        </ol>
-                        <DialogFooter>
-                            <Button type="button" variant="outline" size="sm" className="mr-auto" onClick={() => copyText(codes.join("\n"), "Backup codes copied")}>
-                                Copy codes
-                            </Button>
-                            <DialogSubmit autoFocus>Done</DialogSubmit>
-                        </DialogFooter>
-                    </form>
-                ) : (
-                    <form
-                        className="contents"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            if (code.length === 6 && !busy) submit(code);
-                        }}
-                    >
-                        <div className="flex flex-col gap-3">
-                            <OtpField value={code} onChange={setCode} onComplete={submit} disabled={busy} invalid={!!error} />
-                            {error && <p className="text-[13px] text-destructive">{error}</p>}
-                        </div>
-                        <DialogFooter>
-                            <DialogCancel onClick={() => onOpenChange(false)} />
-                            <DialogSubmit loading={busy} disabled={code.length < 6}>
-                                Generate codes
-                            </DialogSubmit>
-                        </DialogFooter>
-                    </form>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 export default function AccountPage() {
     const { data, mutate } = useSWR<Me>("/api/me", fetcher);
     const [name, setName] = useState("");
     const [savingName, setSavingName] = useState(false);
-    const [regenOpen, setRegenOpen] = useState(false);
     const [signOutAllOpen, setSignOutAllOpen] = useState(false);
     const [pw, setPw] = useState({ current: "", next: "" });
     const [pwBusy, setPwBusy] = useState(false);
@@ -188,63 +100,76 @@ export default function AccountPage() {
 
             <Section
                 title="Two-factor authentication"
-                description="Required on every sign-in. If you lose your phone, a backup code gets you in once."
+                description="An optional second step when you sign in, required by some organizations. A passkey is the quickest; backup codes get you in if your devices aren't at hand."
             >
-                <div id="two-factor" className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3 rounded-lg border border-border p-4">
-                        <ShieldCheck className="size-5 text-foreground" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">Authenticator app</p>
-                            <p className="text-[13px] text-muted-foreground">Enabled</p>
-                        </div>
-                        <ToneBadge tone="mint">On</ToneBadge>
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-border p-4">
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">Backup codes</p>
-                            <p className={user.backupCodesRemaining <= 3 ? "text-[13px] text-destructive" : "text-[13px] text-muted-foreground"}>
-                                {user.backupCodesRemaining} of 10 remaining
-                            </p>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={() => setRegenOpen(true)}>
-                            Generate new codes
-                        </Button>
-                    </div>
-                </div>
+                <TwoFactorSettings totpEnabled={user.totpEnabled} backupCodesRemaining={user.backupCodesRemaining} onChanged={() => mutate()} />
             </Section>
 
-            {user.provider === "credentials" && (
-                <Section title="Password" description="Changing your password signs you out everywhere, including here.">
-                    <form
-                        className="flex max-w-md flex-col gap-4"
-                        onSubmit={async (e) => {
-                            e.preventDefault();
-                            setPwBusy(true);
-                            setPwError(null);
-                            try {
-                                await api("/api/account/password", { body: { currentPassword: pw.current, newPassword: pw.next } });
+            <Section
+                title="Password"
+                description={
+                    user.hasPassword
+                        ? "Changing your password signs you out everywhere, including here."
+                        : "Accounts are created with Google. Set a password to also sign in with your email and password."
+                }
+            >
+                <form
+                    className="flex max-w-md flex-col gap-4"
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        setPwBusy(true);
+                        setPwError(null);
+                        try {
+                            const res = await api<{ signedOut: boolean }>("/api/account/password", {
+                                body: user.hasPassword ? { currentPassword: pw.current, newPassword: pw.next } : { newPassword: pw.next },
+                            });
+                            if (res.signedOut) {
                                 toast.success("Password changed. Sign in again with your new password.");
                                 await signOut({ callbackUrl: "/login" });
-                            } catch (err: any) {
-                                setPwError(err.message);
-                                setPwBusy(false);
+                                return;
                             }
-                        }}
-                    >
+                            toast.success(`Password set. You can now sign in with ${user.email} and this password.`);
+                            setPw({ current: "", next: "" });
+                            setPwBusy(false);
+                            mutate();
+                        } catch (err: any) {
+                            setPwError(err.message);
+                            setPwBusy(false);
+                        }
+                    }}
+                >
+                    {/* Lets password managers save the new password against the right account. */}
+                    <input type="email" name="email" autoComplete="username" value={user.email} readOnly hidden />
+                    {user.hasPassword && (
                         <FormField label="Current password" htmlFor="pw-current">
-                            <Input id="pw-current" type="password" autoComplete="current-password" required value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} />
+                            <Input
+                                id="pw-current"
+                                type="password"
+                                autoComplete="current-password"
+                                required
+                                value={pw.current}
+                                onChange={(e) => setPw({ ...pw, current: e.target.value })}
+                            />
                         </FormField>
-                        <FormField label="New password" htmlFor="pw-next" error={pwError} hint="At least 10 characters.">
-                            <Input id="pw-next" type="password" autoComplete="new-password" minLength={10} required value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} />
-                        </FormField>
-                        <div>
-                            <Button type="submit" variant="default" loading={pwBusy}>
-                                Change password
-                            </Button>
-                        </div>
-                    </form>
-                </Section>
-            )}
+                    )}
+                    <FormField label={user.hasPassword ? "New password" : "Password"} htmlFor="pw-next" error={pwError} hint="At least 10 characters.">
+                        <Input
+                            id="pw-next"
+                            type="password"
+                            autoComplete="new-password"
+                            minLength={10}
+                            required
+                            value={pw.next}
+                            onChange={(e) => setPw({ ...pw, next: e.target.value })}
+                        />
+                    </FormField>
+                    <div>
+                        <Button type="submit" variant="default" loading={pwBusy}>
+                            {user.hasPassword ? "Change password" : "Set password"}
+                        </Button>
+                    </div>
+                </form>
+            </Section>
 
             <Section title="API tokens" description="Personal tokens for the CLI, scripts and CI. They act with your access.">
                 <div className="flex items-center gap-3">
@@ -266,7 +191,6 @@ export default function AccountPage() {
                 </div>
             </Section>
 
-            <RegenerateCodesDialog open={regenOpen} onOpenChange={setRegenOpen} onDone={() => mutate()} />
             <ConfirmDialog
                 open={signOutAllOpen}
                 onOpenChange={setSignOutAllOpen}
