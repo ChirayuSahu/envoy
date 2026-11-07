@@ -1,16 +1,16 @@
 "use client";
 
 import * as React from "react";
+import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 import {
     AlertDialog,
-    AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -94,10 +94,12 @@ export function ConfirmDialog({
                         </div>
                     )}
                     <AlertDialogFooter>
-                        <AlertDialogCancel type="button">{cancelLabel}</AlertDialogCancel>
-                        <Button type="submit" variant={danger ? "destructive" : "default"} disabled={blocked} loading={busy}>
+                        <AlertDialogPrimitive.Cancel asChild>
+                            <DialogCancel>{cancelLabel}</DialogCancel>
+                        </AlertDialogPrimitive.Cancel>
+                        <DialogSubmit variant={danger ? "destructive" : "default"} disabled={blocked} loading={busy}>
                             {actionLabel}
-                        </Button>
+                        </DialogSubmit>
                     </AlertDialogFooter>
                 </form>
             </AlertDialogContent>

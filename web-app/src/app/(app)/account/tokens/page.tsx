@@ -10,8 +10,9 @@ import { api } from "@/lib/api-client";
 import { ExpiryField, customExpiryISO, type Expiry } from "@/components/expiry-field";
 import { usePaginated } from "@/lib/use-paginated";
 import { formatDate, timeAgo } from "@/lib/format";
-import { FormField, CopyButton, EmptyState, LoadMore, PageHeader } from "@/components/common";
+import { FormField, CopyButton, EmptyState, LoadMore, PageHeader, copyText } from "@/components/common";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -45,7 +46,15 @@ function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; o
                 }</DialogDescription>
                 </DialogHeader>
                 {token ? (
-                    <>
+                    <form
+                        className="contents"
+                        onSubmit={async (e) => {
+                            // The token is never shown again, so Enter copies it before closing.
+                            e.preventDefault();
+                            await copyText(token, "Token copied");
+                            close(false);
+                        }}
+                    >
                         <div className="flex items-center gap-1 rounded-md border border-foreground bg-muted/40 py-1 pl-3 pr-1">
                             <code className="flex-1 break-all font-mono text-[12.5px] text-foreground">{token}</code>
                             <CopyButton value={token} label="Token" />
@@ -55,11 +64,9 @@ function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; o
                             command from a project&apos;s &ldquo;Use from CLI&rdquo; button.
                         </p>
                         <DialogFooter>
-                            <Button variant="default" onClick={() => close(false)}>
-                                Done
-                            </Button>
+                            <DialogSubmit autoFocus>Copy and close</DialogSubmit>
                         </DialogFooter>
-                    </>
+                    </form>
                 ) : (
                     <form
                         className="flex flex-col gap-4"
@@ -100,12 +107,10 @@ function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; o
                             ]}
                         />
                         <DialogFooter>
-                            <Button type="button" variant="ghost" onClick={() => close(false)}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" variant="default" loading={busy} disabled={!name.trim()}>
+                            <DialogCancel onClick={() => close(false)} />
+                            <DialogSubmit loading={busy} disabled={!name.trim()}>
                                 Create token
-                            </Button>
+                            </DialogSubmit>
                         </DialogFooter>
                     </form>
                 )}

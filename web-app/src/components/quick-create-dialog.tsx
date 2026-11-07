@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Kbd } from "@/components/ui/kbd";
+import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 
@@ -128,12 +127,10 @@ function QuickCreateForm({
                     <span className="min-w-0 truncate text-[12.5px] text-muted-foreground">{hint}</span>
                 ) : null}
                 <div className="ml-auto flex shrink-0 items-center gap-1">
-                    <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-muted-foreground">
-                        Cancel <Kbd>Esc</Kbd>
-                    </Button>
-                    <Button type="submit" size="sm" loading={busy} disabled={!ready}>
-                        {submitLabel} <Kbd className="bg-primary-foreground/20 text-primary-foreground">↵</Kbd>
-                    </Button>
+                    <DialogCancel onClick={() => onOpenChange(false)} />
+                    <DialogSubmit loading={busy} disabled={!ready}>
+                        {submitLabel}
+                    </DialogSubmit>
                 </div>
             </div>
         </form>

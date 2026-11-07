@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Copy, Link2, Mail, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -181,14 +182,19 @@ export default function InvitesPage() {
                             Copy it now: for security it <strong className="font-semibold text-foreground">won&apos;t be shown again</strong>.
                         </p>
                         <p className="my-4 text-center font-mono text-[26px] font-semibold tracking-[0.18em] text-foreground">{formatInviteCode(createdCode)}</p>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" size="sm" onClick={() => copyText(createdCode, "Invite code copied")}>
+                        <ButtonGroup className="w-full">
+                            <Button variant="outline" size="sm" className="flex-1" onClick={() => copyText(createdCode, "Invite code copied")}>
                                 <Copy /> Copy code
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => copyText(`${window.location.origin}/invite/${createdCode}`, "Invite link copied")}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => copyText(`${window.location.origin}/invite/${createdCode}`, "Invite link copied")}
+                            >
                                 <Link2 /> Copy link
                             </Button>
-                        </div>
+                        </ButtonGroup>
                     </div>
                 )}
             </section>

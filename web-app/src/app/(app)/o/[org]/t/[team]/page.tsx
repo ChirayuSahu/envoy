@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { PageContainer } from "@/components/app/app-shell";
 import { CreateProjectDialog } from "@/components/app/dialogs";
 import { QuickCreateDialog } from "@/components/quick-create-dialog";
+import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
 import { LoadError, LoadingPage } from "@/components/app/states";
 import { api, fetcher } from "@/lib/api-client";
@@ -121,12 +122,10 @@ function AddMemberDialog({
                         </Select>
                     </FormField>
                     <DialogFooter>
-                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-                            Cancel
-                        </Button>
-                        <Button type="submit" variant="default" loading={busy} disabled={!userId}>
+                        <DialogCancel onClick={() => onOpenChange(false)} />
+                        <DialogSubmit loading={busy} disabled={!userId}>
                             Add to team
-                        </Button>
+                        </DialogSubmit>
                     </DialogFooter>
                 </form>
             </DialogContent>

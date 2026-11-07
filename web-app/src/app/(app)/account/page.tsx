@@ -14,6 +14,7 @@ import { api, fetcher } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 import { FormField, copyText, PageHeader, Section, ToneBadge, UserAvatar } from "@/components/common";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { DialogCancel, DialogSubmit } from "@/components/dialog-actions";
 import { OtpField } from "@/components/otp-field";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -75,26 +76,44 @@ function RegenerateCodesDialog({ open, onOpenChange, onDone }: { open: boolean; 
                 }</DialogDescription>
                 </DialogHeader>
                 {codes ? (
-                    <>
+                    <form
+                        className="contents"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            onOpenChange(false);
+                        }}
+                    >
                         <ol className="grid grid-cols-2 gap-x-6 gap-y-1.5 rounded-lg border border-border p-4 font-mono text-[13px] text-foreground">
                             {codes.map((c) => (
                                 <li key={c}>{c}</li>
                             ))}
                         </ol>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => copyText(codes.join("\n"), "Backup codes copied")}>
+                            <Button type="button" variant="outline" size="sm" className="mr-auto" onClick={() => copyText(codes.join("\n"), "Backup codes copied")}>
                                 Copy codes
                             </Button>
-                            <Button variant="default" onClick={() => onOpenChange(false)}>
-                                Done
-                            </Button>
+                            <DialogSubmit autoFocus>Done</DialogSubmit>
                         </DialogFooter>
-                    </>
+                    </form>
                 ) : (
-                    <div className="flex flex-col gap-3">
-                        <OtpField value={code} onChange={setCode} onComplete={submit} disabled={busy} invalid={!!error} />
-                        {error && <p className="text-[13px] text-destructive">{error}</p>}
-                    </div>
+                    <form
+                        className="contents"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (code.length === 6 && !busy) submit(code);
+                        }}
+                    >
+                        <div className="flex flex-col gap-3">
+                            <OtpField value={code} onChange={setCode} onComplete={submit} disabled={busy} invalid={!!error} />
+                            {error && <p className="text-[13px] text-destructive">{error}</p>}
+                        </div>
+                        <DialogFooter>
+                            <DialogCancel onClick={() => onOpenChange(false)} />
+                            <DialogSubmit loading={busy} disabled={code.length < 6}>
+                                Generate codes
+                            </DialogSubmit>
+                        </DialogFooter>
+                    </form>
                 )}
             </DialogContent>
         </Dialog>

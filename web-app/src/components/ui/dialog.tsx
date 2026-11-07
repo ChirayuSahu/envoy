@@ -107,7 +107,8 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "mt-1 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        // The bordered action bar at the bottom of every dialog; bleeds to the dialog edges (content is p-6).
+        "-mx-6 -mb-6 mt-1 flex flex-wrap items-center justify-end gap-1 border-t px-4 py-3",
         className
       )}
       {...props}
