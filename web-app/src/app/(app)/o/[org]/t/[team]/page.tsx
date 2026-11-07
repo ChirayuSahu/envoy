@@ -12,7 +12,7 @@ import { PageContainer } from "@/components/app/app-shell";
 import { CreateProjectDialog } from "@/components/app/dialogs";
 import { QuickCreateDialog } from "@/components/quick-create-dialog";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
-import { LoadingPage, NotFoundState } from "@/components/app/states";
+import { LoadError, LoadingPage } from "@/components/app/states";
 import { api, fetcher } from "@/lib/api-client";
 import { timeAgo } from "@/lib/format";
 import { FormField, UserAvatar, EmptyState, LoadMore, PageHeader, ToneBadge, ToneTile } from "@/components/common";
@@ -222,7 +222,7 @@ function TeamView() {
     const [deleteTeam, setDeleteTeam] = useState(false);
     const [removing, setRemoving] = useState<Member | null>(null);
 
-    if (error) return <NotFoundState title="Team not found" />;
+    if (error) return <LoadError error={error} notFoundTitle="Team not found" onRetry={() => mutate()} />;
     if (!data) return <LoadingPage />;
 
     const { team, projectCount, memberCount } = data;

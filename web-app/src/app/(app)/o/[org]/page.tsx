@@ -8,18 +8,18 @@ import { PageContainer } from "@/components/app/app-shell";
 import { CreateProjectDialog, CreateTeamDialog } from "@/components/app/dialogs";
 import { SetupChecklist } from "@/components/app/setup-checklist";
 import { ROLE_LABEL, useOrg } from "@/components/app/org-context";
-import { LoadingPage, LowBackupCodesBanner, NotFoundState } from "@/components/app/states";
+import { LoadError, LoadingPage, LowBackupCodesBanner } from "@/components/app/states";
 import { timeAgo } from "@/lib/format";
 import { EmptyState, PageHeader, ToneBadge, ToneTile } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { roleTone } from "@/lib/tones";
 
 export default function OrgOverviewPage() {
-    const { data, error, slug, isAdmin } = useOrg();
+    const { data, error, slug, isAdmin, mutate } = useOrg();
     const [createTeam, setCreateTeam] = useState(false);
     const [projectFor, setProjectFor] = useState<{ slug: string; name: string } | null>(null);
 
-    if (error) return <NotFoundState title="Organization not found" />;
+    if (error) return <LoadError error={error} notFoundTitle="Organization not found" onRetry={() => mutate()} />;
     if (!data) return <LoadingPage />;
 
     const { org, teams } = data;

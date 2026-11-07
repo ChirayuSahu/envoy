@@ -12,7 +12,7 @@ import { PageContainer } from "@/components/app/app-shell";
 import { QuickCreateDialog } from "@/components/quick-create-dialog";
 import { EnvEditor } from "@/components/app/env-editor";
 import { useOrg } from "@/components/app/org-context";
-import { LoadingPage, NotFoundState } from "@/components/app/states";
+import { LoadError, LoadingPage } from "@/components/app/states";
 import { api, fetcher } from "@/lib/api-client";
 import { timeAgo } from "@/lib/format";
 import { CopyButton, PageHeader, ToneBadge, ToneDot } from "@/components/common";
@@ -146,7 +146,7 @@ function ProjectView() {
     const [pendingEnv, setPendingEnv] = useState<string | null>(null);
     const onDirtyChange = useCallback((d: boolean) => setDirty(d), []);
 
-    if (error) return <NotFoundState title="Project not found" />;
+    if (error) return <LoadError error={error} notFoundTitle="Project not found" onRetry={() => mutate()} />;
     if (!data) return <LoadingPage />;
 
     const canEdit = data.access !== "view";

@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { PageContainer } from "@/components/app/app-shell";
 import { PageHeader } from "@/components/common";
 import { useOrg } from "@/components/app/org-context";
-import { LoadingPage, NotFoundState } from "@/components/app/states";
+import { LoadError, LoadingPage } from "@/components/app/states";
 import { cn } from "@/lib/utils";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-    const { slug, data, error, isAdmin } = useOrg();
+    const { slug, data, error, isAdmin, mutate } = useOrg();
     const pathname = usePathname();
 
-    if (error) return <NotFoundState title="Organization not found" />;
+    if (error) return <LoadError error={error} notFoundTitle="Organization not found" onRetry={() => mutate()} />;
     if (!data) return <LoadingPage />;
 
     const base = `/o/${slug}/settings`;
