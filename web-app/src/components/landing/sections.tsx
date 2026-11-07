@@ -345,21 +345,17 @@ export function UseCases() {
                     </Button>
                 </div>
             </div>
-            {/* Two staggered columns, like a masonry layout: the right column starts lower. */}
+            {/* An aligned 2×2 grid: tiles and captions line up across each row. */}
             <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2">
-                {[CASES.filter((_, i) => i % 2 === 0), CASES.filter((_, i) => i % 2 === 1)].map((col, ci) => (
-                    <div key={ci} className={cn("flex flex-col gap-16", ci === 1 && "sm:pt-28")}>
-                        {col.map((c, i) => (
-                            <Reveal key={c.tag} delay={(ci + i) * 100} className="flex flex-col">
-                                <div className={cn("flex h-64 items-center justify-center rounded-lg", c.shape)}>{c.visual}</div>
-                                <p className="mt-5 flex gap-2 text-[15px] leading-snug text-foreground/70">
-                                    <ArrowRight className="mt-1 size-3.5 shrink-0" />
-                                    <span>{c.caption}</span>
-                                </p>
-                                <p className="mt-2 text-[10px] font-medium tracking-[0.12em] text-foreground/50 underline underline-offset-4">{c.tag}</p>
-                            </Reveal>
-                        ))}
-                    </div>
+                {CASES.map((c, i) => (
+                    <Reveal key={c.tag} delay={(i % 2) * 100} className="flex flex-col">
+                        <div className={cn("flex h-64 items-center justify-center rounded-lg", c.shape)}>{c.visual}</div>
+                        <p className="mt-5 flex gap-2 text-[15px] leading-snug text-foreground/70">
+                            <ArrowRight className="mt-1 size-3.5 shrink-0" />
+                            <span>{c.caption}</span>
+                        </p>
+                        <p className="mt-2 text-[10px] font-medium tracking-[0.12em] text-foreground/50 underline underline-offset-4">{c.tag}</p>
+                    </Reveal>
                 ))}
             </div>
         </section>
