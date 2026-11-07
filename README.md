@@ -28,7 +28,7 @@ Organization          owners, admins and members
 
 | Role | Can do |
 | --- | --- |
-| **Org owner** | Everything, plus delete the org, transfer ownership, reset a member's 2FA |
+| **Org owner** | Everything, plus delete the org, transfer ownership, require two-factor, reset a member's 2FA |
 | **Org admin** | Create teams, invite people, change roles, edit every project, view the audit log |
 | **Org member** | See only the teams they're on |
 | **Team editor** | Read and change variables, create projects and environments in that team |
@@ -37,7 +37,10 @@ Organization          owners, admins and members
 ## Features
 - [x] **Organizations, teams and projects** - Org owners and admins create teams and decide who can edit and who can only read
 - [x] **Multiple environments per project** - development, staging and production out of the box; add your own
-- [x] **Mandatory TOTP two-factor authentication** - Every sign-in (password or Google) is confirmed with an authenticator app, with one-time backup codes
+- [x] **Sign in with Google** - Accounts are created with Google; people can add a password in Account settings for email sign-in
+- [x] **Passkeys and authenticator apps** - Optional second step at sign-in (Touch ID, Face ID, Windows Hello, a password manager, or 6-digit codes), with one-time backup codes. Owners can require it for their organization
+- [x] **Values stay hidden until you confirm** - People with two-factor confirm with a passkey or code before secret values are sent to the browser; the unlock lasts 10 minutes and lives on the server
+- [x] **Restricted projects** - Limit a project to selected team members; move projects between teams
 - [x] **Invitations** - 10-character invite codes (also shareable as a link) that expire and can be limited to a number of uses. Envoy doesn't send email.
 - [x] **Audit log** - Owners and admins see every change to members, teams, projects and variables (key names only, never values)
 - [x] **Personal API tokens** - Fetch variables from the CLI or CI; tokens follow the user's current access
@@ -61,9 +64,10 @@ Organization          owners, admins and members
 ### Backend
 - **Next.js route handlers** under `src/app/api`
 - **MongoDB** with **Mongoose**
-- **NextAuth.js** (credentials + Google) with a TOTP second factor
+- **NextAuth.js** (Google + email/password) with an optional passkey or TOTP second factor
 
 ### Security
+- **SimpleWebAuthn** for passkeys (only public keys stored, single-use challenges)
 - **otpauth** + **qrcode** for TOTP enrollment and verification (replay-protected, rate-limited)
 - **bcryptjs** for password hashing; backup codes and API tokens are stored as SHA-256 hashes
 - **Node `crypto` AES-256-GCM** for values at rest (`crypto-js` only to read legacy values)
@@ -110,7 +114,9 @@ ENCRYPTION_SECRET=your_long_random_encryption_key
 NEXT_PUBLIC_APP_NAME=your_app_name
 ```
 
-`ENCRYPTION_SECRET` is used only by server-side code and must stay stable for as long as encrypted values need to be read. To keep values encrypted with the previous `NEXT_PUBLIC_ENCRYPTION_SECRET` readable, initially set `ENCRYPTION_SECRET` to that same value. Then rotate it only after re-encrypting existing records with a dedicated migration; changing it directly makes stored values unreadable.
+`ENCRYPTION_SECRET` is used only by server-side code and must stay the same for as long as encrypted data needs to be read: it encrypts variable values, temporary links and authenticator-app secrets. Changing it makes that data unreadable (nothing is deleted; restoring the old value fixes it), so keep it backed up.
+
+Optional: `WEBAUTHN_RP_ID` and `WEBAUTHN_ORIGIN` pin passkeys to one domain (e.g. `envoy.example.com` and `https://envoy.example.com`). Without them, passkeys belong to whichever domain they were created on.
 
 ### Development
 
@@ -164,41 +170,17 @@ List endpoints (organizations, members, team projects and members, invite links,
 - Cursors are opaque and stay stable when items are added or removed between requests.
 - Some lists also return `total`. Org members accept `?q=` to search by name or email.
 
-## Upgrading from workspaces and groups
+## Breaking changes from the workspaces/groups version
 
-This release replaces Workspaces → Groups with Organizations → Teams → Projects → Environments, and makes two-factor authentication mandatory.
-
-1. Back up the database.
-2. Set `ENCRYPTION_SECRET` to the value of the old `NEXT_PUBLIC_ENCRYPTION_SECRET` (then remove the `NEXT_PUBLIC_` variable).
-3. Preview, then run, the migration:
-
-```bash
-npm run migrate:orgs -- --dry-run
-```
-
-```bash
-npm run migrate:orgs
-```
-
-What it does:
-- Each user who owned workspaces gets an organization (they're the owner).
-- Each workspace becomes a team; groups without extra members become projects in it.
-- Each group **with** members becomes its own team holding one project, with those members as **viewers**. This keeps access exactly as it was, since team roles apply to every project in a team.
-- Group variables move to the project's `development` environment, re-encrypted with AES-256-GCM.
-- The script is idempotent; old Workspace/Group documents are left in place.
-
-**Breaking changes**
-- Group tokens no longer work. `GET /api/env/get` returns `410 Gone`; switch to personal API tokens and `/api/v1/…`.
-- Public groups are now private, and nothing can be made public. The migration prints the affected groups; use invite links, or temporary links (max 24 hours) for one-off sharing.
-- Temporary share links now last at most 24 hours. Older links past that age stop working, and the migration deletes them.
-- Everyone sets up an authenticator app at their next sign-in.
-- Invitations are codes only: each invite has a 10-character code (`XXXXX-XXXXX`), also usable as an `/invite/<code>` link. In-app email invites and the personal invitations inbox were removed; email invites created earlier can no longer be accepted.
+Envoy used to organize variables as Workspaces → Groups. Existing data has been moved to Organizations → Teams → Projects → Environments.
+- Group tokens no longer work. `GET /api/env/get` returns `410 Gone`; use personal API tokens and `/api/v1/…`.
+- Nothing can be made public. Use invite links, or temporary links (at most 24 hours) for one-off sharing.
+- Invitations are 10-character codes (`XXXXX-XXXXX`), also usable as an `/invite/<code>` link. Envoy doesn't send email invites.
 
 ## Project Structure
 
 ```
 web-app/
-├── scripts/migrate-to-orgs.ts      # one-time data migration
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/                 # login, signup, 2FA setup/verify, onboarding, invite links

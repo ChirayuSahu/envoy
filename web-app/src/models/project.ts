@@ -7,7 +7,6 @@ const projectSchema = new Schema(
         name: { type: String, required: true, trim: true, maxlength: 64 },
         slug: { type: String, required: true, lowercase: true, trim: true },
         description: { type: String, trim: true, maxlength: 280 },
-        migratedFrom: { type: String, index: true, sparse: true },
         /** "Only selected people": team members see the project only if they're in `allowedUsers`. Org owners and admins always do. */
         restricted: { type: Boolean, default: false },
         allowedUsers: { type: [{ type: Schema.Types.ObjectId, ref: "User" }], default: [] },

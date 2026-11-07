@@ -5,7 +5,6 @@ const organizationSchema = new Schema(
         name: { type: String, required: true, trim: true, maxlength: 64 },
         slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
         owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        migratedFrom: { type: String, index: true, sparse: true },
         /**
          * Members must have a passkey or authenticator app (and use it) to open anything in the org.
          * Deliberately no default: organizations created before this setting existed have no value and

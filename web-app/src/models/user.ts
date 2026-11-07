@@ -41,18 +41,6 @@ const userSchema = new Schema(
         image: {
             type: String,
         },
-        workspaces: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "Workspace",
-            },
-        ],
-        otherGroups: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "Group",
-            },
-        ],
         emailVerified: { type: Boolean, default: false },
         // TOTP two-factor auth. Secrets are stored encrypted with utils/encryption.
         totpEnabled: { type: Boolean, default: false },

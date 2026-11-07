@@ -6,7 +6,6 @@ const teamSchema = new Schema(
         name: { type: String, required: true, trim: true, maxlength: 64 },
         slug: { type: String, required: true, lowercase: true, trim: true },
         description: { type: String, trim: true, maxlength: 280 },
-        migratedFrom: { type: String, index: true, sparse: true },
     },
     { timestamps: true }
 );

@@ -18,8 +18,6 @@ const connectMongo = async () => {
 
     await Promise.all([
       import("@/models/user"),
-      import("@/models/group"),
-      import("@/models/workspace"),
       import("@/models/basicGroup"),
       import("@/models/organization"),
       import("@/models/orgMembership"),
